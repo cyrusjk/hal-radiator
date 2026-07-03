@@ -59,15 +59,10 @@
     function cardDone() {
       locked ? showCard(idx, cardDone) : scheduleNext();
     }
-
     function scheduleNext() {
       clearAuto();
       var next = (idx + 1) % cfg.cards.length;
-      if (cfg.cards[next].type !== 'title') {
-        transitionTo(next);
-      } else {
-        autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, next);
-      }
+      transitionTo(next);
     }
 
     function transitionTo(nextIdx) {

@@ -27,17 +27,19 @@ groups:
     animation:
       phases:
         - { action: blank}
-        - { action: wait, duration: 3000 }
+        - { action: wait, duration: 1000 }
         - { action: appear, groups: [header, footer, grid, groupLabels] }
-        - { action: wait, duration: 5000 }
+        - { action: wait, duration: 1000 }
         - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
         - { action: wait, duration: 2000 }
         - { action: appear, groups: [minValues] }
         - { action: appear, groups: [maxValues] }
-        - { action: throb, groups: [minValues] }
+        - { action: wait, duration: 1000 }
+        - { action: throb, groups: [minValues], order: simultaneous, count: 2 }
         - { action: wait, duration: 1000}
-        - { action: throb, groups: [maxValues]}
-        - { action: wait, duration: 5000 }
+        - { action: throb, groups: [maxValues], order: simultaneous, count: 2 }
+        - { action: wait, duration: 2000 }
+        - { action: fadeOut, groups: [maxValues,minValues], duration: 2000 }
         - { action: disappear, groups: [maxValues] }
         - { action: disappear, groups: [minValues] }
         - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
@@ -57,7 +59,7 @@ groups:
     animation:
       phases:
         - { action: appear, groups: [header, footer, grid, groupLabels] }
-        - { action: wait, duration: 5000 }
+        - { action: wait, duration: 1000 }
         - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
         - { action: wait, duration: 2000 }
         - { action: appear, groups: [minValues] }
@@ -86,7 +88,7 @@ groups:
     animation:
       phases:
         - { action: appear, groups: [header, footer, grid, groupLabels] }
-        - { action: wait, duration: 5000 }
+        - { action: wait, duration: 1000 }
         - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
         - { action: wait, duration: 2000 }
         - { action: appear, groups: [minValues] }

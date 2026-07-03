@@ -30,17 +30,14 @@
     0%   { opacity: 1; } 50%  { opacity: 0; } 100% { opacity: 0; }
   }
 
-  @keyframes throbIn {
-    0%   { opacity: 0; } 25%  { opacity: 1; } 50%  { opacity: 0; }
-    75%  { opacity: 1; } 100% { opacity: 1; }
-  }
-  @keyframes throbOut {
-    0%   { opacity: 1; } 25%  { opacity: 0; } 50%  { opacity: 1; }
-    75%  { opacity: 0; } 100% { opacity: 0; }
+  @keyframes throb {
+    0%   { opacity: 1; }
+    50%  { opacity: 0; }
+    100% { opacity: 1; }
   }
   .blink-in  { animation: blinkIn   1s ease-in-out forwards; }
   .blink-out { animation: blinkOut  1s ease-in-out forwards; }
-  .throb { animation: throbIn 1.25s ease-in-out forwards; }
+  .throb { animation: throb 1s ease-in-out forwards; }
 
   @font-face { font-family: 'EurostileLocal'; src: url('assets/fonts/Eurostile-Bold-Extended.otf') format('opentype'); }
   @font-face { font-family: 'RajdhaniLightLocal'; src: url('assets/fonts/Rajdhani-Light.ttf') format('truetype'); }

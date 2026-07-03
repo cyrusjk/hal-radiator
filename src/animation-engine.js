@@ -4,7 +4,8 @@
 //  — Each phase is: { action, groups, [order], [gap], [duration], [effect] }
 //  — Groups are chart-type specific element collections (header, bands, etc.)
 //
-//  Actions: appear, disappear, flickerIn, flickerOut, wait, blank, throb, done
+//  Actions: appear, disappear, flickerIn, flickerOut, wait, blank,
+//           throb, fadeOut, done
 //  Orders:  sequential (default), simultaneous, reverse
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -33,13 +34,41 @@ window.HAL.anim = window.HAL.anim || {};
     el.classList.add(cls);
   }
 
-  // Smooth sine-like throb (~2 cycles/s, settles visible)
-  function throbOne(el) {
+  // Throb: snap visible → linear fade out → snap visible → repeat count times.
+  // Fade-out is 1000ms. Total cycle is 1000ms. 1 cycle/s.
+  // Uses requestAnimationFrame for reliable opacity on SVG elements.
+  function throbOne(el, count, cb) {
     if (el instanceof Array) {
-      for (var i = 0; i < el.length; i++) throbOne(el[i]);
+      var done = 0, total = el.length;
+      for (var i = 0; i < total; i++) {
+        throbOne(el[i], count, function() { done++; if (done >= total && cb) cb(); });
+      }
       return;
     }
-    el.classList.add('throb');
+    var cycles = count || 2;
+    var step = 0;
+    var running = true;
+
+    function fadeOut(onDone) {
+      var start = performance.now();
+      (function tick(now) {
+        if (!running) return;
+        var t = (now - start) / 1000;
+        if (t >= 1) { el.style.opacity = '0'; onDone(); return; }
+        el.style.opacity = 1 - t;
+        requestAnimationFrame(tick);
+      })(performance.now());
+    }
+
+    function next() {
+      if (!running) return;
+      step++;
+      if (step > cycles) { el.style.opacity = '1'; running = false; if (cb) cb(); return; }
+      el.style.opacity = '1';
+      fadeOut(next);
+    }
+
+    next();
   }
 
   // ── Action implementations ─────────────────────────────────────────
@@ -69,18 +98,36 @@ window.HAL.anim = window.HAL.anim || {};
 
     throb: function(elements, phase, onDone) {
       var list = asArray(elements);
-      // simultaneous: all elements throb at once
+      var count = phase.count || 2;
       if (phase.order === 'simultaneous') {
-        for (var i = 0; i < list.length; i++) throbOne(list[i]);
-        if (onDone) onDone();
+        var remaining = list.length;
+        if (remaining === 0) { if (onDone) onDone(); return; }
+        for (var i = 0; i < list.length; i++) {
+          throbOne(list[i], count, function() {
+            remaining--;
+            if (remaining <= 0 && onDone) onDone();
+          });
+        }
       } else {
         var gap = phase.gap || 400;
-        throbSequence(list, gap, onDone);
+        throbSequence(list, gap, count, onDone);
       }
     },
 
     wait: function(elements, phase, onDone) {
       setTimeout(onDone, phase.duration || 1000);
+    },
+
+    // Smooth fade to invisible over duration ms (default 2000).
+    // Supports order: simultaneous (default) or sequential.
+    fadeOut: function(elements, phase, onDone) {
+      var list = asArray(elements);
+      var dur = phase.duration || 2000;
+      if (phase.order === 'sequential') {
+        fadeSequence(list, dur, onDone);
+      } else {
+        fadeSimultaneous(list, dur, onDone);
+      }
     },
 
     done: function(elements, phase, onDone) {
@@ -113,15 +160,56 @@ window.HAL.anim = window.HAL.anim || {};
   }
 
   // Sequential throb — each element throbs with a gap between them
-  function throbSequence(list, gap, onDone) {
+  function throbSequence(list, gap, count, onDone) {
     var i = 0;
     function tick() {
       if (i >= list.length) { if (onDone) onDone(); return; }
-      throbOne(list[i]);
+      throbOne(list[i], count);
       i++;
-      setTimeout(tick, 1250 + (gap || 0));
+      setTimeout(tick, (count * 1000) + (gap || 0));
     }
     tick();
+  }
+
+  // Fade all elements from 1→0 simultaneously over duration ms.
+  function fadeSimultaneous(list, dur, onDone) {
+    if (list.length === 0) { if (onDone) onDone(); return; }
+    var remaining = list.length;
+    for (var i = 0; i < list.length; i++) {
+      fadeOne(list[i], dur, function() {
+        remaining--;
+        if (remaining <= 0 && onDone) onDone();
+      });
+    }
+  }
+
+  // Fade each element from 1→0 sequentially over duration ms per element.
+  function fadeSequence(list, dur, onDone) {
+    var i = 0;
+    function tick() {
+      if (i >= list.length) { if (onDone) onDone(); return; }
+      fadeOne(list[i], dur, tick);
+      i++;
+    }
+    tick();
+  }
+
+  // Fade a single element from 1→0 over duration ms.
+  function fadeOne(el, dur, cb) {
+    if (el instanceof Array) {
+      var done = 0, total = el.length;
+      for (var i = 0; i < total; i++) {
+        fadeOne(el[i], dur, function() { done++; if (done >= total && cb) cb(); });
+      }
+      return;
+    }
+    var start = performance.now();
+    (function tick(now) {
+      var t = (now - start) / dur;
+      if (t >= 1) { el.style.opacity = '0'; if (cb) cb(); return; }
+      el.style.opacity = 1 - t;
+      requestAnimationFrame(tick);
+    })(performance.now());
   }
 
   // ── Normalise element references ───────────────────────────────────
