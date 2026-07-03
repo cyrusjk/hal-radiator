@@ -16,6 +16,8 @@
   var idx = 0;
   var locked = false;
   var autoTimer = null;
+  var zoom = 1.0;
+  var wrap = document.getElementById('wrap');
 
   // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -38,8 +40,6 @@
     if (c.type !== 'title') {
       window.HAL.data.fetchCardData(c)
         .then(function(data) {
-          // Merge fetched data into the card config so the renderer
-          // can access its chart-type-specific properties (groups, rows, etc.)
           if (data) {
             for (var k in data) c[k] = data[k];
           }
@@ -66,7 +66,6 @@
 
   function cardDone() {
     if (locked) {
-      // Replay the current card's animation
       showCard(idx, cardDone);
     } else {
       scheduleNext();
@@ -90,17 +89,15 @@
     if (c.type !== 'title') {
       showCard(idx, cardDone);
     } else {
-      // Title cards always hold for titleCardDisplay seconds,
-      // then advance to whatever comes next (chart or title).
       showCard(idx);
       autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, (idx + 1) % cfg.cards.length);
     }
   }
 
   // ── Keyboard controls ───────────────────────────────────────────────
-  //  ← →  navigate cards (cancel lock if active)
-  //  Space  toggle lock: when locked the current card loops its animation
-  //         indefinitely; no visual indicator
+  //  ← →  navigate cards
+  //  Space  lock/unlock current card (loops animation)
+  //  +/-    zoom in/out (0.25 increments, 0.25–3.0x)
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowLeft') {
@@ -119,12 +116,24 @@
       e.preventDefault();
       locked = !locked;
       if (locked) {
-        // Restart the current card's animation loop
         clearAuto();
         showCard(idx, cardDone);
       } else {
-        // Unlock: advance to next card
         scheduleNext();
+      }
+    }
+    else if (e.key === '=' || e.key === '+') {
+      e.preventDefault();
+      zoom = Math.min(zoom + 0.25, 3.0);
+      if (wrap) { wrap.style.transform = 'scale(' + zoom + ')'; wrap.classList.add('zoomed'); }
+    }
+    else if (e.key === '-') {
+      e.preventDefault();
+      zoom = Math.max(zoom - 0.25, 0.25);
+      if (zoom === 1.0) {
+        if (wrap) { wrap.style.transform = ''; wrap.classList.remove('zoomed'); }
+      } else {
+        if (wrap) { wrap.style.transform = 'scale(' + zoom + ')'; wrap.classList.add('zoomed'); }
       }
     }
   });

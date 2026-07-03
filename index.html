@@ -6,8 +6,15 @@
 <title>HAL 9000 — Metrics Radiator</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: rgb(45, 78, 161); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-  svg { display: block; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+  body { display: flex; justify-content: center; align-items: center; }
+  #wrap {
+    width: 100vw; height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    overflow: hidden;
+  }
+  #wrap.zoomed svg { transform-origin: center center; }
+  svg { display: block; width: 100%; height: 100%; }
 
   @keyframes blinkIn {
     0%   { opacity: 0; }  4%   { opacity: 1; }  8%   { opacity: 0; }
@@ -39,7 +46,7 @@
 </style>
 </head>
 <body>
-<svg id="card" width="1000" height="750" viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg"></svg>
+<div id="wrap"><svg id="card" width="100%" height="100%" viewBox="0 0 1000 750" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>
 
 <!-- ── Application modules (loaded in dependency order) ─────────────── -->
 <script src="src/config.js"></script>
