@@ -47,6 +47,17 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
       color: 'rgb(22,58,85)',
       dataSource: { type: 'inline' }
     },
+    // ── Live metric: CPU load averages from pappy's VictoriaMetrics ──────
+    {
+      type: 'chart', title: 'SYS: PAPPY', label: 'CPU LOAD AVERAGES',
+      color: 'rgb(16,45,70)',
+      dataSource: {
+        type: 'victoria',
+        url: 'http://192.168.50.9:8428',
+        promql: '{__name__=~"node_load[0-9]+"}',
+        map: { group: 'job', series: '__name__' }
+      }
+    },
   ],
 
 };
