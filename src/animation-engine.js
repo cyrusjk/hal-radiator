@@ -4,7 +4,8 @@
 //  — Each phase is: { action, groups, [order], [gap], [duration], [effect] }
 //  — Groups are chart-type specific element collections (header, bands, etc.)
 //
-//  Actions: appear, disappear, flickerIn, flickerOut, wait, done
+//  Actions: appear, disappear, flickerIn, flickerOut, wait, blank,
+//           throbIn, throbOut, done
 //  Orders:  sequential (default), simultaneous, reverse
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -28,6 +29,16 @@ window.HAL.anim = window.HAL.anim || {};
     var cls = dir === 'in' ? 'blink-in' : 'blink-out';
     if (el instanceof Array) {
       for (var i = 0; i < el.length; i++) flickerOne(el[i], dir);
+      return;
+    }
+    el.classList.add(cls);
+  }
+
+  // Smooth sine-like throb (125ms fade up, 125ms fade down, ~2 cycles)
+  function throbOne(el, dir) {
+    var cls = dir === 'in' ? 'throb-in' : 'throb-out';
+    if (el instanceof Array) {
+      for (var i = 0; i < el.length; i++) throbOne(el[i], dir);
       return;
     }
     el.classList.add(cls);
@@ -58,11 +69,30 @@ window.HAL.anim = window.HAL.anim || {};
       blinkSequence(asArray(elements), 'out', gap, onDone);
     },
 
+    throbIn: function(elements, phase, onDone) {
+      var gap = phase.gap || 400;
+      throbSequence(asArray(elements), 'in', gap, onDone);
+    },
+
+    throbOut: function(elements, phase, onDone) {
+      var gap = phase.gap || 400;
+      throbSequence(asArray(elements), 'out', gap, onDone);
+    },
+
     wait: function(elements, phase, onDone) {
       setTimeout(onDone, phase.duration || 1000);
     },
 
     done: function(elements, phase, onDone) {
+      if (onDone) onDone();
+    },
+
+    // Hide ALL groups — just the card color remains. Ignores phase.groups.
+    blank: function(elements, phase, onDone) {
+      var map = phase._groupMap;
+      if (map) {
+        for (var k in map) setOpacity(asArray(map[k]), 0);
+      }
       if (onDone) onDone();
     },
 
@@ -78,6 +108,18 @@ window.HAL.anim = window.HAL.anim || {};
       flickerOne(list[i], dir);
       i++;
       setTimeout(tick, dur + (gap || 0));
+    }
+    tick();
+  }
+
+  // Sequential throb — each element throbs in/out with a gap between them
+  function throbSequence(list, dir, gap, onDone) {
+    var i = 0;
+    function tick() {
+      if (i >= list.length) { if (onDone) onDone(); return; }
+      throbOne(list[i], dir);
+      i++;
+      setTimeout(tick, 1250 + (gap || 0));
     }
     tick();
   }
@@ -131,6 +173,8 @@ window.HAL.anim = window.HAL.anim || {};
     var fn = actions[phase.action];
     if (!fn) { if (onDone) onDone(); return; }
 
+    // Pass groupMap to the action (used by 'blank' to hide all groups)
+    phase._groupMap = groupMap;
     fn(elements, phase, function() {
       executePhases(phases, groupMap, idx + 1, onDone);
     });

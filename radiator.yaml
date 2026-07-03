@@ -26,7 +26,8 @@ groups:
     color: blueprint
     animation:
       phases:
-        - { action: wait, duration: 180 }
+        - { action: blank}
+        - { action: wait, duration: 3000 }
         - { action: appear, groups: [header, footer, grid, groupLabels] }
         - { action: wait, duration: 5000 }
         - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }

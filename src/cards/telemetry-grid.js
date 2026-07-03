@@ -33,7 +33,8 @@ window.HAL.cards['telemetry-grid'] = {
 
     // ── Card background ───────────────────────────────────────────────
     svgEl.innerHTML = '';
-    svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
+    var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
+    svgEl.appendChild(bg);
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {

@@ -48,7 +48,8 @@ window.HAL.cards['curve-family'] = {
 
     // ── Card background ───────────────────────────────────────────────
     svgEl.innerHTML = '';
-    svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
+    var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
+    svgEl.appendChild(bg);
 
     // ── Header (title) ────────────────────────────────────────────────
     var header = e('text', {
@@ -200,7 +201,7 @@ window.HAL.cards['curve-family'] = {
     // ── Build the group map for the animation engine ──────────────────
     groupMap.header = header;
     groupMap.footer = footer;
-    groupMap.grid = gridLines;
+    groupMap.grid = gridG;
     groupMap.groupLabels = groupLabels;
     groupMap.bands = curveGroups;
     groupMap.minValues = minLabels;

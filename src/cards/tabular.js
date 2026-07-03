@@ -24,7 +24,8 @@ window.HAL.cards.tabular = {
 
     // ── Card background ───────────────────────────────────────────────
     svgEl.innerHTML = '';
-    svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
+    var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
+    svgEl.appendChild(bg);
 
     // ── Layout ────────────────────────────────────────────────────────
     var hPad = 40;           // horizontal padding from left edge

@@ -7,6 +7,10 @@
 
 import json, yaml, os, io, email.utils, mimetypes, urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    allow_reuse_address = True
 
 PORT = 8009
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -63,6 +67,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Connection', 'close')
         self.end_headers()
         try:
             with open(YAML_PATH) as f:
@@ -114,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(ROOT)
-    server = HTTPServer(('127.0.0.1', PORT), Handler)
+    server = ThreadedHTTPServer(('127.0.0.1', PORT), Handler)
     print(f'Serving at http://localhost:{PORT}/')
     try:
         server.serve_forever()
