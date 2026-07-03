@@ -23,6 +23,16 @@ with open(yaml_path) as f:
 
 timing = cfg.get("timing", {})
 groups = cfg.get("groups", [])
+colors = cfg.get("colors", {})
+
+# ── Resolve colour references ─────────────────────────────────────────
+# If a group or chart specifies a colour that matches a key in the
+# `colors:` section, substitute the RGB value. Raw rgb(...) strings
+# pass through unchanged.
+def resolve_color(name):
+    if name in colors:
+        return colors[name]
+    return name
 
 # ── 2. Flatten groups into a linear card sequence ─────────────────────
 # Each group: title card (×1) → chart cards (×N)
@@ -35,7 +45,7 @@ for group in groups:
         "type": "title",
         "title": group["title"],
         "label": group.get("subheading", ""),
-        "color": group.get("color", "rgb(0,0,0)"),
+        "color": resolve_color(group.get("color", "rgb(0,0,0)")),
     })
     # Chart cards for this group
     for chart in group.get("charts", []):
@@ -43,7 +53,7 @@ for group in groups:
             "type": chart["chartType"],
             "title": chart.get("title", ""),
             "label": chart.get("label", ""),
-            "color": chart.get("color", group.get("color", "rgb(0,0,0)")),
+            "color": resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)"))),
             "dataSource": chart.get("dataSource", {"type": "inline"}),
         }
         cards.append(card)

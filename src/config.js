@@ -13,7 +13,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "type": "title",
     "title": "VEH",
     "label": "LIN: 86-QW",
-    "color": "rgb(45,78,161)"
+    "color": "rgb(54,85,165)"
   },
   {
     "type": "curve-family",
@@ -180,7 +180,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "type": "curve-family",
     "title": "THR: NODE-02",
     "label": "THROUGHPUT",
-    "color": "rgb(22,58,85)",
+    "color": "rgb(39,72,100)",
     "dataSource": {
       "type": "inline",
       "groups": [
@@ -299,57 +299,32 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "label": "CPU LOAD AVERAGES",
     "color": "rgb(16,45,70)",
     "dataSource": {
-      "type": "inline",
-      "groups": [
-        {
-          "name": "node",
-          "series": [
-            {
-              "label": "node_load1",
-              "values": [
-                1.09,
-                1.09,
-                0.86,
-                1.3,
-                1.3,
-                1.03,
-                0.65,
-                0.65,
-                0.65
-              ]
-            },
-            {
-              "label": "node_load15",
-              "values": [
-                1.19,
-                1.19,
-                1.16,
-                1.18,
-                1.18,
-                1.16,
-                1.12,
-                1.12,
-                1.12
-              ]
-            },
-            {
-              "label": "node_load5",
-              "values": [
-                1.08,
-                1.08,
-                1.03,
-                1.11,
-                1.11,
-                1.07,
-                0.96,
-                0.96,
-                0.96
-              ]
-            }
-          ]
-        }
-      ]
+      "type": "victoria",
+      "url": "http://192.168.50.9:8428",
+      "promql": "{__name__=~\"node_load[0-9]+\"}",
+      "map": {
+        "group": "job",
+        "series": "__name__"
+      }
     }
+  },
+  {
+    "type": "title",
+    "title": "HAL",
+    "label": "9000 COMPUTER",
+    "color": "rgb(228,153,38)"
+  },
+  {
+    "type": "title",
+    "title": "COM",
+    "label": "PMT: 26-07",
+    "color": "rgb(130,73,107)"
+  },
+  {
+    "type": "title",
+    "title": "GDE",
+    "label": "NAV: 94-KL",
+    "color": "rgb(54,85,165)"
   }
 ],
 };
