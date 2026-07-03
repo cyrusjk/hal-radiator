@@ -1,20 +1,79 @@
 # ═══════════════════════════════════════════════════════════════════════
-#  Build — inline all JS modules into a single HTML file
+#  Build — read radiator.yaml, generate config.js, inline into dist/
 #  Run: python build.py
-#  Output: dist/index.html (works from file:// with no server)
+#  Output: dist/index.html (open in browser via HTTP server)
 # ═══════════════════════════════════════════════════════════════════════
 
-import shutil
+import json, shutil, yaml
 from pathlib import Path
 
 ROOT = Path(__file__).parent
 SRC  = ROOT / "src"
 DIST = ROOT / "dist"
 
-# Read the main index.html
-html = (ROOT / "index.html").read_text(encoding="utf-8")
+# ── 1. Read YAML ──────────────────────────────────────────────────────
 
-# Read each JS file
+yaml_path = ROOT / "radiator.yaml"
+if not yaml_path.exists():
+    print("✗ radiator.yaml not found")
+    exit(1)
+
+with open(yaml_path) as f:
+    cfg = yaml.safe_load(f)
+
+timing = cfg.get("timing", {})
+groups = cfg.get("groups", [])
+
+# ── 2. Flatten groups into a linear card sequence ─────────────────────
+# Each group: title card (×1) → chart cards (×N)
+# Runtime cycles through the flat list sequentially.
+
+cards = []
+for group in groups:
+    # Title card
+    cards.append({
+        "type": "title",
+        "title": group["title"],
+        "label": group.get("subheading", ""),
+        "color": group.get("color", "rgb(0,0,0)"),
+    })
+    # Chart cards for this group
+    for chart in group.get("charts", []):
+        card = {
+            "type": chart["chartType"],
+            "title": chart.get("title", ""),
+            "label": chart.get("label", ""),
+            "color": chart.get("color", group.get("color", "rgb(0,0,0)")),
+            "dataSource": chart.get("dataSource", {"type": "inline"}),
+        }
+        cards.append(card)
+
+# ── 3. Generate src/config.js ─────────────────────────────────────────
+
+config_js_path = SRC / "config.js"
+with open(config_js_path, "w", encoding="utf-8") as f:
+    f.write("// ═══════════════════════════════════════════════════\n")
+    f.write("//  Auto-generated from radiator.yaml\n")
+    f.write("//  Do not edit directly — edit radiator.yaml and\n")
+    f.write("//  run 'python build.py' to regenerate.\n")
+    f.write("// ═══════════════════════════════════════════════════\n\n")
+
+    f.write("window.HAL_CONFIG = window.HAL_CONFIG || {\n")
+    f.write(f"  timing: {json.dumps(cfg.get('timing', {}), indent=2)},\n")
+    f.write(f"  cards: {json.dumps(cards, indent=2)},\n")
+    f.write("};\n")
+
+print(f"✓ Generated src/config.js ({config_js_path.stat().st_size} bytes, {len(cards)} cards)")
+
+# ── 4. Build dist/index.html (inline all JS modules) ──────────────────
+
+html_src = ROOT / "index.html"
+if not html_src.exists():
+    print("✗ index.html not found")
+    exit(1)
+
+html = html_src.read_text(encoding="utf-8")
+
 scripts = [
     "src/config.js",
     "src/svg-utils.js",
@@ -27,33 +86,29 @@ scripts = [
     "src/app.js",
 ]
 
-# Build the inline script blocks
 inline_blocks = []
 for path in scripts:
-    code = (ROOT / path).read_text(encoding="utf-8")
+    p = ROOT / path
+    if not p.exists():
+        print(f"✗ {path} not found")
+        exit(1)
+    code = p.read_text(encoding="utf-8")
     inline_blocks.append(f"<script>{code}</script>")
 
-# Replace the script src tags with inline content
 old_tag = '<!-- ── Application modules (loaded in dependency order) ─────────────── -->'
-# Find the start and end
 start = html.index(old_tag)
-# Find where the last </script> closes
-# The section ends at the </body> tag
 end = html.index("</body>", start)
-
 new_section = old_tag + "\n" + "\n".join(inline_blocks) + "\n"
-
 output = html[:start] + new_section + html[end:]
 
-# Write
 DIST.mkdir(exist_ok=True)
-dist_html = DIST / "index.html"
 
-# Copy assets
 assets_dst = DIST / "assets"
 if assets_dst.exists():
     shutil.rmtree(assets_dst)
 shutil.copytree(ROOT / "assets", assets_dst)
 
+dist_html = DIST / "index.html"
 dist_html.write_text(output, encoding="utf-8")
+
 print(f"✓ Built: {dist_html} ({dist_html.stat().st_size} bytes)")
