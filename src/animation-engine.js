@@ -49,12 +49,12 @@ window.HAL.anim = window.HAL.anim || {};
     },
 
     flickerIn: function(elements, phase, onDone) {
-      var gap = phase.gap || cfg.timing.groupGap;
+      var gap = phase.gap || window.HAL_CONFIG.timing.groupGap;
       blinkSequence(asArray(elements), 'in', gap, onDone);
     },
 
     flickerOut: function(elements, phase, onDone) {
-      var gap = phase.gap || cfg.timing.groupGap;
+      var gap = phase.gap || window.HAL_CONFIG.timing.groupGap;
       blinkSequence(asArray(elements), 'out', gap, onDone);
     },
 
@@ -71,8 +71,7 @@ window.HAL.anim = window.HAL.anim || {};
   // ── Sequential blink helper ─────────────────────────────────────────
 
   function blinkSequence(list, dir, gap, onDone) {
-    var cfgTiming = cfg.timing;
-    var dur = cfgTiming.flickerDuration || 1000;
+    var dur = window.HAL_CONFIG.timing.flickerDuration || 1000;
     var i = 0;
     function tick() {
       if (i >= list.length) { if (onDone) onDone(); return; }
