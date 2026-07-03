@@ -491,6 +491,79 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         }
       ]
     }
+  },
+  {
+    "type": "title",
+    "title": "NAV",
+    "label": "SPATIAL MAP",
+    "color": "rgb(16,24,57)"
+  },
+  {
+    "type": "wireframe",
+    "title": "NAV",
+    "label": "SPATIAL MAP",
+    "color": "rgb(16,24,57)",
+    "dataSource": {
+      "type": "inline",
+      "objects": [
+        {
+          "x": -2,
+          "y": 1.5,
+          "z": 1,
+          "label": "SAT-A"
+        },
+        {
+          "x": 3,
+          "y": -1,
+          "z": 2,
+          "label": "SAT-B"
+        },
+        {
+          "x": -1,
+          "y": -2.5,
+          "z": -0.5,
+          "label": "PROBE-1"
+        },
+        {
+          "x": 2.5,
+          "y": 2,
+          "z": -1.5,
+          "label": "PROBE-2"
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "label": "ORIGIN"
+        }
+      ],
+      "connections": [
+        {
+          "from": 0,
+          "to": 4
+        },
+        {
+          "from": 1,
+          "to": 4
+        },
+        {
+          "from": 2,
+          "to": 4
+        },
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 2,
+          "to": 3
+        }
+      ]
+    }
   }
 ],
 };

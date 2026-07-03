@@ -94,6 +94,7 @@ scripts = [
     "src/cards/curve-family.js",
     "src/cards/tabular.js",
     "src/cards/telemetry-grid.js",
+    "src/cards/wireframe.js",
     "src/data/sources/inline.js",
     "src/data/sources/victoria.js",
     "src/data/fetcher.js",
