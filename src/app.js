@@ -5,14 +5,8 @@
 
 (function() {
   var svgEl = document.getElementById('card');
-  var cfg = HAL_CONFIG;
-  var debug = [];
-
-  function fail(msg) { debug.push(msg); document.getElementById('card').innerHTML = '<text x="10" y="20" fill="red" font-size="14">' + msg + '</text>'; }
-
-  if (!svgEl) { fail('no svgEl'); return; }
-  if (!cfg) { fail('no cfg'); return; }
-  if (!cfg.cards || !cfg.cards.length) { fail('no cards'); return; }
+  var cfg = window.HAL_CONFIG;
+  if (!svgEl || !cfg || !cfg.cards || !cfg.cards.length) return;
 
   var idx = 0;
 
@@ -20,12 +14,12 @@
     var c = cfg.cards[i % cfg.cards.length];
     document.body.style.background = c.color;
     if (c.type === 'chart') {
-      HAL.data.fetchCardData(c).then(function(data) {
+      window.HAL.data.fetchCardData(c).then(function(data) {
         c.groups = data.groups;
-        HAL.cards.curveFamily.render(c, onChartDone);
+        window.HAL.cards.curveFamily.render(c, onChartDone);
       });
     } else {
-      HAL.cards.title.render(c);
+      window.HAL.cards.title.render(c);
     }
   }
 

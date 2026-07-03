@@ -5,15 +5,15 @@
 //  — Find min/max extrema in a series
 // ═══════════════════════════════════════════════════════════════════════
 
-const HAL = window.HAL || {};
+window.HAL = window.HAL || {};
 
-HAL.svg = {
+window.HAL.svg = {
 
   ns: 'http://www.w3.org/2000/svg',
 
   // Create an SVG element with attributes
   el: function(tag, attrs) {
-    const e = document.createElementNS(HAL.svg.ns, tag);
+    const e = document.createElementNS(window.HAL.svg.ns, tag);
     for (const [k, v] of Object.entries(attrs || {})) {
       e.setAttribute(k, String(v));
     }

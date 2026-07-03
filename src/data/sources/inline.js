@@ -4,11 +4,11 @@
 //  — Used when a card's dataSource.type is 'inline'
 // ═══════════════════════════════════════════════════════════════════════
 
-const HAL = window.HAL || {};
-HAL.data = HAL.data || {};
-HAL.data.sources = HAL.data.sources || {};
+window.HAL = window.HAL || {};
+window.HAL.data = window.HAL.data || {};
+window.HAL.data.sources = window.HAL.data.sources || {};
 
-HAL.data.sources.inline = {
+window.HAL.data.sources.inline = {
 
   name: 'inline',
 

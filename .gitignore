@@ -1,6 +1,7 @@
 # ── Generated / output directories ────────────────────────────────────────
 output/
 output_svg/
+dist/
 __pycache__/
 *.pyc
 .venv/

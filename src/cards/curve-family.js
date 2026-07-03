@@ -3,19 +3,19 @@
 //  — Multi-band curve charts with flicker/pop/pongback animation
 // ═══════════════════════════════════════════════════════════════════════
 
-const HAL = window.HAL || {};
+window.HAL = window.HAL || {};
 
-HAL.cards = HAL.cards || {};
+window.HAL.cards = window.HAL.cards || {};
 
-HAL.cards.curveFamily = {
+window.HAL.cards.curveFamily = {
 
   render: function(data, onDone) {
     var svgEl = document.getElementById('card');
-    var cfg = HAL_CONFIG.visual;
+    var cfg = window.HAL_CONFIG.visual;
     var chart = cfg.chart;
     var fonts = cfg.fonts;
-    var e = HAL.svg.el;
-    var findExtrema = HAL.svg.findExtrema;
+    var e = window.HAL.svg.el;
+    var findExtrema = window.HAL.svg.findExtrema;
 
     svgEl.innerHTML = '';
     svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
@@ -25,7 +25,6 @@ HAL.cards.curveFamily = {
     var nGroups = groups.length;
     var bandH = h / nGroups;
 
-    // Grid per band
     for (var gi = 0; gi < nGroups; gi++) {
       var bandTop = y0 + bandH * gi;
       for (var row = 0; row <= 4; row++) {
@@ -43,7 +42,6 @@ HAL.cards.curveFamily = {
       stroke: 'rgba(255,255,255,0.4)', 'stroke-width': 1,
     }));
 
-    // Collect elements for animation
     var curveGroups = [];
     var minLabels = [];
     var maxLabels = [];
@@ -66,14 +64,12 @@ HAL.cards.curveFamily = {
       var scaleY = function(v) { return bandBot - (v / groupMax) * bandH * 0.85; };
       var scaleX = function(i) { return x0 + (i / segs) * w; };
 
-      // Group name label
       svgEl.appendChild(e('text', {
         x: x0, y: bandTop + 14, fill: 'rgba(255,255,255,0.7)',
         'font-family': fonts.label, 'font-size': 11,
       })).textContent = g.name;
 
-      // Container group for all curves in this band
-      var grp = document.createElementNS(HAL.svg.ns, 'g');
+      var grp = document.createElementNS(window.HAL.svg.ns, 'g');
       grp.style.opacity = '0';
 
       for (var si = 0; si < g.series.length; si++) {
@@ -101,7 +97,6 @@ HAL.cards.curveFamily = {
           'font-family': fonts.label, 'font-size': 10,
         })).textContent = s.label;
 
-        // Hidden min/max value labels (outside the curve group)
         var ext = findExtrema(s.values, scaleX, scaleY);
         var pts2 = [ext.min, ext.max];
         for (var pi2 = 0; pi2 < pts2.length; pi2++) {
@@ -129,7 +124,6 @@ HAL.cards.curveFamily = {
       }
     }
 
-    // Header
     var titleG = e('g', { transform: 'translate(500, 50) scale(0.9, 1.0)' });
     var titleT = e('text', {
       x: 0, y: 0, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.95)',
@@ -150,34 +144,21 @@ HAL.cards.curveFamily = {
     subG.appendChild(subT);
     svgEl.appendChild(subG);
 
-    // Start the animation pipeline
-    HAL.cards.curveFamily.runAnimation(curveGroups, minLabels, maxLabels, onDone);
+    window.HAL.cards.curveFamily.runAnimation(curveGroups, minLabels, maxLabels, onDone);
   },
 
-  // ── Animation Pipeline ──────────────────────────────────────────────
-  //  1. pause pause (grid + names visible)
-  //  2. groups flicker in (top→bottom, with groupGap between)
-  //  3. pause 2s
-  //  4. pop in ALL mins at once
-  //  5. pop in ALL maxes at once
-  //  6. pause valueHold
-  //  7. pop out ALL maxes
-  //  8. pop out ALL mins
-  //  9. groups flicker out (bottom→top, with groupGap between)
-  // ═════════════════════════════════════════════════════════════════════
-
   runAnimation: function(curveGroups, minLabels, maxLabels, onDone) {
-    var timing = HAL_CONFIG.timing;
-    var t = HAL.transitions;
+    var timing = window.HAL_CONFIG.timing;
+    var t = window.HAL.transitions;
 
     setTimeout(function() {
       t.flickerSeq(curveGroups, 'in', timing.groupGap, 0, function() {
         setTimeout(function() {
-          HAL.svg.popAll(minLabels, true);
-          HAL.svg.popAll(maxLabels, true);
+          window.HAL.svg.popAll(minLabels, true);
+          window.HAL.svg.popAll(maxLabels, true);
           setTimeout(function() {
-            HAL.svg.popAll(maxLabels, false);
-            HAL.svg.popAll(minLabels, false);
+            window.HAL.svg.popAll(maxLabels, false);
+            window.HAL.svg.popAll(minLabels, false);
             t.flickerSeq(curveGroups.slice().reverse(), 'out', timing.groupGap, 0, function() {
               if (onDone) onDone();
             });

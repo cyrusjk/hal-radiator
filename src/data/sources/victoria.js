@@ -4,11 +4,11 @@
 //  — Transforms Prometheus response into { groups, series, values }
 // ═══════════════════════════════════════════════════════════════════════
 
-const HAL = window.HAL || {};
-HAL.data = HAL.data || {};
-HAL.data.sources = HAL.data.sources || {};
+window.HAL = window.HAL || {};
+window.HAL.data = window.HAL.data || {};
+window.HAL.data.sources = window.HAL.data.sources || {};
 
-HAL.data.sources.victoria = {
+window.HAL.data.sources.victoria = {
 
   name: 'victoria',
 
@@ -46,7 +46,7 @@ HAL.data.sources.victoria = {
 
     return fetch(url + '?' + params)
       .then(function(r) { if (!r.ok) throw new Error('VM fetch failed: ' + r.status); return r.json(); })
-      .then(function(json) { return HAL.data.sources.victoria.transform(json, groupLabel, seriesLabel); });
+      .then(function(json) { return window.HAL.data.sources.victoria.transform(json, groupLabel, seriesLabel); });
   },
 
   // Transform Prometheus query_range response → { groups: [ { name, series: [...] } ] }

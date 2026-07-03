@@ -5,7 +5,7 @@
 //  font paths, and data source connections.
 // ═══════════════════════════════════════════════════════════════════════
 
-const HAL_CONFIG = {
+window.HAL_CONFIG = window.HAL_CONFIG || {
 
   // ── Timing ──────────────────────────────────────────────────────────
   timing: {
