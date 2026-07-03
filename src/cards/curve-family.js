@@ -2,7 +2,7 @@
 //  Curve-Family Chart Card
 //  — Multi-band curve charts with config-driven animation
 //  — Each band is a row (e.g. API-GATEWAY) containing multiple curves
-//  — Curve data must be pre-fetched via HAL.data.fetchCardData()
+//  — Brightness uses fg('frame', mult) and fg('data', mult)
 // ═══════════════════════════════════════════════════════════════════════
 
 window.HAL = window.HAL || {};
@@ -21,6 +21,7 @@ window.HAL.cards['curve-family'] = {
     var dashes = vc.dashes || [null, "4,3", "1,3"];
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
     var labelFont = (vis.fonts || {}).label || 'monospace';
+    var fg = window.HAL.svg.fg;
 
     var ns = window.HAL.svg.ns;
     var e = window.HAL.svg.el;
@@ -50,7 +51,7 @@ window.HAL.cards['curve-family'] = {
 
     // ── Header (title) ────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: 'rgba(255,255,255,0.8)', 'font-size': 14, 'font-family': labelFont,
+      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': 14, 'font-family': labelFont,
       'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -71,7 +72,7 @@ window.HAL.cards['curve-family'] = {
       if (gi > 0) {
         gridLines.push(e('line', {
           x1: x0, y1: bandTop, x2: x0 + gridW, y2: bandTop,
-          stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1,
+          stroke: fg('frame', 0.2), 'stroke-width': 1,
         }));
       }
 
@@ -86,7 +87,7 @@ window.HAL.cards['curve-family'] = {
 
       // Group label
       var glabel = e('text', {
-        x: 15, y: bandTop + bandH / 2 + 4, fill: 'rgba(255,255,255,0.4)',
+        x: 15, y: bandTop + bandH / 2 + 4, fill: fg('frame', 1.0),
         'font-size': 11, 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       glabel.textContent = g.name;
@@ -96,10 +97,9 @@ window.HAL.cards['curve-family'] = {
       // Data columns (vertical grid lines + series curves)
       for (var vi = 0; vi < dataPts; vi++) {
         var px = x0 + (vi / (dataPts - 1)) * gridW;
-        // Vertical tick
         gridLines.push(e('line', {
           x1: px, y1: bandTop, x2: px, y2: bandTop + bandH,
-          stroke: 'rgba(255,255,255,0.05)', 'stroke-width': 1,
+          stroke: fg('frame', 0.12), 'stroke-width': 1,
         }));
       }
 
@@ -123,7 +123,7 @@ window.HAL.cards['curve-family'] = {
         var pathAttrs = {
           d: pathParts.join(' '),
           fill: 'none',
-          stroke: 'rgba(255,255,255,' + (0.4 + si * 0.15) + ')',
+          stroke: fg('data', 0.5 + si * 0.25),
           'stroke-width': strokeW,
         };
         if (dash) pathAttrs['stroke-dasharray'] = dash;
@@ -135,11 +135,11 @@ window.HAL.cards['curve-family'] = {
         var ly = bandTop + bandH - (last / bandMax) * (bandH - 20) - 10;
 
         grp.appendChild(e('circle', {
-          cx: lx, cy: ly, r: 2.5, fill: 'rgba(255,255,255,0.5)',
+          cx: lx, cy: ly, r: 2.5, fill: fg('data', 0.65),
         }));
 
         var serLabel = e('text', {
-          x: lx + 6, y: ly + 3, fill: 'rgba(255,255,255,0.5)',
+          x: lx + 6, y: ly + 3, fill: fg('data', 0.65),
           'font-size': 10, 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
         });
         serLabel.textContent = series[si].label;
@@ -156,7 +156,7 @@ window.HAL.cards['curve-family'] = {
         var mlx = x0 + (minIdx / (dataPts - 1)) * gridW;
         var mly = bandTop + bandH - (minVal / bandMax) * (bandH - 20) - 10;
         var mn = e('text', {
-          x: mlx, y: mly - 12, fill: 'rgba(255,255,255,0.85)', 'font-size': 14,
+          x: mlx, y: mly - 12, fill: fg('data', 1.1), 'font-size': 14,
           'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
         });
         mn.style.opacity = '0';
@@ -167,7 +167,7 @@ window.HAL.cards['curve-family'] = {
         var mlx2 = x0 + (maxIdx / (dataPts - 1)) * gridW;
         var mly2 = bandTop + bandH - (maxVal / bandMax) * (bandH - 20) - 10;
         var mx = e('text', {
-          x: mlx2, y: mly2 - 12, fill: 'rgba(255,255,255,0.85)', 'font-size': 14,
+          x: mlx2, y: mly2 - 12, fill: fg('data', 1.1), 'font-size': 14,
           'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
         });
         mx.style.opacity = '0';
@@ -186,15 +186,13 @@ window.HAL.cards['curve-family'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 15, y: 740, fill: 'rgba(255,255,255,0.35)', 'font-size': 10,
+      x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': 10,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
     svgEl.appendChild(footer);
 
     // ── Build the group map for the animation engine ──────────────────
-    // Note: grid/groupLabels are NOT hidden — they start visible.
-    // The animation engine sets opacity on groups it manages.
     groupMap.header = header;
     groupMap.footer = footer;
     groupMap.grid = gridLines;

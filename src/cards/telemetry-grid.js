@@ -16,6 +16,7 @@ window.HAL.cards['telemetry-grid'] = {
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var e = window.HAL.svg.el;
     var ns = window.HAL.svg.ns;
+    var fg = window.HAL.svg.fg;
 
     var cols = (data.columns || []);
     var rows = (data.rows || []);
@@ -35,7 +36,7 @@ window.HAL.cards['telemetry-grid'] = {
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: hPad, y: 45, fill: 'rgba(255,255,255,0.8)', 'font-size': 14,
+      x: hPad, y: 45, fill: fg('frame', 1.9), 'font-size': 14,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -43,7 +44,7 @@ window.HAL.cards['telemetry-grid'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: hPad, y: 735, fill: 'rgba(255,255,255,0.35)', 'font-size': 10,
+      x: hPad, y: 735, fill: fg('frame', 0.85), 'font-size': 10,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
@@ -52,7 +53,7 @@ window.HAL.cards['telemetry-grid'] = {
     // ── Top separator ─────────────────────────────────────────────────
     var topSep = e('line', {
       x1: hPad, y1: sepY, x2: 960, y2: sepY,
-      stroke: 'rgba(255,255,255,0.12)', 'stroke-width': 1,
+      stroke: fg('frame', 0.3), 'stroke-width': 1,
     });
     svgEl.appendChild(topSep);
 
@@ -61,7 +62,7 @@ window.HAL.cards['telemetry-grid'] = {
     for (var ci = 0; ci < cols.length; ci++) {
       var cx = hPad + labelW + ci * colW + colW / 2;
       var ch = e('text', {
-        x: cx, y: vPad - 8, fill: 'rgba(255,255,255,0.5)', 'font-size': 11,
+        x: cx, y: vPad - 8, fill: fg('frame', 1.25), 'font-size': 11,
         'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
       });
       ch.textContent = cols[ci].label;
@@ -84,7 +85,7 @@ window.HAL.cards['telemetry-grid'] = {
       if (ri > 0) {
         var sep = e('line', {
           x1: hPad, y1: rowY, x2: 960, y2: rowY,
-          stroke: 'rgba(255,255,255,0.06)', 'stroke-width': 1,
+          stroke: fg('frame', 0.15), 'stroke-width': 1,
         });
         svgEl.appendChild(sep);
         separators.push(sep);
@@ -92,7 +93,7 @@ window.HAL.cards['telemetry-grid'] = {
 
       // Row label
       var rl = e('text', {
-        x: hPad, y: rowY + 14, fill: 'rgba(255,255,255,0.6)', 'font-size': 14,
+        x: hPad, y: rowY + 14, fill: fg('frame', 1.5), 'font-size': 14,
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       rl.textContent = rows[ri].label;
@@ -104,7 +105,7 @@ window.HAL.cards['telemetry-grid'] = {
         var cx = hPad + labelW + ci * colW + colW / 2;
         var val = ci < rowVals.length ? String(rowVals[ci]) : '—';
         var cell = e('text', {
-          x: cx, y: rowY + 14, fill: 'rgba(255,255,255,0.8)', 'font-size': 15,
+          x: cx, y: rowY + 14, fill: fg('frame', 1.9), 'font-size': 15,
           'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
         });
         cell.textContent = val;

@@ -15,6 +15,7 @@ window.HAL.cards.title = {
     var titleFont = window.HAL_CONFIG.visual.fonts.title;
     var labelFont = window.HAL_CONFIG.visual.fonts.label;
     var e = window.HAL.svg.el;
+    var fg = window.HAL.svg.fg;
 
     // Build SVG via DOM methods (reliable across all browsers and protocols)
     svgEl.innerHTML = '';

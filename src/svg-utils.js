@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════
 //  SVG Utilities
-//  — SVG namespace constant and element creation helper
+//  — SVG namespace constant, element creation, brightness helpers
 // ───────────────────────────────────────────────────────────────────────
 
 window.HAL = window.HAL || {};
@@ -16,5 +16,23 @@ window.HAL.svg = {
       for (var k in attrs) e.setAttribute(k, String(attrs[k]));
     }
     return e;
+  },
+
+  // ── Brightness helpers ──────────────────────────────────────────────
+  // Each renderer can import these to keep frame/data brightness
+  // consistent and configurable from radiator.yaml.
+
+  vis: function() {
+    return window.HAL_CONFIG.visual || {};
+  },
+
+  // Returns an rgba string with opacity = baseBrightness * multiplier.
+  //   type: 'frame' or 'data' — selects from visual.frameBrightness or dataBrightness
+  //   mult: brightness multiplier (e.g. 0.15 for subtle grid lines, 2.0 for header)
+  fg: function(type, mult) {
+    var v = window.HAL.svg.vis();
+    var base = type === 'data' ? (v.dataBrightness || 0.8) : (v.frameBrightness || 0.4);
+    var opacity = Math.min(1, Math.max(0, base * mult));
+    return 'rgba(255,255,255,' + opacity.toFixed(2) + ')';
   },
 };

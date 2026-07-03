@@ -16,6 +16,7 @@ window.HAL.cards.tabular = {
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var e = window.HAL.svg.el;
+    var fg = window.HAL.svg.fg;
 
     var rows = (data.rows || []);
     if (rows.length === 0) { if (onDone) onDone(); return; }
@@ -35,7 +36,7 @@ window.HAL.cards.tabular = {
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: hPad, y: 45, fill: 'rgba(255,255,255,0.8)', 'font-size': 14,
+      x: hPad, y: 45, fill: fg('frame', 1.9), 'font-size': 14,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -43,7 +44,7 @@ window.HAL.cards.tabular = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: hPad, y: 735, fill: 'rgba(255,255,255,0.35)', 'font-size': 10,
+      x: hPad, y: 735, fill: fg('frame', 0.85), 'font-size': 10,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
@@ -64,7 +65,7 @@ window.HAL.cards.tabular = {
       if (i > 0) {
         var sep = e('line', {
           x1: hPad, y1: rowY - rowH / 2, x2: 960, y2: rowY - rowH / 2,
-          stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1,
+          stroke: fg('frame', 0.2), 'stroke-width': 1,
         });
         svgEl.appendChild(sep);
         separators.push(sep);
@@ -72,7 +73,7 @@ window.HAL.cards.tabular = {
 
       // Label
       var label = e('text', {
-        x: labelX, y: rowY + 4, fill: 'rgba(255,255,255,0.6)', 'font-size': 18,
+        x: labelX, y: rowY + 4, fill: fg('frame', 1.5), 'font-size': 18,
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       label.textContent = rows[i].label;
@@ -81,7 +82,7 @@ window.HAL.cards.tabular = {
       // Value
       var valStr = String(rows[i].value);
       var val = e('text', {
-        x: valueX, y: rowY + 4, fill: 'rgba(255,255,255,0.85)', 'font-size': 20,
+        x: valueX, y: rowY + 4, fill: fg('data', 1.1), 'font-size': 20,
         'font-family': labelFont, 'text-anchor': 'end', 'text-rendering': 'optimizeLegibility',
       });
       val.textContent = valStr;

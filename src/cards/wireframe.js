@@ -17,6 +17,7 @@ window.HAL.cards['wireframe'] = {
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var e = window.HAL.svg.el;
     var ns = window.HAL.svg.ns;
+    var fg = window.HAL.svg.fg;
 
     var objects = (data.objects || []);
     var connections = (data.connections || []);
@@ -39,7 +40,7 @@ window.HAL.cards['wireframe'] = {
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: 'rgba(255,255,255,0.8)', 'font-size': 14,
+      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': 14,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -47,7 +48,7 @@ window.HAL.cards['wireframe'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 20, y: 735, fill: 'rgba(255,255,255,0.35)', 'font-size': 10,
+      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': 10,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
@@ -67,14 +68,14 @@ window.HAL.cards['wireframe'] = {
       if (p1.z < 0 || p2.z < 0) continue;
       gridLines.push(e('line', {
         x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-        stroke: 'rgba(255,255,255,0.12)', 'stroke-width': 0.5,
+        stroke: fg('frame', 0.3), 'stroke-width': 0.5,
       }));
       p1 = project(-4, d, 3);
       p2 = project(4, d, 3);
       if (p1.z < 0 || p2.z < 0) continue;
       gridLines.push(e('line', {
         x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-        stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 0.5,
+        stroke: fg('frame', 0.2), 'stroke-width': 0.5,
       }));
     }
 
@@ -88,7 +89,7 @@ window.HAL.cards['wireframe'] = {
       if (p1.z < 0) continue;
       gridLines.push(e('line', {
         x1: p0.x, y1: p0.y, x2: p1.x, y2: p1.y,
-        stroke: 'rgba(255,255,255,0.06)', 'stroke-width': 0.5,
+        stroke: fg('frame', 0.15), 'stroke-width': 0.5,
       }));
     }
 
@@ -106,7 +107,7 @@ window.HAL.cards['wireframe'] = {
       if (pathD) {
         gridLines.push(e('path', {
           d: pathD, fill: 'none',
-          stroke: 'rgba(255,255,255,0.10)', 'stroke-width': 0.5,
+          stroke: fg('frame', 0.25), 'stroke-width': 0.5,
         }));
       }
     }
@@ -131,7 +132,7 @@ window.HAL.cards['wireframe'] = {
       var p2 = project(o2.x, o2.y, o2.z);
       var line = e('line', {
         x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-        stroke: 'rgba(255,255,255,0.3)', 'stroke-width': 0.8,
+        stroke: fg('data', 0.38), 'stroke-width': 0.8,
       });
       connG.appendChild(line);
       connElements.push(line);
@@ -152,19 +153,19 @@ window.HAL.cards['wireframe'] = {
       // Point marker (crosshair/diamond)
       var size = 5;
       grp.appendChild(e('circle', {
-        cx: p.x, cy: p.y, r: size, fill: 'rgba(255,255,255,0.7)',
+        cx: p.x, cy: p.y, r: size, fill: fg('data', 0.88),
       }));
 
       // Glow ring
       grp.appendChild(e('circle', {
         cx: p.x, cy: p.y, r: size + 3, fill: 'none',
-        stroke: 'rgba(255,255,255,0.25)', 'stroke-width': 1,
+        stroke: fg('data', 0.32), 'stroke-width': 1,
       }));
 
       // Label
       var lbl = e('text', {
         x: p.x + 10, y: p.y + 3,
-        fill: 'rgba(255,255,255,0.6)', 'font-size': 10,
+        fill: fg('frame', 1.5), 'font-size': 10,
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       lbl.textContent = obj.label || '';

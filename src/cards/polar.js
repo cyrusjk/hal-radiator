@@ -16,6 +16,7 @@ window.HAL.cards['polar'] = {
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var e = window.HAL.svg.el;
     var ns = window.HAL.svg.ns;
+    var fg = window.HAL.svg.fg;
 
     var series = (data.series || []);
     if (series.length === 0) { if (onDone) onDone(); return; }
@@ -42,7 +43,7 @@ window.HAL.cards['polar'] = {
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: 'rgba(255,255,255,0.8)', 'font-size': 14,
+      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': 14,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -50,7 +51,7 @@ window.HAL.cards['polar'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 20, y: 735, fill: 'rgba(255,255,255,0.35)', 'font-size': 10,
+      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': 10,
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
@@ -74,7 +75,7 @@ window.HAL.cards['polar'] = {
       }
       var ring = e('path', {
         d: pathD, fill: 'none',
-        stroke: 'rgba(255,255,255,' + (0.06 + ri * 0.02) + ')',
+        stroke: 'rgba(255,255,255,' + ((vis.frameBrightness||0.4) * (0.15 + ri * 0.05)).toFixed(2) + ')',
         'stroke-width': 0.5,
       });
       svgEl.appendChild(ring);
@@ -85,7 +86,7 @@ window.HAL.cards['polar'] = {
         var rl = polar(r, 0);
         var rv = e('text', {
           x: rl.x + 4, y: rl.y + 3,
-          fill: 'rgba(255,255,255,0.25)', 'font-size': 9,
+          fill: fg('frame', 0.6), 'font-size': 9,
           'font-family': labelFont,
         });
         rv.textContent = Math.round((ri / nRings) * maxVal);
@@ -102,7 +103,7 @@ window.HAL.cards['polar'] = {
       var p = polar(radius, angle);
       var spoke = e('line', {
         x1: cx, y1: cy, x2: p.x, y2: p.y,
-        stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 0.5,
+        stroke: fg('frame', 0.2), 'stroke-width': 0.5,
       });
       svgEl.appendChild(spoke);
       spokeElements.push(spoke);
@@ -111,7 +112,7 @@ window.HAL.cards['polar'] = {
       var lp = polar(radius + 22, angle);
       var lbl = e('text', {
         x: lp.x, y: lp.y + 3,
-        fill: 'rgba(255,255,255,0.3)', 'font-size': 9,
+        fill: fg('frame', 0.75), 'font-size': 9,
         'font-family': labelFont, 'text-anchor': 'middle',
       });
       lbl.textContent = String(si + 1);
@@ -153,8 +154,8 @@ window.HAL.cards['polar'] = {
 
       var poly = e('path', {
         d: pathD,
-        fill: 'rgba(255,255,255,' + (0.08 + si * 0.04) + ')',
-        stroke: 'rgba(255,255,255,' + alpha + ')',
+        fill: 'rgba(255,255,255,' + ((vis.dataBrightness||0.8) * (0.1 + si * 0.05)).toFixed(2) + ')',
+        stroke: 'rgba(255,255,255,' + ((vis.dataBrightness||0.8) * (0.38 + si * 0.25)).toFixed(2) + ')',
         'stroke-width': 1.2,
       });
       svgEl.appendChild(poly);
