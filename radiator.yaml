@@ -171,3 +171,16 @@ groups:
           - { from: 0, to: 1 }
           - { from: 2, to: 3 }
 
+- title: RAD
+  subheading: "RADAR SWEEP"
+  color: navy
+  charts:
+    - chartType: polar
+      title: "RAD"
+      label: "RADAR SWEEP"
+      color: navy
+      dataSource:
+        type: inline
+        series:
+          - { label: "SECTOR-A", values: [60, 45, 80, 70, 55, 90, 75, 50] }
+

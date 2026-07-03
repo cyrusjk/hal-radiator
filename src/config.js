@@ -564,6 +564,36 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         }
       ]
     }
+  },
+  {
+    "type": "title",
+    "title": "RAD",
+    "label": "RADAR SWEEP",
+    "color": "rgb(23,31,57)"
+  },
+  {
+    "type": "polar",
+    "title": "RAD",
+    "label": "RADAR SWEEP",
+    "color": "rgb(23,31,57)",
+    "dataSource": {
+      "type": "inline",
+      "series": [
+        {
+          "label": "SECTOR-A",
+          "values": [
+            60,
+            45,
+            80,
+            70,
+            55,
+            90,
+            75,
+            50
+          ]
+        }
+      ]
+    }
   }
 ],
 };

@@ -26,6 +26,9 @@ window.HAL.data.sources.inline = {
     if (dataSource && dataSource.objects) {
       return { objects: dataSource.objects, connections: dataSource.connections || [] };
     }
+    if (dataSource && dataSource.series) {
+      return { series: dataSource.series };
+    }
     if (dataSource && dataSource.groups) {
       return { groups: dataSource.groups };
     }
