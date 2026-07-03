@@ -4,8 +4,7 @@
 //  — Each phase is: { action, groups, [order], [gap], [duration], [effect] }
 //  — Groups are chart-type specific element collections (header, bands, etc.)
 //
-//  Actions: appear, disappear, flickerIn, flickerOut, wait, blank,
-//           throbIn, throbOut, done
+//  Actions: appear, disappear, flickerIn, flickerOut, wait, blank, throb, done
 //  Orders:  sequential (default), simultaneous, reverse
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -34,14 +33,13 @@ window.HAL.anim = window.HAL.anim || {};
     el.classList.add(cls);
   }
 
-  // Smooth sine-like throb (125ms fade up, 125ms fade down, ~2 cycles)
-  function throbOne(el, dir) {
-    var cls = dir === 'in' ? 'throb-in' : 'throb-out';
+  // Smooth sine-like throb (~2 cycles/s, settles visible)
+  function throbOne(el) {
     if (el instanceof Array) {
-      for (var i = 0; i < el.length; i++) throbOne(el[i], dir);
+      for (var i = 0; i < el.length; i++) throbOne(el[i]);
       return;
     }
-    el.classList.add(cls);
+    el.classList.add('throb');
   }
 
   // ── Action implementations ─────────────────────────────────────────
@@ -69,14 +67,16 @@ window.HAL.anim = window.HAL.anim || {};
       blinkSequence(asArray(elements), 'out', gap, onDone);
     },
 
-    throbIn: function(elements, phase, onDone) {
-      var gap = phase.gap || 400;
-      throbSequence(asArray(elements), 'in', gap, onDone);
-    },
-
-    throbOut: function(elements, phase, onDone) {
-      var gap = phase.gap || 400;
-      throbSequence(asArray(elements), 'out', gap, onDone);
+    throb: function(elements, phase, onDone) {
+      var list = asArray(elements);
+      // simultaneous: all elements throb at once
+      if (phase.order === 'simultaneous') {
+        for (var i = 0; i < list.length; i++) throbOne(list[i]);
+        if (onDone) onDone();
+      } else {
+        var gap = phase.gap || 400;
+        throbSequence(list, gap, onDone);
+      }
     },
 
     wait: function(elements, phase, onDone) {
@@ -112,12 +112,12 @@ window.HAL.anim = window.HAL.anim || {};
     tick();
   }
 
-  // Sequential throb — each element throbs in/out with a gap between them
-  function throbSequence(list, dir, gap, onDone) {
+  // Sequential throb — each element throbs with a gap between them
+  function throbSequence(list, gap, onDone) {
     var i = 0;
     function tick() {
       if (i >= list.length) { if (onDone) onDone(); return; }
-      throbOne(list[i], dir);
+      throbOne(list[i]);
       i++;
       setTimeout(tick, 1250 + (gap || 0));
     }

@@ -34,6 +34,9 @@ groups:
         - { action: wait, duration: 2000 }
         - { action: appear, groups: [minValues] }
         - { action: appear, groups: [maxValues] }
+        - { action: throb, groups: [minValues] }
+        - { action: wait, duration: 1000}
+        - { action: throb, groups: [maxValues]}
         - { action: wait, duration: 5000 }
         - { action: disappear, groups: [maxValues] }
         - { action: disappear, groups: [minValues] }
