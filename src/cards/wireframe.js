@@ -18,6 +18,7 @@ window.HAL.cards['wireframe'] = {
     var e = window.HAL.svg.el;
     var ns = window.HAL.svg.ns;
     var fg = window.HAL.svg.fg;
+    var fs = window.HAL.svg.fs;
 
     var objects = (data.objects || []);
     var connections = (data.connections || []);
@@ -40,7 +41,7 @@ window.HAL.cards['wireframe'] = {
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': 14,
+      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -48,7 +49,7 @@ window.HAL.cards['wireframe'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': 10,
+      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
@@ -165,7 +166,7 @@ window.HAL.cards['wireframe'] = {
       // Label
       var lbl = e('text', {
         x: p.x + 10, y: p.y + 3,
-        fill: fg('frame', 1.5), 'font-size': 10,
+        fill: fg('frame', 1.5), 'font-size': fs(10),
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       lbl.textContent = obj.label || '';

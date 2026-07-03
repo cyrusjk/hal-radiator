@@ -12,6 +12,7 @@ window.HAL.cards.title = {
 
   render: function(data) {
     var svgEl = document.getElementById('card');
+    var fs = window.HAL.svg.fs;
     var titleFont = window.HAL_CONFIG.visual.fonts.title;
     var labelFont = window.HAL_CONFIG.visual.fonts.label;
     var e = window.HAL.svg.el;
@@ -27,7 +28,7 @@ window.HAL.cards.title = {
     var titleG = e('g', { transform: 'translate(500, 406) scale(0.9, 1.0)' });
     var titleT = e('text', {
       x: 0, y: 0, 'text-anchor': 'middle', fill: 'rgb(255,255,255)',
-      'font-family': titleFont, 'font-size': 90, 'font-weight': 'bold',
+      'font-family': titleFont, 'font-size': fs(90), 'font-weight': 'bold',
       'letter-spacing': 44, 'text-rendering': 'optimizeLegibility',
     });
     titleT.textContent = data.title;
@@ -37,7 +38,7 @@ window.HAL.cards.title = {
     var subG = e('g', { transform: 'translate(231, 293) scale(1.0, 0.4)' });
     var subT = e('text', {
       x: 0, y: 0, fill: 'rgb(255,255,255)',
-      'font-family': labelFont, 'font-size': 49, 'letter-spacing': -2,
+      'font-family': labelFont, 'font-size': fs(49), 'letter-spacing': -2,
       'text-rendering': 'optimizeLegibility',
     });
     subT.textContent = data.label;

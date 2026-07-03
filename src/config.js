@@ -35,7 +35,8 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     ]
   },
   "frameBrightness": 0.4,
-  "dataBrightness": 0.8
+  "dataBrightness": 0.8,
+  "fontScale": 1.0
 },
   cards: [
   {

@@ -35,4 +35,11 @@ window.HAL.svg = {
     var opacity = Math.min(1, Math.max(0, base * mult));
     return 'rgba(255,255,255,' + opacity.toFixed(2) + ')';
   },
+
+  // Scale a base font size by visual.fontScale (default 1.0).
+  // Call as fs(14) instead of hardcoding 'font-size': 14.
+  fs: function(px) {
+    var scale = window.HAL.svg.vis().fontScale || 1.0;
+    return Math.round(px * scale);
+  },
 };

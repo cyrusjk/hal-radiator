@@ -22,6 +22,7 @@ window.HAL.cards['curve-family'] = {
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var fg = window.HAL.svg.fg;
+    var fs = window.HAL.svg.fs;
 
     var ns = window.HAL.svg.ns;
     var e = window.HAL.svg.el;
@@ -51,7 +52,7 @@ window.HAL.cards['curve-family'] = {
 
     // ── Header (title) ────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': 14, 'font-family': labelFont,
+      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14), 'font-family': labelFont,
       'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -88,7 +89,7 @@ window.HAL.cards['curve-family'] = {
       // Group label
       var glabel = e('text', {
         x: 15, y: bandTop + bandH / 2 + 4, fill: fg('frame', 1.0),
-        'font-size': 11, 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+        'font-size': fs(11), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       glabel.textContent = g.name;
       svgEl.appendChild(glabel);
@@ -140,7 +141,7 @@ window.HAL.cards['curve-family'] = {
 
         var serLabel = e('text', {
           x: lx + 6, y: ly + 3, fill: fg('data', 0.65),
-          'font-size': 10, 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+          'font-size': fs(10), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
         });
         serLabel.textContent = series[si].label;
         grp.appendChild(serLabel);
@@ -156,7 +157,7 @@ window.HAL.cards['curve-family'] = {
         var mlx = x0 + (minIdx / (dataPts - 1)) * gridW;
         var mly = bandTop + bandH - (minVal / bandMax) * (bandH - 20) - 10;
         var mn = e('text', {
-          x: mlx, y: mly - 12, fill: fg('data', 1.1), 'font-size': 14,
+          x: mlx, y: mly - 12, fill: fg('data', 1.1), 'font-size': fs(14),
           'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
         });
         mn.style.opacity = '0';
@@ -167,7 +168,7 @@ window.HAL.cards['curve-family'] = {
         var mlx2 = x0 + (maxIdx / (dataPts - 1)) * gridW;
         var mly2 = bandTop + bandH - (maxVal / bandMax) * (bandH - 20) - 10;
         var mx = e('text', {
-          x: mlx2, y: mly2 - 12, fill: fg('data', 1.1), 'font-size': 14,
+          x: mlx2, y: mly2 - 12, fill: fg('data', 1.1), 'font-size': fs(14),
           'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
         });
         mx.style.opacity = '0';
@@ -186,7 +187,7 @@ window.HAL.cards['curve-family'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': 10,
+      x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';

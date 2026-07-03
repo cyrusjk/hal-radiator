@@ -17,6 +17,7 @@ window.HAL.cards['polar'] = {
     var e = window.HAL.svg.el;
     var ns = window.HAL.svg.ns;
     var fg = window.HAL.svg.fg;
+    var fs = window.HAL.svg.fs;
 
     var series = (data.series || []);
     if (series.length === 0) { if (onDone) onDone(); return; }
@@ -43,7 +44,7 @@ window.HAL.cards['polar'] = {
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': 14,
+      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
@@ -51,7 +52,7 @@ window.HAL.cards['polar'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': 10,
+      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
@@ -86,7 +87,7 @@ window.HAL.cards['polar'] = {
         var rl = polar(r, 0);
         var rv = e('text', {
           x: rl.x + 4, y: rl.y + 3,
-          fill: fg('frame', 0.6), 'font-size': 9,
+          fill: fg('frame', 0.6), 'font-size': fs(9),
           'font-family': labelFont,
         });
         rv.textContent = Math.round((ri / nRings) * maxVal);
@@ -112,7 +113,7 @@ window.HAL.cards['polar'] = {
       var lp = polar(radius + 22, angle);
       var lbl = e('text', {
         x: lp.x, y: lp.y + 3,
-        fill: fg('frame', 0.75), 'font-size': 9,
+        fill: fg('frame', 0.75), 'font-size': fs(9),
         'font-family': labelFont, 'text-anchor': 'middle',
       });
       lbl.textContent = String(si + 1);
