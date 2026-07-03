@@ -21,7 +21,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "x0": 80,
     "y0": 70,
     "w": 700,
-    "h": 520,
+    "h": 650,
     "dataPts": 9,
     "strokes": [
       1.5,

@@ -14,7 +14,7 @@
     overflow: hidden;
   }
   #wrap.zoomed svg { transform-origin: center center; }
-  svg { display: block; width: 100vw; height: 100vh; }
+  svg { display: block; width: 1000px; max-width: 100vw; max-height: 100vh; height: auto; }
 
   @keyframes blinkIn {
     0%   { opacity: 0; }  4%   { opacity: 1; }  8%   { opacity: 0; }
@@ -46,7 +46,7 @@
 </style>
 </head>
 <body>
-<div id="wrap"><svg id="card" viewBox="0 0 1000 750" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<div id="wrap"><svg id="card" width="1000" height="750" viewBox="0 0 1000 750" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>
 
 <!-- ── Application modules (loaded in dependency order) ─────────────── -->
 <script src="src/config.js"></script>
