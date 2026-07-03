@@ -31,6 +31,21 @@ colors:
   dark-teal:  "rgb(16,45,70)"
   charcoal:   "rgb(20,20,30)"
 
+# ── Visual settings ─────────────────────────────────────────────────────
+# Fonts, chart dimensions, and line styles used by card renderers.
+visual:
+  fonts:
+    title: "EurostileLocal, sans-serif"
+    label: "RajdhaniLightLocal, Rajdhani, monospace"
+  chart:
+    x0: 80
+    y0: 70
+    w: 700
+    h: 520
+    dataPts: 9
+    strokes: [1.5, 1.0, 0.7]
+    dashes: [null, "4,3", "1,3"]
+
 # ── Card sequence ─────────────────────────────────────────────────────
 # Each group defines a title card followed by one or more chart cards.
 # The radiator cycles: title (8s) → chart (animation) → chart → ...

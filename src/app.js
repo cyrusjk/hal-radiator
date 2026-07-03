@@ -6,11 +6,16 @@
 (function() {
   var svgEl = document.getElementById('card');
   var cfg = window.HAL_CONFIG;
-  if (!svgEl || !cfg || !cfg.cards || !cfg.cards.length) return;
+
+  // Quick sanity — surface errors visibly
+  if (!svgEl) { document.body.innerHTML += 'ERROR: no SVG element'; return; }
+  if (!cfg) { document.body.innerHTML += 'ERROR: HAL_CONFIG not loaded'; return; }
+  if (!cfg.cards || !cfg.cards.length) return;
+  if (!window.HAL.cards || !window.HAL.cards.title) { document.body.innerHTML += 'ERROR: title renderer missing'; return; }
 
   var idx = 0;
-  var locked = false;       // spacebar toggle — locks rotation & loops current card
-  var autoTimer = null;     // pending auto-advance timeout
+  var locked = false;
+  var autoTimer = null;
 
   // ── Helpers ─────────────────────────────────────────────────────────
 

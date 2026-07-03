@@ -8,6 +8,29 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   timing: {
   "titleCardDisplay": 8
 },
+  visual: {
+  "fonts": {
+    "title": "EurostileLocal, sans-serif",
+    "label": "RajdhaniLightLocal, Rajdhani, monospace"
+  },
+  "chart": {
+    "x0": 80,
+    "y0": 70,
+    "w": 700,
+    "h": 520,
+    "dataPts": 9,
+    "strokes": [
+      1.5,
+      1.0,
+      0.7
+    ],
+    "dashes": [
+      null,
+      "4,3",
+      "1,3"
+    ]
+  }
+},
   cards: [
   {
     "type": "title",

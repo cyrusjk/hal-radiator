@@ -70,6 +70,7 @@ with open(config_js_path, "w", encoding="utf-8") as f:
 
     f.write("window.HAL_CONFIG = window.HAL_CONFIG || {\n")
     f.write(f"  timing: {json.dumps(cfg.get('timing', {}), indent=2)},\n")
+    f.write(f"  visual: {json.dumps(cfg.get('visual', {}), indent=2)},\n")
     f.write(f"  cards: {json.dumps(cards, indent=2)},\n")
     f.write("};\n")
 
