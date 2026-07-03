@@ -10,14 +10,26 @@
 
   var idx = 0;
 
+  // Clear the SVG immediately so visual state matches the current card.
+  function clearCard(color) {
+    if (color) document.body.style.background = color;
+    svgEl.innerHTML = '';
+  }
+
   function showCard(i, onChartDone) {
     var c = cfg.cards[i % cfg.cards.length];
-    document.body.style.background = c.color;
+    clearCard(c.color);
+
     if (c.type === 'chart') {
-      window.HAL.data.fetchCardData(c).then(function(data) {
-        c.groups = data.groups;
-        window.HAL.cards.curveFamily.render(c, onChartDone);
-      });
+      window.HAL.data.fetchCardData(c)
+        .then(function(data) {
+          c.groups = data && data.groups ? data.groups : [];
+          window.HAL.cards.curveFamily.render(c, onChartDone);
+        })
+        .catch(function() {
+          // Fetch failed — skip this card and move to the next
+          if (onChartDone) onChartDone();
+        });
     } else {
       window.HAL.cards.title.render(c);
     }
