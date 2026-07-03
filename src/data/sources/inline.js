@@ -13,12 +13,12 @@ window.HAL.data.sources.inline = {
   name: 'inline',
 
   // Returns the groups+series payload for the given card config.
-  // The card's dataSource field can embed group data directly:
-  //
-  //   { type: 'inline', groups: [ ... ] }
-  //
-  // If dataSource.groups doesn't exist, returns the demo defaults keyed
-  // by the card's title.
+  //  The card's dataSource field can embed chart data directly:
+  //    curve-family: { type: 'inline', groups: [ { name, series } ] }
+  //    tabular:      { type: 'inline', rows: [ { label, value } ] }
+  //    telemetry-grid: { type: 'inline', columns: [...], rows: [...] }
+  //    wireframe:    { type: 'inline', objects: [...], connections: [...] }
+  //    polar:        { type: 'inline', series: [ { label, values } ] }
   fetch: function(dataSource) {
     if (dataSource && dataSource.columns) {
       return { columns: dataSource.columns, rows: dataSource.rows || [] };

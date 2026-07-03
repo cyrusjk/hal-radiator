@@ -96,34 +96,17 @@ window.HAL.anim = window.HAL.anim || {};
     return g !== undefined ? g : [];
   }
 
-  // ── Public API ─────────────────────────────────────────────────────
+// ── Public API ─────────────────────────────────────────────────────
   // Run a sequence of animation phases for a card.
   //   card      — the card config object (from HAL_CONFIG.cards[])
   //   groupMap  — { groupName: DOM_element_or_array }
   //   onDone    — called when the entire sequence completes
-  //   defaults  — optional default phases (renderer-specific) if card has none
+  //   defaults  — renderer-specific default phases (used if card has no animation config)
 
   window.HAL.anim.run = function(card, groupMap, onDone, defaults) {
-    var phases = (card.animation && card.animation.phases) || defaults || defaultPhases();
+    var phases = (card.animation && card.animation.phases) || defaults || [];
     executePhases(phases, groupMap, 0, onDone);
   };
-
-  // ── Default phases for curve-family (matches current hardcoded pipeline)
-  function defaultPhases() {
-    return [
-      { action: 'appear',   groups: ['header', 'footer', 'grid', 'groupLabels'] },
-      { action: 'wait',     duration: cfg.timing.initialPause || 5000 },
-      { action: 'flickerIn', groups: ['bands'],          order: 'sequential', gap: cfg.timing.groupGap },
-      { action: 'wait',     duration: 2000 },
-      { action: 'appear',   groups: ['minValues'] },
-      { action: 'appear',   groups: ['maxValues'] },
-      { action: 'wait',     duration: cfg.timing.valueHold || 5000 },
-      { action: 'disappear', groups: ['maxValues'] },
-      { action: 'disappear', groups: ['minValues'] },
-      { action: 'flickerOut', groups: ['bands'],          order: 'sequential', gap: cfg.timing.groupGap },
-      { action: 'done' },
-    ];
-  }
 
   // ── Phase sequencer ────────────────────────────────────────────────
 

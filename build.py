@@ -88,7 +88,6 @@ html = html_src.read_text(encoding="utf-8")
 scripts = [
     "src/config.js",
     "src/svg-utils.js",
-    "src/transitions.js",
     "src/animation-engine.js",
     "src/cards/title.js",
     "src/cards/curve-family.js",
