@@ -20,14 +20,14 @@ window.HAL.data.sources.inline = {
   // If dataSource.groups doesn't exist, returns the demo defaults keyed
   // by the card's title.
   fetch: function(dataSource) {
+    if (dataSource && dataSource.columns) {
+      return { columns: dataSource.columns, rows: dataSource.rows || [] };
+    }
     if (dataSource && dataSource.groups) {
       return { groups: dataSource.groups };
     }
     if (dataSource && dataSource.rows) {
       return { rows: dataSource.rows };
-    }
-    if (dataSource && dataSource.columns) {
-      return { columns: dataSource.columns, rows: dataSource.rows };
     }
     return null;
   },
