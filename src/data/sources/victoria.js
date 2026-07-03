@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════
 //  VictoriaMetrics Data Source Plugin
-//  — Fetches time-series data from VictoriaMetrics PromQL API
-//  — Transforms Prometheus response into { groups, series, values }
+//  — Fetches time-series data from VictoriaMetrics PromQL API via JSONP
+//  — JSONP works from any page context, including file:// (no CORS, no
+//    server needed). VictoriaMetrics wraps the response in a callback.
 //
 //  Usage in config.js:
 //    { type: 'chart', ...
@@ -11,7 +12,7 @@
 //        promql: 'rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100',
 //        map: {
 //          group:  'name',        // Prometheus label → group name (band)
-//          series: 'le',          // Prometheus label → series label (curve), or null
+//          series: 'le',          // Prometheus label → series label, or null
 //        }
 //      }
 //    }
@@ -26,11 +27,13 @@ window.HAL.data = window.HAL.data || {};
 window.HAL.data.sources = window.HAL.data.sources || {};
 
 (function() {
+  var reqId = 0;  // unique counter for callback names
+
   var plugin = {
 
-    // ── Fetch ─────────────────────────────────────────────────────────
-    // Returns a Promise that resolves to { groups: [ { name, series } ] }
-    // or null if the config is invalid.
+    // ── Fetch via JSONP ───────────────────────────────────────────────
+    // Injects a <script> tag that loads data from VictoriaMetrics.
+    // Returns a Promise that resolves to { groups: [ { name, series } ] }.
     fetch: function(dataSource) {
       if (!dataSource || !dataSource.url || !dataSource.promql) return null;
 
@@ -40,19 +43,53 @@ window.HAL.data.sources = window.HAL.data.sources || {};
       var groupLabel = map.group || 'group';
       var seriesLabel = map.series || null;
 
-      // Default: last 5 minutes, 9 data points
+      // Time window: last 5 minutes, 9 data points
       var now = Date.now() / 1000;
       var start = now - 300;
-      var step = 300 / 8;  // ~37.5s between points
+      var step = 300 / 8;
 
-      return fetch(url + '?' + [
-        'query=' + encodeURIComponent(query),
-        'start=' + start,
-        'end=' + now,
-        'step=' + step
-      ].join('&'))
-        .then(function(r) { if (!r.ok) throw new Error('VM fetch failed: ' + r.status); return r.json(); })
-        .then(function(json) { return plugin.transform(json, groupLabel, seriesLabel); });
+      // Unique callback name for this request
+      var cbName = '_vm_cb_' + (reqId++);
+
+      return new Promise(function(resolve, reject) {
+        // The callback that VictoriaMetrics will call
+        window[cbName] = function(json) {
+          cleanup();
+          var result = plugin.transform(json, groupLabel, seriesLabel);
+          resolve(result);
+        };
+
+        // Timeout: reject if no response within 10 seconds
+        var timer = setTimeout(function() {
+          cleanup();
+          reject(new Error('VM JSONP timeout'));
+        }, 10000);
+
+        function cleanup() {
+          clearTimeout(timer);
+          delete window[cbName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        // Build the JSONP URL
+        var params = [
+          'query=' + encodeURIComponent(query),
+          'start=' + start,
+          'end=' + now,
+          'step=' + step,
+          'callback=' + cbName
+        ];
+        var scriptUrl = url + '?' + params.join('&');
+
+        // Inject the script tag — this triggers the request
+        var script = document.createElement('script');
+        script.src = scriptUrl;
+        script.onerror = function() {
+          cleanup();
+          reject(new Error('VM JSONP load failed'));
+        };
+        document.body.appendChild(script);
+      });
     },
 
     // ── Transform ─────────────────────────────────────────────────────
@@ -99,6 +136,5 @@ window.HAL.data.sources = window.HAL.data.sources || {};
 
   };
 
-  // Export
   window.HAL.data.sources.victoria = plugin;
 })();
