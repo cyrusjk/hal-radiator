@@ -89,6 +89,7 @@ scripts = [
     "src/config.js",
     "src/svg-utils.js",
     "src/transitions.js",
+    "src/animation-engine.js",
     "src/cards/title.js",
     "src/cards/curve-family.js",
     "src/data/sources/inline.js",
