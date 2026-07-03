@@ -107,6 +107,22 @@ groups:
   color: plum
   charts: []
 - title: GDE
-  subheading: 'NAV: 94-KL'
+  subheading: "NAV: 94-KL"
   color: blue
   charts: []
+
+- title: VEC
+  subheading: "COORDINATES"
+  color: dark-navy
+  charts:
+    - chartType: tabular
+      title: "VEC"
+      label: "COORDINATES"
+      color: dark-navy
+      dataSource:
+        type: inline
+        rows:
+          - { label: "X-AXIS", value: "047.23" }
+          - { label: "Y-AXIS", value: "182.76" }
+          - { label: "Z-AXIS", value: "093.41" }
+

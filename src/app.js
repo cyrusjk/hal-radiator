@@ -38,9 +38,18 @@
     if (c.type !== 'title') {
       window.HAL.data.fetchCardData(c)
         .then(function(data) {
-          c.groups = data && data.groups ? data.groups : [];
+          // Merge fetched data into the card config so the renderer
+          // can access its chart-type-specific properties (groups, rows, etc.)
+          if (data) {
+            for (var k in data) c[k] = data[k];
+          }
           try {
-            window.HAL.cards.curveFamily.render(c, onDone);
+            var renderer = window.HAL.cards[c.type];
+            if (renderer && renderer.render) {
+              renderer.render(c, onDone);
+            } else {
+              if (onDone) onDone();
+            }
           } catch(e) {
             if (onDone) onDone();
           }

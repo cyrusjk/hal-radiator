@@ -204,7 +204,20 @@ window.HAL.cards.curveFamily = {
     groupMap.maxValues = maxLabels;
 
     // ── Start the animation ───────────────────────────────────────────
-    window.HAL.anim.run(data, groupMap, onDone);
+    var defaults = [
+      { action: 'appear',     groups: ['header', 'footer', 'grid', 'groupLabels'] },
+      { action: 'wait',       duration: window.HAL_CONFIG.timing.initialPause || 5000 },
+      { action: 'flickerIn',  groups: ['bands'], order: 'sequential', gap: window.HAL_CONFIG.timing.groupGap },
+      { action: 'wait',       duration: 2000 },
+      { action: 'appear',     groups: ['minValues'] },
+      { action: 'appear',     groups: ['maxValues'] },
+      { action: 'wait',       duration: window.HAL_CONFIG.timing.valueHold || 5000 },
+      { action: 'disappear',  groups: ['maxValues'] },
+      { action: 'disappear',  groups: ['minValues'] },
+      { action: 'flickerOut', groups: ['bands'], order: 'sequential', gap: window.HAL_CONFIG.timing.groupGap },
+      { action: 'done' },
+    ];
+    window.HAL.anim.run(data, groupMap, onDone, defaults);
   },
 
 };

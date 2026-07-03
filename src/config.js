@@ -395,6 +395,35 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "title": "GDE",
     "label": "NAV: 94-KL",
     "color": "rgb(54,85,165)"
+  },
+  {
+    "type": "title",
+    "title": "VEC",
+    "label": "COORDINATES",
+    "color": "rgb(16,24,57)"
+  },
+  {
+    "type": "tabular",
+    "title": "VEC",
+    "label": "COORDINATES",
+    "color": "rgb(16,24,57)",
+    "dataSource": {
+      "type": "inline",
+      "rows": [
+        {
+          "label": "X-AXIS",
+          "value": "047.23"
+        },
+        {
+          "label": "Y-AXIS",
+          "value": "182.76"
+        },
+        {
+          "label": "Z-AXIS",
+          "value": "093.41"
+        }
+      ]
+    }
   }
 ],
 };

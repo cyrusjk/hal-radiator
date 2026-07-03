@@ -92,6 +92,7 @@ scripts = [
     "src/animation-engine.js",
     "src/cards/title.js",
     "src/cards/curve-family.js",
+    "src/cards/tabular.js",
     "src/data/sources/inline.js",
     "src/data/sources/victoria.js",
     "src/data/fetcher.js",

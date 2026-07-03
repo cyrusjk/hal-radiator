@@ -101,9 +101,10 @@ window.HAL.anim = window.HAL.anim || {};
   //   card      — the card config object (from HAL_CONFIG.cards[])
   //   groupMap  — { groupName: DOM_element_or_array }
   //   onDone    — called when the entire sequence completes
+  //   defaults  — optional default phases (renderer-specific) if card has none
 
-  window.HAL.anim.run = function(card, groupMap, onDone) {
-    var phases = (card.animation && card.animation.phases) || defaultPhases();
+  window.HAL.anim.run = function(card, groupMap, onDone, defaults) {
+    var phases = (card.animation && card.animation.phases) || defaults || defaultPhases();
     executePhases(phases, groupMap, 0, onDone);
   };
 
