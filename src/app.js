@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════
 //  App — Orchestrator
-//  — Card cycling, transition logic, boot sequence
+//  — Card cycling, keyboard controls, transition logic
 // ═══════════════════════════════════════════════════════════════════════
 
 (function() {
@@ -9,14 +9,24 @@
   if (!svgEl || !cfg || !cfg.cards || !cfg.cards.length) return;
 
   var idx = 0;
+  var locked = false;       // spacebar toggle — locks rotation & loops current card
+  var autoTimer = null;     // pending auto-advance timeout
 
-  // Clear the SVG immediately so visual state matches the current card.
+  // ── Helpers ─────────────────────────────────────────────────────────
+
+  function clearAuto() {
+    if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  }
+
   function clearCard(color) {
     if (color) document.body.style.background = color;
     svgEl.innerHTML = '';
   }
 
-  function showCard(i, onChartDone) {
+  // ── Card display ────────────────────────────────────────────────────
+
+  function showCard(i, onDone) {
+    clearAuto();
     var c = cfg.cards[i % cfg.cards.length];
     clearCard(c.color);
 
@@ -24,38 +34,83 @@
       window.HAL.data.fetchCardData(c)
         .then(function(data) {
           c.groups = data && data.groups ? data.groups : [];
-          window.HAL.cards.curveFamily.render(c, onChartDone);
+          window.HAL.cards.curveFamily.render(c, onDone);
         })
         .catch(function() {
-          // Fetch failed — skip this card and move to the next
-          if (onChartDone) onChartDone();
+          if (onDone) onDone();
         });
     } else {
       window.HAL.cards.title.render(c);
     }
   }
 
+  // ── Cycle logic ─────────────────────────────────────────────────────
+
+  function cardDone() {
+    if (locked) {
+      // Replay the current card's animation
+      showCard(idx, cardDone);
+    } else {
+      scheduleNext();
+    }
+  }
+
   function scheduleNext() {
+    clearAuto();
     var next = (idx + 1) % cfg.cards.length;
-    var nextCard = cfg.cards[next % cfg.cards.length];
+    var nextCard = cfg.cards[next];
     if (nextCard.type === 'chart') {
       transitionTo(next);
     } else {
-      setTimeout(transitionTo, cfg.timing.titleCardDisplay, next);
+      autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay, next);
     }
   }
 
   function transitionTo(nextIdx) {
     idx = nextIdx;
-    var c = cfg.cards[idx % cfg.cards.length];
+    var c = cfg.cards[idx];
     if (c.type === 'chart') {
-      showCard(idx, scheduleNext);
+      showCard(idx, cardDone);
     } else {
       showCard(idx);
-      scheduleNext();
+      cardDone(); // schedule next via the same loop
     }
   }
 
+  // ── Keyboard controls ───────────────────────────────────────────────
+  //  ← →  navigate cards (cancel lock if active)
+  //  Space  toggle lock: when locked the current card loops its animation
+  //         indefinitely; no visual indicator
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      locked = false;
+      var prev = (idx - 1 + cfg.cards.length) % cfg.cards.length;
+      transitionTo(prev);
+    }
+    else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      locked = false;
+      var next = (idx + 1) % cfg.cards.length;
+      transitionTo(next);
+    }
+    else if (e.key === ' ') {
+      e.preventDefault();
+      locked = !locked;
+      if (locked) {
+        // Restart the current card's animation loop
+        clearAuto();
+        showCard(idx, cardDone);
+      } else {
+        // Unlock: advance to next card
+        scheduleNext();
+      }
+    }
+  });
+
+  // ── Boot ────────────────────────────────────────────────────────────
+
   showCard(0);
-  setTimeout(transitionTo, cfg.timing.titleCardDisplay, 1);
+  autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay, 1);
 })();
