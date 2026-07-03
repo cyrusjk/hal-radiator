@@ -8,7 +8,7 @@
 window.HAL = window.HAL || {};
 window.HAL.cards = window.HAL.cards || {};
 
-window.HAL.cards.curveFamily = {
+window.HAL.cards['curve-family'] = {
 
   render: function(data, onDone) {
     var svgEl = document.getElementById('card');
