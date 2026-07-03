@@ -35,11 +35,15 @@
     var c = cfg.cards[i % cfg.cards.length];
     clearCard(c.color);
 
-    if (c.type === 'chart') {
+    if (c.type !== 'title') {
       window.HAL.data.fetchCardData(c)
         .then(function(data) {
           c.groups = data && data.groups ? data.groups : [];
-          window.HAL.cards.curveFamily.render(c, onDone);
+          try {
+            window.HAL.cards.curveFamily.render(c, onDone);
+          } catch(e) {
+            if (onDone) onDone();
+          }
         })
         .catch(function() {
           if (onDone) onDone();
@@ -64,7 +68,7 @@
     clearAuto();
     var next = (idx + 1) % cfg.cards.length;
     var nextCard = cfg.cards[next];
-    if (nextCard.type === 'chart') {
+    if (nextCard.type !== 'title') {
       transitionTo(next);
     } else {
       autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, next);
@@ -74,7 +78,7 @@
   function transitionTo(nextIdx) {
     idx = nextIdx;
     var c = cfg.cards[idx];
-    if (c.type === 'chart') {
+    if (c.type !== 'title') {
       showCard(idx, cardDone);
     } else {
       // Title cards always hold for titleCardDisplay seconds,

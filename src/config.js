@@ -40,8 +40,8 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   },
   {
     "type": "curve-family",
-    "title": "LAT: PROD-01",
-    "label": "LATENCY PERCENTILES",
+    "title": "LAT",
+    "label": "PROD-01",
     "color": "rgb(28,52,100)",
     "dataSource": {
       "type": "inline",
@@ -201,8 +201,8 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   },
   {
     "type": "curve-family",
-    "title": "THR: NODE-02",
-    "label": "THROUGHPUT",
+    "title": "THR",
+    "label": "NODE-02",
     "color": "rgb(39,72,100)",
     "dataSource": {
       "type": "inline",
@@ -318,17 +318,60 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   },
   {
     "type": "curve-family",
-    "title": "CPU: LOAD AVG",
-    "label": "CPU LOAD AVERAGES",
+    "title": "CPU",
+    "label": "LOAD AVG",
     "color": "rgb(16,45,70)",
     "dataSource": {
-      "type": "victoria",
-      "url": "http://192.168.50.9:8428",
-      "promql": "{__name__=~\"node_load[0-9]+\"}",
-      "map": {
-        "group": "job",
-        "series": "__name__"
-      }
+      "type": "inline",
+      "groups": [
+        {
+          "name": "node",
+          "series": [
+            {
+              "label": "node_load1",
+              "values": [
+                1.68,
+                1.62,
+                1.62,
+                2.1,
+                2.1,
+                1.73,
+                1.69,
+                1.69,
+                1.69
+              ]
+            },
+            {
+              "label": "node_load15",
+              "values": [
+                1.0,
+                1.05,
+                1.05,
+                1.15,
+                1.15,
+                1.18,
+                1.22,
+                1.22,
+                1.22
+              ]
+            },
+            {
+              "label": "node_load5",
+              "values": [
+                1.11,
+                1.23,
+                1.23,
+                1.47,
+                1.47,
+                1.5,
+                1.55,
+                1.55,
+                1.55
+              ]
+            }
+          ]
+        }
+      ]
     }
   },
   {
