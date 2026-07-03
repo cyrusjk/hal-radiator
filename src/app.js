@@ -67,7 +67,7 @@
     if (nextCard.type === 'chart') {
       transitionTo(next);
     } else {
-      autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay, next);
+      autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, next);
     }
   }
 
@@ -77,8 +77,10 @@
     if (c.type === 'chart') {
       showCard(idx, cardDone);
     } else {
+      // Title cards always hold for titleCardDisplay seconds,
+      // then advance to whatever comes next (chart or title).
       showCard(idx);
-      cardDone(); // schedule next via the same loop
+      autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, (idx + 1) % cfg.cards.length);
     }
   }
 
@@ -117,5 +119,5 @@
   // ── Boot ────────────────────────────────────────────────────────────
 
   showCard(0);
-  autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay, 1);
+  autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, 1);
 })();
