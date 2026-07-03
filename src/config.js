@@ -424,6 +424,73 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         }
       ]
     }
+  },
+  {
+    "type": "title",
+    "title": "TLM",
+    "label": "SENSOR GRID",
+    "color": "rgb(23,31,57)"
+  },
+  {
+    "type": "telemetry-grid",
+    "title": "TLM",
+    "label": "SENSOR GRID",
+    "color": "rgb(23,31,57)",
+    "dataSource": {
+      "type": "inline",
+      "columns": [
+        {
+          "label": "TEMP"
+        },
+        {
+          "label": "PRES"
+        },
+        {
+          "label": "HUM"
+        },
+        {
+          "label": "VOLT"
+        }
+      ],
+      "rows": [
+        {
+          "label": "REACTOR-1",
+          "values": [
+            "87.2",
+            "101.3",
+            "44",
+            "5.01"
+          ]
+        },
+        {
+          "label": "REACTOR-2",
+          "values": [
+            "91.5",
+            "98.7",
+            "51",
+            "4.97"
+          ]
+        },
+        {
+          "label": "COOLANT-A",
+          "values": [
+            "72.8",
+            "105.2",
+            "62",
+            "5.03"
+          ]
+        },
+        {
+          "label": "COOLANT-B",
+          "values": [
+            "68.4",
+            "102.8",
+            "58",
+            "4.99"
+          ]
+        }
+      ]
+    }
   }
 ],
 };
