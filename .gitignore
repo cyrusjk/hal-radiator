@@ -1,0 +1,15 @@
+# ── Generated / output directories ────────────────────────────────────────
+output/
+output_svg/
+__pycache__/
+*.pyc
+.venv/
+
+# ── Reference material (not part of the app) ──────────────────────────────
+reference/
+
+# ── OS / editor noise ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
