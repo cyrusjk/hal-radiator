@@ -101,7 +101,7 @@ window.HAL.cards.tabular = {
     // ── Start the animation ───────────────────────────────────────────
     var defaults = [
       { action: 'appear',     groups: ['header', 'footer', 'separators'] },
-      { action: 'wait',       duration: 3000 },
+      { action: 'wait',       duration: 1000 },
       { action: 'appear',     groups: ['rows'], order: 'sequential', gap: 400 },
       { action: 'wait',       duration: 8000 },
       { action: 'disappear',  groups: ['rows'], order: 'sequential', gap: 300 },
