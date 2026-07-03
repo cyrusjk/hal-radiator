@@ -2,16 +2,50 @@
 # ═══════════════════════════════════════════════════════════════════════
 #  Serve — lightweight HTTP server
 #   - Serves static files (HTML, JS, fonts, etc.)
-#   - Serves /api/config from radiator.yaml (as JSON)
+#   - Serves /api/config from radiator.yaml (flattened to card array)
 # ═══════════════════════════════════════════════════════════════════════
 
-import json, yaml, os, io, email.utils, mimetypes, urllib.parse, traceback
+import json, yaml, os, io, email.utils, mimetypes, urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from datetime import datetime
 
 PORT = 8009
 ROOT = os.path.dirname(os.path.abspath(__file__))
 YAML_PATH = os.path.join(ROOT, 'radiator.yaml')
+
+def flatten_config(cfg):
+    """Convert the YAML groups structure into a flat card array,
+    matching what build.py produces."""
+    colors = cfg.get("colors", {})
+    timing = cfg.get("timing", {})
+    visual = cfg.get("visual", {})
+    groups = cfg.get("groups", [])
+
+    def resolve_color(name):
+        return colors.get(name, name) if isinstance(name, str) else name
+
+    cards = []
+    for group in groups:
+        # Title card
+        cards.append({
+            "type": "title",
+            "title": group["title"],
+            "label": group.get("subheading", ""),
+            "color": resolve_color(group.get("color", "rgb(0,0,0)")),
+        })
+        # Chart cards
+        for chart in group.get("charts", []):
+            c = dict(chart)
+            c["type"] = chart.get("chartType", "curve-family")
+            c["label"] = chart.get("label", "")
+            c["color"] = resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)")))
+            c.pop("chartType", None)
+            cards.append(c)
+
+    return {
+        "timing": timing,
+        "visual": visual,
+        "cards": cards,
+    }
 
 class Handler(BaseHTTPRequestHandler):
 
@@ -23,10 +57,8 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_config()
             return
 
-        # Serve static file
         self._serve_static(path)
 
-    # ── API: radiator.yaml as JSON ────────────────────────────────────
     def _serve_config(self):
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
@@ -34,45 +66,35 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         try:
             with open(YAML_PATH) as f:
-                cfg = yaml.safe_load(f)
-            self.wfile.write(json.dumps(cfg).encode())
+                raw = yaml.safe_load(f)
+            flat = flatten_config(raw)
+            self.wfile.write(json.dumps(flat).encode())
         except Exception as e:
-            self.wfile.write(json.dumps({'error': str(e)}).encode())
+            import traceback
+            self.wfile.write(json.dumps({'error': str(e), 'trace': traceback.format_exc()}).encode())
 
-    # ── Static file server ────────────────────────────────────────────
     def _serve_static(self, path):
-        # Default document
         if path == '/' or path == '':
             path = '/index.html'
-
-        # Build absolute path, preventing directory traversal
         clean = path.lstrip('/').replace('\\', '/')
         abspath = os.path.normpath(os.path.join(ROOT, clean))
         if not abspath.startswith(ROOT):
             self._send_error(403, 'Forbidden')
             return
-
         if not os.path.isfile(abspath):
             self._send_error(404, 'Not Found')
             return
-
-        # Determine content type
         ct, _ = mimetypes.guess_type(abspath)
         if ct is None:
             ct = 'application/octet-stream'
-
         st = os.stat(abspath)
-        size = st.st_size
-        mtime = st.st_mtime
-
         self.send_response(200)
         self.send_header('Content-Type', ct)
-        self.send_header('Content-Length', str(size))
-        self.send_header('Last-Modified', email.utils.formatdate(mtime, usegmt=True))
+        self.send_header('Content-Length', str(st.st_size))
+        self.send_header('Last-Modified', email.utils.formatdate(st.st_mtime, usegmt=True))
         self.end_headers()
-
         with open(abspath, 'rb') as f:
-            remaining = size
+            remaining = st.st_size
             while remaining:
                 chunk = 65536 if remaining >= 65536 else remaining
                 data = f.read(chunk)
@@ -88,7 +110,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(f'{code} {msg}\n'.encode())
 
     def log_message(self, fmt, *args):
-        pass  # silent
+        pass
 
 if __name__ == '__main__':
     os.chdir(ROOT)

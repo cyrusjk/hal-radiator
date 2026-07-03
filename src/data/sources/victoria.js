@@ -9,7 +9,8 @@
 //      dataSource: {
 //        type: 'victoria',
 //        url: 'http://192.168.50.9:8428',
-//        promql: 'rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100',
+//        range: 300,            // time window in seconds (default 300)
+//        promql: '...',
 //        map: {
 //          group:  'name',        // Prometheus label → group name (band)
 //          series: 'le',          // Prometheus label → series label, or null
@@ -42,10 +43,11 @@ window.HAL.data.sources = window.HAL.data.sources || {};
       var groupLabel = map.group || 'group';
       var seriesLabel = map.series || null;
 
-      // Default time window: last 5 minutes, 9 data points
+      // Configurable time window: range in seconds (default 300 = 5 min), step auto-calculated for 9 points
+      var windowSec = dataSource.range || 300;
       var now = Date.now() / 1000;
-      var start = now - 300;
-      var step = 300 / 8;
+      var start = now - windowSec;
+      var step = Math.max(Math.floor(windowSec / 8), 1);
 
       return fetch(url + '?' + [
         'query=' + encodeURIComponent(query),
