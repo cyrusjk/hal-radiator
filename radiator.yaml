@@ -1,4 +1,9 @@
-timing: {titleCardDisplay: 8}
+timing:
+  titleCardDisplay: 8
+  initialPause: 5000
+  groupGap: 500
+  valueHold: 5000
+  flickerDuration: 1000
 colors: {blue: 'rgb(54,85,165)', plum: 'rgb(130,73,107)', amber: 'rgb(228,153,38)',
   teal: 'rgb(19,81,73)', pink: 'rgb(166,38,79)', green: 'rgb(78,118,84)', red: 'rgb(167,11,53)',
   navy: 'rgb(23,31,57)', dark-blue: 'rgb(39,72,100)', dark-navy: 'rgb(16,24,57)',

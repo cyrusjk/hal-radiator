@@ -6,7 +6,11 @@
 
 window.HAL_CONFIG = window.HAL_CONFIG || {
   timing: {
-  "titleCardDisplay": 8
+  "titleCardDisplay": 8,
+  "initialPause": 5000,
+  "groupGap": 500,
+  "valueHold": 5000,
+  "flickerDuration": 1000
 },
   visual: {
   "fonts": {
