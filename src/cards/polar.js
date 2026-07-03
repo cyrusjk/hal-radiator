@@ -48,6 +48,7 @@ window.HAL.cards['polar'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
+    header.style.opacity = '0';
     svgEl.appendChild(header);
 
     // ── Footer ────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ window.HAL.cards['polar'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
+    footer.style.opacity = '0';
     svgEl.appendChild(footer);
 
     // ── Helper: polar to cartesian ────────────────────────────────────
@@ -91,6 +93,7 @@ window.HAL.cards['polar'] = {
           'font-family': labelFont,
         });
         rv.textContent = Math.round((ri / nRings) * maxVal);
+        rv.style.opacity = '0';
         svgEl.appendChild(rv);
         ringElements.push(rv);
       }
@@ -106,6 +109,7 @@ window.HAL.cards['polar'] = {
         x1: cx, y1: cy, x2: p.x, y2: p.y,
         stroke: fg('frame', 0.2), 'stroke-width': 0.5,
       });
+      spoke.style.opacity = '0';
       svgEl.appendChild(spoke);
       spokeElements.push(spoke);
 
@@ -117,6 +121,7 @@ window.HAL.cards['polar'] = {
         'font-family': labelFont, 'text-anchor': 'middle',
       });
       lbl.textContent = String(si + 1);
+      lbl.style.opacity = '0';
       svgEl.appendChild(lbl);
       spokeElements.push(lbl);
     }
@@ -184,6 +189,8 @@ window.HAL.cards['polar'] = {
       { action: 'wait',       duration: 300 },
       { action: 'disappear',  groups: ['spokes'], order: 'simultaneous' },
       { action: 'disappear',  groups: ['rings'], order: 'sequential', gap: 100 },
+      { action: 'wait',       duration: 300 },
+      { action: 'disappear',  groups: ['header', 'footer'] },
       { action: 'done' },
     ];
     window.HAL.anim.run(data, groupMap, onDone, defaults);

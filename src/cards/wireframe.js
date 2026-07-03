@@ -45,6 +45,7 @@ window.HAL.cards['wireframe'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
+    header.style.opacity = '0';
     svgEl.appendChild(header);
 
     // ── Footer ────────────────────────────────────────────────────────
@@ -53,6 +54,7 @@ window.HAL.cards['wireframe'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
+    footer.style.opacity = '0';
     svgEl.appendChild(footer);
 
     // ── Perspective grid ──────────────────────────────────────────────
@@ -113,6 +115,7 @@ window.HAL.cards['wireframe'] = {
       }
     }
 
+    gridG.style.opacity = '0';
     for (var gli = 0; gli < gridLines.length; gli++) {
       gridG.appendChild(gridLines[gli]);
     }
@@ -195,6 +198,8 @@ window.HAL.cards['wireframe'] = {
       { action: 'disappear',  groups: ['dataPoints'], order: 'sequential', gap: 250 },
       { action: 'wait',       duration: 400 },
       { action: 'disappear',  groups: ['connections'], order: 'simultaneous' },
+      { action: 'wait',       duration: 300 },
+      { action: 'disappear',  groups: ['header', 'footer', 'grid'] },
       { action: 'done' },
     ];
     window.HAL.anim.run(data, groupMap, onDone, defaults);

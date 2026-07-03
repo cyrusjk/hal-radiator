@@ -41,6 +41,7 @@ window.HAL.cards.tabular = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
+    header.style.opacity = '0';
     svgEl.appendChild(header);
 
     // ── Footer ────────────────────────────────────────────────────────
@@ -49,6 +50,7 @@ window.HAL.cards.tabular = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
+    footer.style.opacity = '0';
     svgEl.appendChild(footer);
 
     // ── Rows ──────────────────────────────────────────────────────────
@@ -68,6 +70,7 @@ window.HAL.cards.tabular = {
           x1: hPad, y1: rowY - rowH / 2, x2: 960, y2: rowY - rowH / 2,
           stroke: fg('frame', 0.2), 'stroke-width': 1,
         });
+        sep.style.opacity = '0';
         svgEl.appendChild(sep);
         separators.push(sep);
       }
@@ -107,6 +110,8 @@ window.HAL.cards.tabular = {
       { action: 'appear',     groups: ['rows'], order: 'sequential', gap: 400 },
       { action: 'wait',       duration: 8000 },
       { action: 'disappear',  groups: ['rows'], order: 'sequential', gap: 300 },
+      { action: 'wait',       duration: 300 },
+      { action: 'disappear',  groups: ['header', 'footer', 'separators'] },
       { action: 'done' },
     ];
     window.HAL.anim.run(data, groupMap, onDone, defaults);

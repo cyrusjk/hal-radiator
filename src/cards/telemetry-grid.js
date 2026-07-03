@@ -41,6 +41,7 @@ window.HAL.cards['telemetry-grid'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
+    header.style.opacity = '0';
     svgEl.appendChild(header);
 
     // ── Footer ────────────────────────────────────────────────────────
@@ -49,6 +50,7 @@ window.HAL.cards['telemetry-grid'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
+    footer.style.opacity = '0';
     svgEl.appendChild(footer);
 
     // ── Top separator ─────────────────────────────────────────────────
@@ -56,6 +58,7 @@ window.HAL.cards['telemetry-grid'] = {
       x1: hPad, y1: sepY, x2: 960, y2: sepY,
       stroke: fg('frame', 0.3), 'stroke-width': 1,
     });
+    topSep.style.opacity = '0';
     svgEl.appendChild(topSep);
 
     // ── Column headers ────────────────────────────────────────────────
@@ -68,6 +71,7 @@ window.HAL.cards['telemetry-grid'] = {
       });
       ch.textContent = cols[ci].label;
       svgEl.appendChild(ch);
+      ch.style.opacity = '0';
       colHeaderElements.push(ch);
     }
 
@@ -88,6 +92,7 @@ window.HAL.cards['telemetry-grid'] = {
           x1: hPad, y1: rowY, x2: 960, y2: rowY,
           stroke: fg('frame', 0.15), 'stroke-width': 1,
         });
+        sep.style.opacity = '0';
         svgEl.appendChild(sep);
         separators.push(sep);
       }
@@ -132,6 +137,8 @@ window.HAL.cards['telemetry-grid'] = {
       { action: 'appear',     groups: ['rows'], order: 'sequential', gap: 300 },
       { action: 'wait',       duration: 8000 },
       { action: 'disappear',  groups: ['rows'], order: 'sequential', gap: 200 },
+      { action: 'wait',       duration: 300 },
+      { action: 'disappear',  groups: ['header', 'footer', 'columnHeaders', 'separators'] },
       { action: 'done' },
     ];
     window.HAL.anim.run(data, groupMap, onDone, defaults);

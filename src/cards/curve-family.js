@@ -56,6 +56,7 @@ window.HAL.cards['curve-family'] = {
       'text-rendering': 'optimizeLegibility',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
+    header.style.opacity = '0';
     svgEl.appendChild(header);
 
     // ── Grid + bands ──────────────────────────────────────────────────
@@ -92,6 +93,7 @@ window.HAL.cards['curve-family'] = {
         'font-size': fs(11), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
       glabel.textContent = g.name;
+      glabel.style.opacity = '0';
       svgEl.appendChild(glabel);
       groupLabels.push(glabel);
 
@@ -181,6 +183,7 @@ window.HAL.cards['curve-family'] = {
     }
 
     // Add grid lines (behind everything)
+    gridG.style.opacity = '0';
     for (var gli = 0; gli < gridLines.length; gli++) {
       gridG.appendChild(gridLines[gli]);
     }
@@ -191,6 +194,7 @@ window.HAL.cards['curve-family'] = {
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
     footer.textContent = data.label || '';
+    footer.style.opacity = '0';
     svgEl.appendChild(footer);
 
     // ── Build the group map for the animation engine ──────────────────
@@ -214,6 +218,8 @@ window.HAL.cards['curve-family'] = {
       { action: 'disappear',  groups: ['maxValues'] },
       { action: 'disappear',  groups: ['minValues'] },
       { action: 'flickerOut', groups: ['bands'], order: 'sequential', gap: window.HAL_CONFIG.timing.groupGap },
+      { action: 'wait',       duration: 300 },
+      { action: 'disappear',  groups: ['header', 'footer', 'grid', 'groupLabels'] },
       { action: 'done' },
     ];
     window.HAL.anim.run(data, groupMap, onDone, defaults);

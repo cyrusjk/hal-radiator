@@ -26,6 +26,7 @@ groups:
     color: blueprint
     animation:
       phases:
+        - { action: wait, duration: 180 }
         - { action: appear, groups: [header, footer, grid, groupLabels] }
         - { action: wait, duration: 5000 }
         - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
@@ -36,6 +37,8 @@ groups:
         - { action: disappear, groups: [maxValues] }
         - { action: disappear, groups: [minValues] }
         - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, grid, groupLabels] }
         - { action: done }
     dataSource:
       type: victoria
@@ -59,6 +62,8 @@ groups:
         - { action: disappear, groups: [maxValues] }
         - { action: disappear, groups: [minValues] }
         - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, grid, groupLabels] }
         - { action: done }
     dataSource:
       type: victoria
@@ -86,6 +91,8 @@ groups:
         - { action: disappear, groups: [maxValues] }
         - { action: disappear, groups: [minValues] }
         - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, grid, groupLabels] }
         - { action: done }
     dataSource:
       type: victoria
@@ -121,6 +128,8 @@ groups:
           - { action: appear, groups: [rows], order: sequential, gap: 400 }
           - { action: wait, duration: 8000 }
           - { action: disappear, groups: [rows], order: sequential, gap: 300 }
+          - { action: wait, duration: 300 }
+          - { action: disappear, groups: [header, footer, separators] }
           - { action: done }
       dataSource:
         type: inline
@@ -144,6 +153,8 @@ groups:
           - { action: appear, groups: [rows], order: sequential, gap: 300 }
           - { action: wait, duration: 8000 }
           - { action: disappear, groups: [rows], order: sequential, gap: 200 }
+          - { action: wait, duration: 300 }
+          - { action: disappear, groups: [header, footer, columnHeaders, separators] }
           - { action: done }
       dataSource:
         type: inline
@@ -177,6 +188,8 @@ groups:
           - { action: disappear, groups: [dataPoints], order: sequential, gap: 250 }
           - { action: wait, duration: 400 }
           - { action: disappear, groups: [connections], order: simultaneous }
+          - { action: wait, duration: 300 }
+          - { action: disappear, groups: [header, footer, grid] }
           - { action: done }
       dataSource:
         type: inline
@@ -215,6 +228,8 @@ groups:
           - { action: wait, duration: 300 }
           - { action: disappear, groups: [spokes], order: simultaneous }
           - { action: disappear, groups: [rings], order: sequential, gap: 100 }
+          - { action: wait, duration: 300 }
+          - { action: disappear, groups: [header, footer] }
           - { action: done }
       dataSource:
         type: inline
