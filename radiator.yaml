@@ -11,10 +11,10 @@ colors: {blue: 'rgb(54,85,165)', plum: 'rgb(130,73,107)', amber: 'rgb(228,153,38
   charcoal: 'rgb(20,20,30)'}
 visual:
   fonts: {title: 'EurostileLocal, sans-serif', label: 'RajdhaniLightLocal, Rajdhani, monospace'}
-  chart: {x0: 80, y0: 70, w: 700, h: 650, dataPts: 9, strokes: [1.5, 1.0, 0.7], dashes: [null, "4,3", "1,3"]}
+  chart: {x0: 80, y0: 70, w: 700, h: 650, dataPts: 20, strokes: [1.5, 1.0, 0.7], dashes: [null, "4,3", "1,3"]}
   frameBrightness: 0.4    # opacity multiplier for grid, separators, labels, header/footer
   dataBrightness: 0.8      # opacity multiplier for curves, points, value labels, polygons
-  fontScale: 2.0           # global multiplier for all font sizes
+  fontScale: 1.5           # global multiplier for all font sizes
 groups:
 - title: VEH
   subheading: 'LIN: 86-QW'
@@ -50,6 +50,7 @@ groups:
       type: victoria
       url: "http://192.168.50.9:8428"
       range: 3600
+      points: 20
       promql: 'avg by (mode, job) (rate(node_cpu_seconds_total{mode=~"user|system|iowait"}[2m]))'
       map: { group: job, series: mode }
   - chartType: curve-family
@@ -75,10 +76,11 @@ groups:
       type: victoria
       url: "http://192.168.50.9:8428"
       range: 3600
+      points: 20
       promql: 'label_replace(rate(node_network_receive_bytes_total{device="eth0"}[2m]), "direction", "RX", "__name__", ".*") or label_replace(rate(node_network_transmit_bytes_total{device="eth0"}[2m]), "direction", "TX", "__name__", ".*")'
       map: { group: device, series: direction }
 - title: SYS
-  subheading: PAPPY HOMELAB
+  subheading: "PAPPY: 192.168.50.9"
   color: dark-teal
   charts:
   - chartType: curve-family
@@ -104,8 +106,54 @@ groups:
       type: victoria
       url: "http://192.168.50.9:8428"
       range: 3600
+      points: 20
       promql: '{__name__=~"node_load[0-9]+", job="node"}'
       map: { group: job, series: __name__ }
+
+  - chartType: curve-family-stacked
+    title: CPU
+    label: "LOAD 1/5/15"
+    color: dark-teal
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer] }
+        - { action: wait, duration: 1000 }
+        - { action: appear, groups: [bands], order: sequential, gap: 300 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [bands], order: sequential, gap: 200 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer] }
+        - { action: done }
+    dataSource:
+      type: victoria
+      url: "http://192.168.50.9:8428"
+      range: 3600
+      points: 20
+      promql: '{__name__=~"node_load[0-9]+", job="node"}'
+      map: { group: job, series: __name__ }
+
+  - chartType: curve-family-3d
+    title: CPU
+    label: "3D LOAD"
+    color: dark-teal
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer, grid] }
+        - { action: wait, duration: 1000 }
+        - { action: appear, groups: [bands], order: sequential, gap: 400 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [bands], order: sequential, gap: 200 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, grid] }
+        - { action: done }
+    dataSource:
+      type: victoria
+      url: "http://192.168.50.9:8428"
+      range: 3600
+      points: 20
+      promql: '{__name__=~"node_load[0-9]+", job="node"}'
+      map: { group: job, series: __name__ }
+
 - title: HAL
   subheading: 9000 COMPUTER
   color: amber

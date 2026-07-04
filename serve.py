@@ -97,6 +97,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', ct)
         self.send_header('Content-Length', str(st.st_size))
         self.send_header('Last-Modified', email.utils.formatdate(st.st_mtime, usegmt=True))
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.end_headers()
         with open(abspath, 'rb') as f:
             remaining = st.st_size

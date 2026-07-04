@@ -43,11 +43,12 @@ window.HAL.data.sources = window.HAL.data.sources || {};
       var groupLabel = map.group || 'group';
       var seriesLabel = map.series || null;
 
-      // Configurable time window: range in seconds (default 300 = 5 min), step auto-calculated for 9 points
+      // Configurable time window: range in seconds (default 300 = 5 min)
       var windowSec = dataSource.range || 300;
+      var nPoints = dataSource.points || 9;
       var now = Date.now() / 1000;
       var start = now - windowSec;
-      var step = Math.max(Math.floor(windowSec / 8), 1);
+      var step = Math.max(Math.floor(windowSec / (nPoints - 1)), 1);
 
       return fetch(url + '?' + [
         'query=' + encodeURIComponent(query),

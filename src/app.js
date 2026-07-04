@@ -2,6 +2,8 @@
 //  App — Orchestrator
 //  — Boots by fetching /api/config from the server
 //  — Then cycles cards, handles keyboard controls
+//  — Uses a generation counter to prevent stale callbacks from
+//    racing with manual navigation
 // ═══════════════════════════════════════════════════════════════════════
 
 (function() {
@@ -27,6 +29,7 @@
 
     var idx = 0, locked = false, autoTimer = null, zoom = 1.0;
     var wrap = document.getElementById('wrap');
+    var gen = 0;  // incremented on every showCard → invalidates stale callbacks
 
     function clearAuto() {
       if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
@@ -37,43 +40,60 @@
       svgEl.innerHTML = '';
     }
 
+    // ── Guard: wraps a callback so it only fires if `myGen` still
+    //     matches `gen`.  Prevents in-flight callbacks from a
+    //     previous showCard from racing after a new transition.
+    function guard(fn, myGen) {
+      return function() {
+        if (myGen !== gen) return;
+        if (fn) fn.apply(this, arguments);
+      };
+    }
+
+    // ── showCard: renders card at index i.  Increments gen so any
+    //     pending callback from a previous render is atomically stale.
+    //     Every navigation path (user arrows, auto-advance, locked
+    //     replay, space toggle) ultimately calls showCard, so gen
+    //     always advances.
     function showCard(i, onDone) {
       clearAuto();
+      gen++;
+      var myGen = gen;
       var c = cfg.cards[i % cfg.cards.length];
       clearCard(c.color);
+
       if (c.type !== 'title') {
         window.HAL.data.fetchCardData(c)
           .then(function(data) {
+            if (myGen !== gen) return;  // stale: user navigated away
             if (data) for (var k in data) c[k] = data[k];
             try {
               var r = window.HAL.cards[c.type];
-              r && r.render ? r.render(c, onDone) : onDone && onDone();
-            } catch(e) { onDone && onDone(); }
+              var cb = guard(onDone, myGen);
+              r && r.render ? r.render(c, cb) : cb && cb();
+            } catch(e) { var cb = guard(onDone, myGen); cb && cb(); }
           })
-          .catch(function() { onDone && onDone(); });
+          .catch(function() { var cb = guard(onDone, myGen); cb && cb(); });
       } else {
         window.HAL.cards.title.render(c);
+        if (onDone) {
+          autoTimer = setTimeout(guard(onDone, myGen), cfg.timing.titleCardDisplay * 1000);
+        }
       }
     }
 
     function cardDone() {
       locked ? showCard(idx, cardDone) : scheduleNext();
     }
+
     function scheduleNext() {
       clearAuto();
-      var next = (idx + 1) % cfg.cards.length;
-      transitionTo(next);
+      transitionTo((idx + 1) % cfg.cards.length);
     }
 
     function transitionTo(nextIdx) {
       idx = nextIdx;
-      var c = cfg.cards[idx];
-      if (c.type !== 'title') {
-        showCard(idx, cardDone);
-      } else {
-        showCard(idx);
-        autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, (idx + 1) % cfg.cards.length);
-      }
+      showCard(idx, cardDone);
     }
 
     document.addEventListener('keydown', function(e) {
@@ -87,7 +107,7 @@
       }
       else if (e.key === ' ') {
         e.preventDefault(); locked = !locked;
-        locked ? (clearAuto(), showCard(idx, cardDone)) : scheduleNext();
+        locked ? showCard(idx, cardDone) : scheduleNext();
       }
       else if (e.key === '=' || e.key === '+') {
         e.preventDefault();

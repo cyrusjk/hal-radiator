@@ -22,7 +22,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "y0": 70,
     "w": 700,
     "h": 650,
-    "dataPts": 9,
+    "dataPts": 20,
     "strokes": [
       1.5,
       1.0,
@@ -36,7 +36,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   },
   "frameBrightness": 0.4,
   "dataBrightness": 0.8,
-  "fontScale": 2.0
+  "fontScale": 1.5
 },
   cards: [
   {
@@ -51,159 +51,15 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "label": "PROD-01",
     "color": "rgb(28,52,100)",
     "dataSource": {
-      "type": "inline",
-      "groups": [
-        {
-          "name": "API-GATEWAY",
-          "series": [
-            {
-              "label": "p99",
-              "values": [
-                60,
-                70,
-                85,
-                110,
-                130,
-                125,
-                100,
-                80,
-                65,
-                55
-              ]
-            },
-            {
-              "label": "p95",
-              "values": [
-                30,
-                35,
-                42,
-                55,
-                60,
-                58,
-                50,
-                40,
-                32,
-                28
-              ]
-            },
-            {
-              "label": "p50",
-              "values": [
-                10,
-                12,
-                14,
-                18,
-                20,
-                18,
-                15,
-                12,
-                10,
-                8
-              ]
-            }
-          ]
-        },
-        {
-          "name": "AUTH-SVC",
-          "series": [
-            {
-              "label": "p99",
-              "values": [
-                35,
-                42,
-                58,
-                78,
-                90,
-                85,
-                70,
-                50,
-                38,
-                32
-              ]
-            },
-            {
-              "label": "p95",
-              "values": [
-                15,
-                18,
-                25,
-                35,
-                40,
-                38,
-                30,
-                22,
-                16,
-                14
-              ]
-            },
-            {
-              "label": "p50",
-              "values": [
-                5,
-                6,
-                8,
-                10,
-                12,
-                11,
-                9,
-                7,
-                5,
-                4
-              ]
-            }
-          ]
-        },
-        {
-          "name": "WORKER",
-          "series": [
-            {
-              "label": "p99",
-              "values": [
-                80,
-                95,
-                120,
-                160,
-                190,
-                180,
-                150,
-                110,
-                90,
-                75
-              ]
-            },
-            {
-              "label": "p95",
-              "values": [
-                50,
-                60,
-                75,
-                95,
-                110,
-                105,
-                85,
-                65,
-                55,
-                48
-              ]
-            },
-            {
-              "label": "p50",
-              "values": [
-                20,
-                25,
-                30,
-                40,
-                45,
-                42,
-                35,
-                28,
-                22,
-                18
-              ]
-            }
-          ]
-        }
-      ]
+      "type": "victoria",
+      "url": "http://192.168.50.9:8428",
+      "range": 3600,
+      "points": 20,
+      "promql": "avg by (mode, job) (rate(node_cpu_seconds_total{mode=~\"user|system|iowait\"}[2m]))",
+      "map": {
+        "group": "job",
+        "series": "mode"
+      }
     }
   },
   {
@@ -212,115 +68,21 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "label": "NODE-02",
     "color": "rgb(39,72,100)",
     "dataSource": {
-      "type": "inline",
-      "groups": [
-        {
-          "name": "API-GATEWAY",
-          "series": [
-            {
-              "label": "max",
-              "values": [
-                1200,
-                1150,
-                1050,
-                950,
-                880,
-                900,
-                1000,
-                1100,
-                1180,
-                1220
-              ]
-            },
-            {
-              "label": "avg",
-              "values": [
-                950,
-                900,
-                820,
-                750,
-                700,
-                720,
-                780,
-                860,
-                920,
-                980
-              ]
-            },
-            {
-              "label": "min",
-              "values": [
-                600,
-                550,
-                480,
-                420,
-                380,
-                400,
-                450,
-                520,
-                580,
-                620
-              ]
-            }
-          ]
-        },
-        {
-          "name": "AUTH-SVC",
-          "series": [
-            {
-              "label": "max",
-              "values": [
-                1050,
-                980,
-                880,
-                800,
-                750,
-                780,
-                860,
-                950,
-                1020,
-                1080
-              ]
-            },
-            {
-              "label": "avg",
-              "values": [
-                800,
-                750,
-                680,
-                620,
-                580,
-                600,
-                650,
-                720,
-                780,
-                820
-              ]
-            },
-            {
-              "label": "min",
-              "values": [
-                450,
-                400,
-                350,
-                300,
-                280,
-                300,
-                340,
-                400,
-                440,
-                470
-              ]
-            }
-          ]
-        }
-      ]
+      "type": "victoria",
+      "url": "http://192.168.50.9:8428",
+      "range": 3600,
+      "points": 20,
+      "promql": "label_replace(rate(node_network_receive_bytes_total{device=\"eth0\"}[2m]), \"direction\", \"RX\", \"__name__\", \".*\") or label_replace(rate(node_network_transmit_bytes_total{device=\"eth0\"}[2m]), \"direction\", \"TX\", \"__name__\", \".*\")",
+      "map": {
+        "group": "device",
+        "series": "direction"
+      }
     }
   },
   {
     "type": "title",
     "title": "SYS",
-    "label": "PAPPY HOMELAB",
+    "label": "PAPPY: 192.168.50.9",
     "color": "rgb(16,45,70)"
   },
   {
@@ -329,56 +91,49 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "label": "LOAD AVG",
     "color": "rgb(16,45,70)",
     "dataSource": {
-      "type": "inline",
-      "groups": [
-        {
-          "name": "node",
-          "series": [
-            {
-              "label": "node_load1",
-              "values": [
-                1.68,
-                1.62,
-                1.62,
-                2.1,
-                2.1,
-                1.73,
-                1.69,
-                1.69,
-                1.69
-              ]
-            },
-            {
-              "label": "node_load15",
-              "values": [
-                1.0,
-                1.05,
-                1.05,
-                1.15,
-                1.15,
-                1.18,
-                1.22,
-                1.22,
-                1.22
-              ]
-            },
-            {
-              "label": "node_load5",
-              "values": [
-                1.11,
-                1.23,
-                1.23,
-                1.47,
-                1.47,
-                1.5,
-                1.55,
-                1.55,
-                1.55
-              ]
-            }
-          ]
-        }
-      ]
+      "type": "victoria",
+      "url": "http://192.168.50.9:8428",
+      "range": 3600,
+      "points": 20,
+      "promql": "{__name__=~\"node_load[0-9]+\", job=\"node\"}",
+      "map": {
+        "group": "job",
+        "series": "__name__"
+      }
+    }
+  },
+  {
+    "type": "curve-family-stacked",
+    "title": "CPU",
+    "label": "LOAD 1/5/15",
+    "color": "rgb(16,45,70)",
+    "dataSource": {
+      "type": "victoria",
+      "url": "http://192.168.50.9:8428",
+      "range": 3600,
+      "points": 20,
+      "promql": "{__name__=~\"node_load[0-9]+\", job=\"node\"}",
+      "map": {
+        "group": "job",
+        "series": "__name__"
+      }
+    }
+  },
+  {
+    "type": "curve-family-3d",
+    "title": "CPU",
+    "label": "3D LOAD",
+    "color": "rgb(16,45,70)",
+    "dataSource": {
+      "type": "victoria",
+      "url": "http://192.168.50.9:8428",
+      "range": 3600,
+      "points": 20,
+      "promql": "{__name__=~\"node_load[0-9]+\", job=\"node\"}",
+      "map": {
+        "group": "job",
+        "series": "__name__"
+      }
     }
   },
   {

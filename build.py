@@ -91,6 +91,8 @@ scripts = [
     "src/animation-engine.js",
     "src/cards/title.js",
     "src/cards/curve-family.js",
+    "src/cards/curve-family-stacked.js",
+    "src/cards/curve-family-3d.js",
     "src/cards/tabular.js",
     "src/cards/telemetry-grid.js",
     "src/cards/wireframe.js",
