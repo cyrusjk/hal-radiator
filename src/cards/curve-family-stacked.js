@@ -15,7 +15,6 @@ window.HAL.cards['curve-family-stacked'] = {
     var vc = vis.chart || {};
     var x0 = 80, pad = 60;
     var cw = vc.w || 700;
-    var dataPts = vc.dataPts || 9;
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var fg = window.HAL.svg.fg;
@@ -30,6 +29,14 @@ window.HAL.cards['curve-family-stacked'] = {
     if (nSeries === 0) { if (onDone) onDone(); return; }
 
     var groupMap = {};
+
+    // Use actual data point count from fetched data.
+    var actualPts = (groupsData[0].series && groupsData[0].series[0] && groupsData[0].series[0].values)
+      ? groupsData[0].series[0].values.length
+      : (vc.actualPts || 20);
+    if (actualPts < 2) { if (onDone) onDone(); return; }
+
+    // Determine the stacked value range per column
     var paneGroups = [];
 
     // Card background
@@ -111,8 +118,8 @@ window.HAL.cards['curve-family-stacked'] = {
 
         // Curve path
         var pathParts = [];
-        for (var vi = 0; vi < sv.length && vi < dataPts; vi++) {
-          var px = x0 + (vi / (dataPts - 1)) * cw;
+        for (var vi = 0; vi < sv.length && vi < actualPts; vi++) {
+          var px = x0 + (vi / (actualPts - 1)) * cw;
           var py = top + paneH - (sv[vi] / maxVal) * (paneH - 8) - 4;
           pathParts.push((vi === 0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1));
         }

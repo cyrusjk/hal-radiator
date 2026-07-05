@@ -1,16 +1,14 @@
-# ── Generated / output directories ────────────────────────────────────────
-output/
-output_svg/
-dist/
-__pycache__/
-*.pyc
-.venv/
+# Screenshots / exports
+*.png
+*.jpg
+*.gif
 
-# ── Reference material (not part of the app) ──────────────────────────────
-reference/
+# Font download artifacts
+assets/fonts/*.zip
+assets/fonts/*.htm
+assets/fonts/*.txt
+assets/fonts/*.html
 
-# ── OS / editor noise ────────────────────────────────────────────────────
-.DS_Store
+# OS
 Thumbs.db
-*.swp
-*.swo
+.DS_Store

@@ -15,6 +15,7 @@ window.HAL.cards.tabular = {
     var vis = window.HAL_CONFIG.visual || {};
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
     var labelFont = (vis.fonts || {}).label || 'monospace';
+    var dataFont = (vis.fonts || {}).data || labelFont;
     var e = window.HAL.svg.el;
     var fg = window.HAL.svg.fg;
     var fs = window.HAL.svg.fs;
@@ -88,7 +89,7 @@ window.HAL.cards.tabular = {
       var valStr = String(rows[i].value);
       var val = e('text', {
         x: valueX, y: rowY + 4, fill: fg('data', 1.1), 'font-size': fs(20),
-        'font-family': labelFont, 'text-anchor': 'end', 'text-rendering': 'optimizeLegibility',
+        'font-family': dataFont, 'text-anchor': 'end', 'text-rendering': 'optimizeLegibility',
       });
       val.textContent = valStr;
       rowG.appendChild(val);

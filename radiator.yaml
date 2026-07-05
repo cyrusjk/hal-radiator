@@ -10,25 +10,47 @@ colors: {blue: 'rgb(54,85,165)', plum: 'rgb(130,73,107)', amber: 'rgb(228,153,38
   purple: 'rgb(98,61,109)', blueprint: 'rgb(28,52,100)', dark-teal: 'rgb(16,45,70)',
   charcoal: 'rgb(20,20,30)'}
 visual:
-  fonts: {title: 'EurostileLocal, sans-serif', label: 'RajdhaniLightLocal, Rajdhani, monospace'}
+  fonts: {title: 'EurostileLocal, sans-serif', label: 'RajdhaniLightLocal, Rajdhani, monospace', data: 'ManifoldLocal, monospace'}
   chart: {x0: 80, y0: 70, w: 700, h: 650, dataPts: 20, strokes: [1.5, 1.0, 0.7], dashes: [null, "4,3", "1,3"]}
-  frameBrightness: 0.4    # opacity multiplier for grid, separators, labels, header/footer
-  dataBrightness: 0.8      # opacity multiplier for curves, points, value labels, polygons
-  fontScale: 1.5           # global multiplier for all font sizes
-groups:
-- title: VEH
-  subheading: 'LIN: 86-QW'
-  color: blue
-  charts:
-  - chartType: curve-family
-    title: LAT
-    label: PROD-01
-    color: blueprint
+  frameBrightness: 0.6
+  dataBrightness: 0.8
+  fontScale: 1.5
+
+# ── Card Prototypes ────────────────────────────────────────────────────
+# Named reusable templates. Each sets chartType and animation phases.
+# Chart entries reference a prototype and override title, label, color,
+# dataSource, and optionally animation.phases.
+cardPrototypes:
+  curve-family-default:
+    chartType: curve-family
+    animation:
+      phases:
+        - { action: blank}
+        - { action: wait, duration: 2000 }
+        - { action: draw, groups: [verticalLines], order: sequential, gap: 40, duration: 10 }
+        - { action: appear, groups: [header, footer, grid, groupLabels, verticalLines] }
+        - { action: wait, duration: 2000 }
+        - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
+        - { action: wait, duration: 2000 }
+        - { action: appear, groups: [minValues] }
+        - { action: appear, groups: [maxValues] }
+        - { action: wait, duration: 5000 }
+        - { action: disappear, groups: [maxValues] }
+        - { action: disappear, groups: [minValues] }
+        - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, grid, groupLabels, verticalLines] }
+        - { action: wait, duration: 1000 }
+        - { action: done }
+
+  curve-family-lat:
+    chartType: curve-family
     animation:
       phases:
         - { action: blank}
         - { action: wait, duration: 1000 }
-        - { action: appear, groups: [header, footer, grid, groupLabels] }
+        - { action: draw, groups: [verticalLines], order: sequential, gap: 40, duration: 10 }
+        - { action: appear, groups: [header, footer, grid, groupLabels, verticalLines] }
         - { action: wait, duration: 1000 }
         - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
         - { action: wait, duration: 2000 }
@@ -42,78 +64,14 @@ groups:
         - { action: fadeOut, groups: [maxValues,minValues], duration: 2000 }
         - { action: disappear, groups: [maxValues] }
         - { action: disappear, groups: [minValues] }
-        - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
-        - { action: wait, duration: 300 }
-        - { action: disappear, groups: [header, footer, grid, groupLabels] }
-        - { action: done }
-    dataSource:
-      type: victoria
-      url: "http://192.168.50.9:8428"
-      range: 3600
-      points: 20
-      promql: 'avg by (mode, job) (rate(node_cpu_seconds_total{mode=~"user|system|iowait"}[2m]))'
-      map: { group: job, series: mode }
-  - chartType: curve-family
-    title: THR
-    label: NODE-02
-    color: dark-blue
-    animation:
-      phases:
-        - { action: appear, groups: [header, footer, grid, groupLabels] }
         - { action: wait, duration: 1000 }
-        - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
-        - { action: wait, duration: 2000 }
-        - { action: appear, groups: [minValues] }
-        - { action: appear, groups: [maxValues] }
-        - { action: wait, duration: 5000 }
-        - { action: disappear, groups: [maxValues] }
-        - { action: disappear, groups: [minValues] }
         - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
         - { action: wait, duration: 300 }
-        - { action: disappear, groups: [header, footer, grid, groupLabels] }
+        - { action: disappear, groups: [header, footer, grid, groupLabels, verticalLines] }
         - { action: done }
-    dataSource:
-      type: victoria
-      url: "http://192.168.50.9:8428"
-      range: 3600
-      points: 20
-      promql: 'label_replace(rate(node_network_receive_bytes_total{device="eth0"}[2m]), "direction", "RX", "__name__", ".*") or label_replace(rate(node_network_transmit_bytes_total{device="eth0"}[2m]), "direction", "TX", "__name__", ".*")'
-      map: { group: device, series: direction }
-- title: SYS
-  subheading: "PAPPY: 192.168.50.9"
-  color: dark-teal
-  charts:
-  - chartType: curve-family
-    title: CPU
-    label: LOAD AVG
-    color: dark-teal
-    animation:
-      phases:
-        - { action: appear, groups: [header, footer, grid, groupLabels] }
-        - { action: wait, duration: 1000 }
-        - { action: flickerIn, groups: [bands], order: sequential, gap: 500 }
-        - { action: wait, duration: 2000 }
-        - { action: appear, groups: [minValues] }
-        - { action: appear, groups: [maxValues] }
-        - { action: wait, duration: 5000 }
-        - { action: disappear, groups: [maxValues] }
-        - { action: disappear, groups: [minValues] }
-        - { action: flickerOut, groups: [bands], order: sequential, gap: 500 }
-        - { action: wait, duration: 300 }
-        - { action: disappear, groups: [header, footer, grid, groupLabels] }
-        - { action: done }
-    dataSource:
-      type: victoria
-      url: "http://192.168.50.9:8428"
-      range: 3600
-      points: 20
-      promql: '{__name__=~"node_load[0-9]+", job="node"}'
-      map: { group: job, series: __name__ }
 
-  - chartType: curve-family-stacked
-    title: CPU
-    label: "LOAD 1/5/15"
-    color: dark-teal
+  curve-family-stacked:
+    chartType: curve-family-stacked
     animation:
       phases:
         - { action: appear, groups: [header, footer] }
@@ -124,40 +82,280 @@ groups:
         - { action: wait, duration: 300 }
         - { action: disappear, groups: [header, footer] }
         - { action: done }
-    dataSource:
-      type: victoria
-      url: "http://192.168.50.9:8428"
-      range: 3600
-      points: 20
-      promql: '{__name__=~"node_load[0-9]+", job="node"}'
-      map: { group: job, series: __name__ }
 
-  - chartType: curve-family-3d
-    title: CPU
-    label: "3D LOAD"
-    color: dark-teal
+  curve-family-3d:
+    chartType: curve-family-3d
+    animation:
+      phases:
+        - { action: blank }
+        - { action: wait, duration: 1000 }
+        - { action: draw, groups: [radialLines], duration: 500 }
+        - { action: draw, groups: [gridLines], order: sequential, gap: 20, duration: 10 }
+        - { action: appear, groups: [labels] }
+        - { action: wait, duration: 1000 }
+        - { action: appear, groups: [header, footer] }
+        - { action: wait, duration: 2000 }
+        - { action: appear, groups: [bands], order: sequential, gap: 600 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [bands], order: sequential, gap: 600 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [radialLines, gridLines, labels, header, footer] }
+        - { action: done }
+
+  tabular-default:
+    chartType: tabular
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer, separators] }
+        - { action: wait, duration: 1000 }
+        - { action: appear, groups: [rows], order: sequential, gap: 400 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [rows], order: sequential, gap: 300 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, separators] }
+        - { action: done }
+
+  telemetry-grid-default:
+    chartType: telemetry-grid
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer, columnHeaders, separators] }
+        - { action: wait, duration: 1000 }
+        - { action: appear, groups: [rows], order: sequential, gap: 300 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [rows], order: sequential, gap: 200 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer, columnHeaders, separators] }
+        - { action: done }
+
+  wireframe-default:
+    chartType: wireframe
     animation:
       phases:
         - { action: appear, groups: [header, footer, grid] }
         - { action: wait, duration: 1000 }
-        - { action: appear, groups: [bands], order: sequential, gap: 400 }
+        - { action: appear, groups: [connections], order: simultaneous }
+        - { action: wait, duration: 600 }
+        - { action: appear, groups: [dataPoints], order: sequential, gap: 400 }
         - { action: wait, duration: 8000 }
-        - { action: disappear, groups: [bands], order: sequential, gap: 200 }
+        - { action: disappear, groups: [dataPoints], order: sequential, gap: 250 }
+        - { action: wait, duration: 400 }
+        - { action: disappear, groups: [connections], order: simultaneous }
         - { action: wait, duration: 300 }
         - { action: disappear, groups: [header, footer, grid] }
         - { action: done }
+
+  polar-default:
+    chartType: polar
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer] }
+        - { action: wait, duration: 800 }
+        - { action: appear, groups: [rings], order: sequential, gap: 150 }
+        - { action: appear, groups: [spokes], order: simultaneous }
+        - { action: wait, duration: 600 }
+        - { action: appear, groups: [dataPolygons], order: sequential, gap: 500 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [dataPolygons], order: sequential, gap: 300 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [spokes], order: simultaneous }
+        - { action: disappear, groups: [rings], order: sequential, gap: 100 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer] }
+        - { action: done }
+
+  sunburst-default:
+    chartType: sunburst
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer] }
+        - { action: wait, duration: 500 }
+        - { action: appear, groups: [rings], order: sequential, gap: 300 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [rings], order: reverse, gap: 200 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer] }
+        - { action: done }
+
+  streamgraph-default:
+    chartType: streamgraph
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer] }
+        - { action: wait, duration: 800 }
+        - { action: appear, groups: [ribbons], order: sequential, gap: 400 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [ribbons], order: reverse, gap: 250 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer] }
+        - { action: done }
+
+  edge-bundling-default:
+    chartType: edge-bundling
+    animation:
+      phases:
+        - { action: appear, groups: [header, footer] }
+        - { action: wait, duration: 500 }
+        - { action: appear, groups: [nodes] }
+        - { action: wait, duration: 400 }
+        - { action: appear, groups: [connections], order: sequential, gap: 200 }
+        - { action: wait, duration: 8000 }
+        - { action: disappear, groups: [connections], order: reverse, gap: 150 }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [nodes] }
+        - { action: wait, duration: 300 }
+        - { action: disappear, groups: [header, footer] }
+        - { action: done }
+
+# ── Groups ─────────────────────────────────────────────────────────────
+groups:
+- title: VEH
+  subheading: 'LIN: 86-QW'
+  color: blue
+  charts:
+  - prototype: curve-family-lat
+    title: LAT
+    label: PROD-01
+    color: blueprint
     dataSource:
       type: victoria
       url: "http://192.168.50.9:8428"
       range: 3600
-      points: 20
+      step: 60
+      promql: 'avg by (mode, job) (rate(node_cpu_seconds_total{mode=~"user|system|iowait"}[2m]))'
+      map: { group: job, series: mode }
+
+  - prototype: curve-family-default
+    title: THR
+    label: NODE-02
+    color: dark-blue
+    dataSource:
+      type: victoria
+      url: "http://192.168.50.9:8428"
+      range: 3600
+      step: 180
+      promql: 'label_replace(rate(node_network_receive_bytes_total{device="eth0"}[2m]), "direction", "RX", "__name__", ".*") or label_replace(rate(node_network_transmit_bytes_total{device="eth0"}[2m]), "direction", "TX", "__name__", ".*")'
+      map: { group: device, series: direction }
+
+- title: SYS
+  subheading: "PAPPY: 192.168.50.9"
+  color: dark-teal
+  charts:
+  - prototype: curve-family-default
+    title: CPU
+    label: LOAD AVG
+    color: dark-teal
+    dataSource:
+      type: victoria
+      url: "http://192.168.50.9:8428"
+      range: 3600
+      step: 180
       promql: '{__name__=~"node_load[0-9]+", job="node"}'
       map: { group: job, series: __name__ }
+
+  - prototype: curve-family-stacked
+    title: CPU
+    label: "LOAD 1/5/15"
+    color: dark-teal
+    dataSource:
+      type: victoria
+      url: "http://192.168.50.9:8428"
+      range: 3600
+      step: 180
+      promql: '{__name__=~"node_load[0-9]+", job="node"}'
+      map: { group: job, series: __name__ }
+
+  - prototype: curve-family-3d
+    title: 1 / 5 / 15
+    label: "LOAD"
+    color: dark-teal
+    dataSource:
+      type: victoria
+      url: "http://192.168.50.9:8428"
+      range: 3600
+      step: 120
+      promql: '{__name__=~"node_load[0-9]+", job="node"}'
+      map: { group: job, series: __name__ }
+      alias:
+        strip: node_load
 
 - title: HAL
   subheading: 9000 COMPUTER
   color: amber
-  charts: []
+  charts:
+  - prototype: sunburst-default
+    title: "HAL"
+    label: "SUNBURST"
+    color: amber
+    dataSource:
+      type: inline
+      hierarchy:
+        - name: CPU
+          children:
+            - { name: "USER", value: 45 }
+            - { name: "SYSTEM", value: 30 }
+            - { name: "IOWAIT", value: 15 }
+            - { name: "IDLE", value: 10 }
+        - name: MEM
+          children:
+            - { name: "USED", value: 60 }
+            - { name: "CACHE", value: 25 }
+            - { name: "FREE", value: 15 }
+        - name: NET
+          children:
+            - { name: "TXRX", value: 70 }
+            - { name: "DROPS", value: 5 }
+            - { name: "ERRORS", value: 3 }
+            - { name: "IDLE", value: 22 }
+
+  - prototype: streamgraph-default
+    title: "HAL"
+    label: "STREAM"
+    color: amber
+    dataSource:
+      type: inline
+      series:
+        - { label: "USER", values: [12, 18, 15, 22, 20, 28, 25, 30, 27, 35, 32, 38, 33, 40, 36, 42, 38, 45, 40, 48] }
+        - { label: "SYS",  values: [5, 7, 6, 8, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17, 20, 18, 22, 20, 24, 22] }
+        - { label: "IOW",  values: [2, 3, 1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 7, 10, 8, 11, 9, 12] }
+
+  - prototype: edge-bundling-default
+    title: "HAL"
+    label: "TOPOLOGY"
+    color: amber
+    dataSource:
+      type: inline
+      tree:
+        name: "CLUSTER"
+        children:
+          - name: "COMPUTE"
+            children:
+              - name: "SRV-A"
+              - name: "SRV-B"
+              - name: "SRV-C"
+          - name: "STORAGE"
+            children:
+              - name: "NAS-1"
+              - name: "NAS-2"
+          - name: "NETWORK"
+            children:
+              - name: "SW-1"
+              - name: "SW-2"
+              - name: "GW-1"
+      connections:
+        - { source: "SRV-A", target: "SRV-B" }
+        - { source: "SRV-A", target: "SRV-C" }
+        - { source: "SRV-B", target: "SRV-C" }
+        - { source: "SRV-A", target: "NAS-1" }
+        - { source: "SRV-C", target: "NAS-2" }
+        - { source: "NAS-1", target: "NAS-2" }
+        - { source: "SRV-A", target: "SW-1" }
+        - { source: "SRV-B", target: "SW-2" }
+        - { source: "SRV-C", target: "GW-1" }
+        - { source: "SW-1", target: "SW-2" }
+        - { source: "SW-1", target: "GW-1" }
+        - { source: "NAS-1", target: "SW-1" }
+        - { source: "SRV-B", target: "NAS-2" }
 - title: COM
   subheading: 'PMT: 26-07'
   color: plum
@@ -171,20 +369,10 @@ groups:
   subheading: "COORDINATES"
   color: dark-navy
   charts:
-    - chartType: tabular
+    - prototype: tabular-default
       title: "VEC"
       label: "COORDINATES"
       color: dark-navy
-      animation:
-        phases:
-          - { action: appear, groups: [header, footer, separators] }
-          - { action: wait, duration: 1000 }
-          - { action: appear, groups: [rows], order: sequential, gap: 400 }
-          - { action: wait, duration: 8000 }
-          - { action: disappear, groups: [rows], order: sequential, gap: 300 }
-          - { action: wait, duration: 300 }
-          - { action: disappear, groups: [header, footer, separators] }
-          - { action: done }
       dataSource:
         type: inline
         rows:
@@ -196,20 +384,10 @@ groups:
   subheading: "SENSOR GRID"
   color: navy
   charts:
-    - chartType: telemetry-grid
+    - prototype: telemetry-grid-default
       title: "TLM"
       label: "SENSOR GRID"
       color: navy
-      animation:
-        phases:
-          - { action: appear, groups: [header, footer, columnHeaders, separators] }
-          - { action: wait, duration: 1000 }
-          - { action: appear, groups: [rows], order: sequential, gap: 300 }
-          - { action: wait, duration: 8000 }
-          - { action: disappear, groups: [rows], order: sequential, gap: 200 }
-          - { action: wait, duration: 300 }
-          - { action: disappear, groups: [header, footer, columnHeaders, separators] }
-          - { action: done }
       dataSource:
         type: inline
         columns:
@@ -227,24 +405,10 @@ groups:
   subheading: "SPATIAL MAP"
   color: dark-navy
   charts:
-    - chartType: wireframe
+    - prototype: wireframe-default
       title: "NAV"
       label: "SPATIAL MAP"
       color: dark-navy
-      animation:
-        phases:
-          - { action: appear, groups: [header, footer, grid] }
-          - { action: wait, duration: 1000 }
-          - { action: appear, groups: [connections], order: simultaneous }
-          - { action: wait, duration: 600 }
-          - { action: appear, groups: [dataPoints], order: sequential, gap: 400 }
-          - { action: wait, duration: 8000 }
-          - { action: disappear, groups: [dataPoints], order: sequential, gap: 250 }
-          - { action: wait, duration: 400 }
-          - { action: disappear, groups: [connections], order: simultaneous }
-          - { action: wait, duration: 300 }
-          - { action: disappear, groups: [header, footer, grid] }
-          - { action: done }
       dataSource:
         type: inline
         objects:
@@ -265,26 +429,10 @@ groups:
   subheading: "RADAR SWEEP"
   color: navy
   charts:
-    - chartType: polar
+    - prototype: polar-default
       title: "RAD"
       label: "RADAR SWEEP"
       color: navy
-      animation:
-        phases:
-          - { action: appear, groups: [header, footer] }
-          - { action: wait, duration: 800 }
-          - { action: appear, groups: [rings], order: sequential, gap: 150 }
-          - { action: appear, groups: [spokes], order: simultaneous }
-          - { action: wait, duration: 600 }
-          - { action: appear, groups: [dataPolygons], order: sequential, gap: 500 }
-          - { action: wait, duration: 8000 }
-          - { action: disappear, groups: [dataPolygons], order: sequential, gap: 300 }
-          - { action: wait, duration: 300 }
-          - { action: disappear, groups: [spokes], order: simultaneous }
-          - { action: disappear, groups: [rings], order: sequential, gap: 100 }
-          - { action: wait, duration: 300 }
-          - { action: disappear, groups: [header, footer] }
-          - { action: done }
       dataSource:
         type: inline
         series:

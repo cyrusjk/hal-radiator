@@ -16,7 +16,6 @@ window.HAL.cards['curve-family'] = {
     var vc = vis.chart || {};
     var x0 = vc.x0 || 80, y0 = vc.y0 || 70;
     var cw = vc.w || 700, ch = vc.h || 520;
-    var dataPts = vc.dataPts || 9;
     var strokes = vc.strokes || [1.5, 1.0, 0.7];
     var dashes = vc.dashes || [null, "4,3", "1,3"];
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
@@ -31,6 +30,13 @@ window.HAL.cards['curve-family'] = {
     var nGroups = groupsData.length;
     if (nGroups === 0) { if (onDone) onDone(); return; }
 
+    // Use actual data point count from fetched data (not vc.actualPts)
+    // so VictoriaMetrics can return arbitrary-density points.
+    var actualPts = (groupsData[0].series && groupsData[0].series[0] && groupsData[0].series[0].values)
+      ? groupsData[0].series[0].values.length
+      : (vc.actualPts || 9);
+    if (actualPts < 2) { if (onDone) onDone(); return; }
+
     var margin = 60;
     var gridW = cw;
     var gridH = ch / nGroups;
@@ -43,7 +49,8 @@ window.HAL.cards['curve-family'] = {
     var curveGroups = [];       // bands (one <g> per band)
     var minLabels = [];         // min value text elements
     var maxLabels = [];         // max value text elements
-    var gridLines = [];         // horizontal grid lines
+    var gridLines = [];         // horizontal grid lines (band separators)
+    var verticalLines = [];     // vertical data column lines (sweep targets)
     var groupLabels = [];       // band/group name text elements
 
     // ── Card background ───────────────────────────────────────────────
@@ -98,10 +105,10 @@ window.HAL.cards['curve-family'] = {
       svgEl.appendChild(glabel);
       groupLabels.push(glabel);
 
-      // Data columns (vertical grid lines + series curves)
-      for (var vi = 0; vi < dataPts; vi++) {
-        var px = x0 + (vi / (dataPts - 1)) * gridW;
-        gridLines.push(e('line', {
+      // Data columns (vertical grid lines — sweep targets)
+      for (var vi = 0; vi < actualPts; vi++) {
+        var px = x0 + (vi / (actualPts - 1)) * gridW;
+        verticalLines.push(e('line', {
           x1: px, y1: bandTop, x2: px, y2: bandTop + bandH,
           stroke: fg('frame', 0.12), 'stroke-width': 1,
         }));
@@ -116,8 +123,8 @@ window.HAL.cards['curve-family'] = {
       for (var si = 0; si < series.length; si++) {
         var sv = series[si].values || [];
         var pathParts = [];
-        for (var vi = 0; vi < sv.length && vi < dataPts; vi++) {
-          var px = x0 + (vi / (dataPts - 1)) * gridW;
+        for (var vi = 0; vi < sv.length && vi < actualPts; vi++) {
+          var px = x0 + (vi / (actualPts - 1)) * gridW;
           var py = bandTop + bandH - (sv[vi] / bandMax) * (bandH - 20) - 10;
           pathParts.push((vi === 0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1));
         }
@@ -134,7 +141,7 @@ window.HAL.cards['curve-family'] = {
         grp.appendChild(e('path', pathAttrs));
 
         // Endpoint dot + value label
-        var last = sv[Math.min(sv.length, dataPts) - 1];
+        var last = sv[Math.min(sv.length, actualPts) - 1];
         var lx = x0 + gridW;
         var ly = bandTop + bandH - (last / bandMax) * (bandH - 20) - 10;
 
@@ -157,7 +164,7 @@ window.HAL.cards['curve-family'] = {
           if (sv[mvi] > maxVal) { maxVal = sv[mvi]; maxIdx = mvi; }
         }
 
-        var mlx = x0 + (minIdx / (dataPts - 1)) * gridW;
+        var mlx = x0 + (minIdx / (actualPts - 1)) * gridW;
         var mly = bandTop + bandH - (minVal / bandMax) * (bandH - 20) - 10;
         var mn = e('text', {
           x: mlx, y: mly - 12, fill: fg('data', 1.1), 'font-size': fs(14),
@@ -168,7 +175,7 @@ window.HAL.cards['curve-family'] = {
         svgEl.appendChild(mn);
         minLabels.push(mn);
 
-        var mlx2 = x0 + (maxIdx / (dataPts - 1)) * gridW;
+        var mlx2 = x0 + (maxIdx / (actualPts - 1)) * gridW;
         var mly2 = bandTop + bandH - (maxVal / bandMax) * (bandH - 20) - 10;
         var mx = e('text', {
           x: mlx2, y: mly2 - 12, fill: fg('data', 1.1), 'font-size': fs(14),
@@ -188,6 +195,13 @@ window.HAL.cards['curve-family'] = {
     for (var gli = 0; gli < gridLines.length; gli++) {
       gridG.appendChild(gridLines[gli]);
     }
+    // Vertical lines — stored as array for sequential draw sweep
+    // so executePhases expands each child into its own element for drawOne.
+    var verticalG = e('g');
+    svgEl.insertBefore(verticalG, bandG);
+    for (var vli = 0; vli < verticalLines.length; vli++) {
+      verticalG.appendChild(verticalLines[vli]);
+    }
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
@@ -201,6 +215,7 @@ window.HAL.cards['curve-family'] = {
     // ── Build the group map for the animation engine ──────────────────
     groupMap.header = header;
     groupMap.footer = footer;
+    groupMap.verticalLines = verticalLines;
     groupMap.grid = gridG;
     groupMap.groupLabels = groupLabels;
     groupMap.bands = curveGroups;

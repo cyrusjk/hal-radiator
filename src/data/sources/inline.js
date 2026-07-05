@@ -29,6 +29,12 @@ window.HAL.data.sources.inline = {
     if (dataSource && dataSource.series) {
       return { series: dataSource.series };
     }
+    if (dataSource && dataSource.hierarchy) {
+      return { hierarchy: dataSource.hierarchy };
+    }
+    if (dataSource && dataSource.tree) {
+      return { tree: dataSource.tree, connections: dataSource.connections || [] };
+    }
     if (dataSource && dataSource.groups) {
       return { groups: dataSource.groups };
     }

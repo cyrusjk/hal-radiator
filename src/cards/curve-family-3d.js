@@ -15,12 +15,12 @@ window.HAL.cards['curve-family-3d'] = {
     var svgEl = document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
-    var dataPts = vc.dataPts || 9;
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var fg = window.HAL.svg.fg;
     var fs = window.HAL.svg.fs;
     var e = window.HAL.svg.el;
 
+    // Build flat series list and sort by numeric label
     var groupsData = data.groups || [];
     var allSeries = [];
     for (var gi = 0; gi < groupsData.length; gi++) {
@@ -29,7 +29,17 @@ window.HAL.cards['curve-family-3d'] = {
         allSeries.push({ label: series[si].label, values: series[si].values || [] });
       }
     }
+    // Sort numerically so Z-order is 1 (back), 5, 15 (front) not 1, 15, 5
+    allSeries.sort(function(a, b) {
+      var na = parseInt(String(a.label).replace(/[^0-9]/g, ''), 10) || 0;
+      var nb = parseInt(String(b.label).replace(/[^0-9]/g, ''), 10) || 0;
+      return na - nb;
+    });
     if (allSeries.length === 0) { if (onDone) onDone(); return; }
+
+    // Use actual data point count from fetched data.
+    var actualPts = allSeries[0].values.length;
+    if (actualPts < 2) { if (onDone) onDone(); return; }
 
     var groupMap = {};
     var curveGroups = [];
@@ -59,133 +69,165 @@ window.HAL.cards['curve-family-3d'] = {
     globalMax = Math.ceil(globalMax * 1.3);
     if (globalMax < 2) globalMax = 2;
 
-    // ── Isometric projection ───────────────────────────────────────
-    // X (time index) → screen: right + up at 30°
-    // Y (load value) → screen: straight up  
-    // Z (depth)      → screen: left + up at 30°
+    // ── True isometric projection ─────────────────────────────────
+    // All three axes have equal step sizes, rotated 30° from horizontal.
+    //   isoStep = pixel distance per data-unit along any axis
+    //   xSp = isoStep * cos(30°) ≈ 0.866  (horizontal component, X → right)
+    //   zSp = isoStep * cos(30°) ≈ 0.866  (horizontal component, Z → left)
+    //   diagSp = isoStep * sin(30°) = isoStep * 0.5  (vertical component, both axes → up)
     //
-    //   sx = ox + px * xSp - pz * zSp
+    //   sx = ox + (px - pz) * xSp
     //   sy = oy - py * ySp + (px + pz) * diagSp
-    //
-    // diagSp is the vertical component of the diagonal axes.
 
-    var ox = 420, oy = 240;           // origin (top-front corner, centered wider & higher for deep Z)
-    var xSp = Math.min(70, 650 / (dataPts - 1));   // adaptive X spacing
-    var zSp = 200;                      // depth spacing (horizontal shift per Z level)
-    var ySp = 150 / globalMax;         // vertical scaling for load value
-    var diagSp = Math.min(80, 1000 / (dataPts + dataPts));  // adaptive diagonal (Z vertical component)
+    var isoStep = Math.min(70, 650 / (actualPts - 1));  // base step per data unit
+    var xSp = isoStep * 0.866;
+    var diagSp = isoStep * 0.5;
+    var ySp = ((actualPts - 1) * isoStep) / globalMax;  // Y-axis same length as X-axis
 
     function project(px, py, pz) {
       return {
         sx: ox + px * xSp - pz * zSp,
-        sy: oy - py * ySp + (px + pz) * diagSp,
+        sy: oy - py * ySp + px * diagSp + pz * zDiagSp,
       };
     }
 
     var nCurves = allSeries.length;
 
-    // ── Scaled chart area (80% of original) ──────────────────────────
+    // Z has only (nCurves - 1) steps vs X's (actualPts - 1) steps.
+    // Scale zSp so total Z depth ≈ 45% of total X extent, giving visible separation.
+    var totalX = (actualPts - 1) * xSp;
+    var zSteps = Math.max(nCurves - 1, 1);
+    var zSp = (totalX * 0.45) / zSteps;      // 45% of X span, spread across Z steps
+    var zDiagSp = (totalX * 0.45 * 0.5) / zSteps;  // matching vertical component
+
+    // Chart bounds in projection space (before scale/translate) — computed AFTER nCurves
+    var chartLeft  = - (nCurves - 1) * zSp;
+    var chartRight = (actualPts - 1) * xSp;
+    var chartTop   = - globalMax * ySp;
+    var chartBottom = (actualPts - 1) * diagSp + (nCurves - 1) * zDiagSp;
+    var chartCX = (chartLeft + chartRight) / 2;
+    var chartCY = (chartTop + chartBottom) / 2;
+    var ox = 500 - chartCX;
+    var oy = 375 - chartCY;
+
+    // ── Scaled chart area (68% of original, centered) ─────────────────
     var chartArea = e('g');
-    chartArea.setAttribute('transform', 'translate(500,375) scale(0.8) translate(-500,-375)');
+    chartArea.setAttribute('transform', 'translate(500,375) scale(0.68) translate(-500,-375)');
     svgEl.appendChild(chartArea);
 
     // ── Isometric grid ────────────────────────────────────────────
+    // Split into three groups so animation can target them separately:
+    //   radialLines — lines from origin (draw radially)
+    //   gridLines   — remaining floor + Z lines (sweep sequentially)
+    //   labels      — all text (appear instantly)
+    var radialLines = [];
+    var gridLines = [];
+    var labelElements = [];
+
+    // Wrapper groups for correct paint order (no opacity — the animation
+    // engine manages visibility via the arrays above).
+    var radialG = e('g');
+    chartArea.appendChild(radialG);
     var gridG = e('g');
-    gridG.style.opacity = '0';
     chartArea.appendChild(gridG);
+    var labelsG = e('g');
+    chartArea.appendChild(labelsG);
 
     // Floor grid: X-Z plane at y=0
     // Lines along X axis (time) at each Z depth
     for (var zi = 0; zi < nCurves - 1; zi++) {
       var pL = project(0, 0, zi);
-      var pR = project(dataPts - 1, 0, zi);
-      gridG.appendChild(e('line', {
+      var pR = project(actualPts - 1, 0, zi);
+      var line = e('line', {
         x1: pL.sx, y1: pL.sy, x2: pR.sx, y2: pR.sy,
         stroke: fg('frame', 0.55 - zi * 0.1), 'stroke-width': 0.7 - zi * 0.15,
-      }));
+      });
+      (zi === 0 ? radialG : gridG).appendChild(line);
+      (zi === 0 ? radialLines : gridLines).push(line);
     }
     // Last Z baseline
     var pL = project(0, 0, nCurves - 1);
-    var pR = project(dataPts - 1, 0, nCurves - 1);
-    gridG.appendChild(e('line', {
+    var pR = project(actualPts - 1, 0, nCurves - 1);
+    var lastBase = e('line', {
       x1: pL.sx, y1: pL.sy, x2: pR.sx, y2: pR.sy,
       stroke: fg('frame', 0.25), 'stroke-width': 0.4,
-    }));
+    });
+    gridG.appendChild(lastBase);
+    gridLines.push(lastBase);
 
-    // Lines along Z axis at each time step + labels
-    for (var vi = 0; vi < dataPts; vi++) {
+    // Lines along Z axis at each time step
+    for (var vi = 0; vi < actualPts; vi++) {
       var pF = project(vi, 0, 0);
       var pB = project(vi, 0, nCurves - 1);
-      gridG.appendChild(e('line', {
+      var line = e('line', {
         x1: pF.sx, y1: pF.sy, x2: pB.sx, y2: pB.sy,
-        stroke: fg('frame', 0.5 - 0.1 * (vi / dataPts)), 'stroke-width': 0.5,
-      }));
-      // Time step label at the front edge of each Z line
-      gridG.appendChild(e('text', {
+        stroke: fg('frame', 0.5 - 0.1 * (vi / actualPts)), 'stroke-width': 0.5,
+      });
+      (vi === 0 ? radialG : gridG).appendChild(line);
+      (vi === 0 ? radialLines : gridLines).push(line);
+      // Time step label at the front edge
+      var tsLabel = e('text', {
         x: pF.sx - 6, y: pF.sy + 14,
         fill: fg('frame', 0.35),
         'font-size': fs(7),
         'font-family': labelFont, 'text-anchor': 'middle',
         'text-rendering': 'optimizeLegibility',
         textContent: vi,
-      }));
+      });
+      labelsG.appendChild(tsLabel);
+      labelElements.push(tsLabel);
     }
 
     // X-axis label at the far end of the front baseline
-    var pXLabel = project(dataPts - 1, 0, 0);
-    gridG.appendChild(e('text', {
+    var pXLabel = project(actualPts - 1, 0, 0);
+    var xLabel = e('text', {
       x: pXLabel.sx, y: pXLabel.sy + 22,
       fill: fg('frame', 0.45),
       'font-size': fs(8),
       'font-family': labelFont, 'text-anchor': 'middle',
       'text-rendering': 'optimizeLegibility',
       textContent: 'STEP',
-    }));
+    });
+    labelsG.appendChild(xLabel);
+    labelElements.push(xLabel);
 
     // Y-axis label at the top of the reference line
     var pYLabel = project(0, globalMax, 0);
-    gridG.appendChild(e('text', {
+    var yLabel = e('text', {
       x: pYLabel.sx - 16, y: pYLabel.sy + 3,
       fill: fg('frame', 0.5),
       'font-size': fs(8),
       'font-family': labelFont, 'text-anchor': 'end',
       'text-rendering': 'optimizeLegibility',
       textContent: 'LOAD',
-    }));
+    });
+    labelsG.appendChild(yLabel);
+    labelElements.push(yLabel);
 
-    // Vertical Y-axis reference at the front-left corner
+    // Vertical Y-axis reference at the front-left corner (from origin = radial)
     var pY0 = project(0, 0, 0);
     var pY1 = project(0, globalMax, 0);
-    gridG.appendChild(e('line', {
+    var yLine = e('line', {
       x1: pY0.sx, y1: pY0.sy, x2: pY1.sx, y2: pY1.sy,
       stroke: fg('frame', 0.7), 'stroke-width': 1.5,
-    }));
+    });
+    radialG.appendChild(yLine);
+    radialLines.push(yLine);
 
     // Y-axis tick labels
     for (var li = 0; li <= 3; li++) {
       var lv = (globalMax / 3) * li;
       var pt = project(0, lv, 0);
-      gridG.appendChild(e('text', {
+      var tickLabel = e('text', {
         x: pt.sx - 10, y: pt.sy + 3,
         fill: fg('frame', 0.6),
         'font-size': fs(8),
         'font-family': labelFont, 'text-anchor': 'end',
         'text-rendering': 'optimizeLegibility',
         textContent: lv.toFixed(1),
-      }));
-    }
-
-    // Series labels at the left end of each Z baseline
-    for (var zi = 0; zi < nCurves; zi++) {
-      var pL = project(0, 0, zi);
-      gridG.appendChild(e('text', {
-        x: pL.sx - 8, y: pL.sy + 4,
-        fill: fg('frame', 0.45 + 0.2 * (nCurves - 1 - zi)),
-        'font-size': fs(8 + (nCurves - 1 - zi) * 2),
-        'font-family': labelFont, 'text-anchor': 'end',
-        'text-rendering': 'optimizeLegibility',
-        textContent: allSeries[zi].label,
-      }));
+      });
+      labelsG.appendChild(tickLabel);
+      labelElements.push(tickLabel);
     }
 
     // ── Curves ────────────────────────────────────────────────────
@@ -200,7 +242,7 @@ window.HAL.cards['curve-family-3d'] = {
 
       // Project all data points
       var pts = [];
-      for (var vi = 0; vi < sv.length && vi < dataPts; vi++) {
+      for (var vi = 0; vi < sv.length && vi < actualPts; vi++) {
         var p = project(vi, sv[vi], si);
         pts.push({ sx: p.sx, sy: p.sy, val: sv[vi] });
       }
@@ -292,7 +334,7 @@ window.HAL.cards['curve-family-3d'] = {
       // Connection to next curve (mesh surface)
       if (si < nCurves - 1) {
         var nextSv = allSeries[si + 1].values;
-        for (var vi = 1; vi < sv.length && vi < dataPts; vi++) {
+        for (var vi = 1; vi < sv.length && vi < actualPts; vi++) {
           var pA = project(vi, sv[vi], si);
           var pA0 = project(vi - 1, sv[vi - 1], si);
           var pB = project(vi, nextSv[Math.min(vi, nextSv.length - 1)], si + 1);
@@ -325,20 +367,43 @@ window.HAL.cards['curve-family-3d'] = {
       curveGroups.push(grp);
     }
 
-    // ── Animation ─────────────────────────────────────────────────
+    // ── Series labels at start of each Z baseline ──
+    for (var si = 0; si < nCurves; si++) {
+      var ns = 'http://www.w3.org/2000/svg';
+      var p = project(0, 0, si);
+      var sx = 500 + (p.sx - 500) * 0.68;
+      var sy = 375 + (p.sy - 375) * 0.68;
+      if (isNaN(sx) || isNaN(sy)) { sx = 10; sy = 80 + si * 25; }
+      var t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', String(sx - 40));
+      t.setAttribute('y', String(sy + 4));
+      t.setAttribute('fill', '#ffffff');
+      t.setAttribute('font-size', '16');
+      t.setAttribute('font-family', 'monospace');
+      t.setAttribute('font-weight', 'bold');
+      t.textContent = String(allSeries[si].label || '--');
+      svgEl.appendChild(t);
+    }
+
     groupMap.header = header;
     groupMap.footer = footer;
-    groupMap.grid = gridG;
+    groupMap.radialLines = radialLines;
+    groupMap.gridLines = gridLines;
+    groupMap.labels = labelElements;
     groupMap.bands = curveGroups;
 
     var defaults = [
-      { action: 'appear',     groups: ['header', 'footer', 'grid'] },
-      { action: 'wait',       duration: 1000 },
-      { action: 'appear',     groups: ['bands'], order: 'sequential', gap: 400 },
-      { action: 'wait',       duration: 8000 },
-      { action: 'disappear',  groups: ['bands'], order: 'sequential', gap: 200 },
-      { action: 'wait',       duration: 300 },
-      { action: 'disappear',  groups: ['header', 'footer', 'grid'] },
+      { action: 'draw',    groups: ['radialLines'],               duration: 500 },
+      { action: 'draw',    groups: ['gridLines'],  order: 'sequential', gap: 60, duration: 250 },
+      { action: 'appear',  groups: ['labels'] },
+      { action: 'wait',    duration: 500 },
+      { action: 'appear',  groups: ['header', 'footer'] },
+      { action: 'wait',    duration: 500 },
+      { action: 'appear',  groups: ['bands'], order: 'sequential', gap: 400 },
+      { action: 'wait',    duration: 8000 },
+      { action: 'disappear', groups: ['bands'], order: 'sequential', gap: 200 },
+      { action: 'wait',    duration: 300 },
+      { action: 'disappear', groups: ['radialLines', 'gridLines', 'labels', 'header', 'footer'] },
       { action: 'done' },
     ];
     window.HAL.anim.run(data, groupMap, onDone, defaults);

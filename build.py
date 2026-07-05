@@ -24,6 +24,32 @@ with open(yaml_path) as f:
 timing = cfg.get("timing", {})
 groups = cfg.get("groups", [])
 colors = cfg.get("colors", {})
+prototypes = cfg.get("cardPrototypes", {})
+
+# ── Resolve card prototypes ───────────────────────────────────────────
+# Chart entries with 'prototype' key inherit chartType and animation
+# from the named prototype, then overlay title/label/color/dataSource.
+def resolve_prototype(chart, prototypes):
+    proto_name = chart.get('prototype')
+    if not proto_name:
+        return chart
+    base = prototypes.get(proto_name)
+    if base is None:
+        raise ValueError(f"Unknown card prototype: {proto_name}")
+    resolved = dict(base)
+    for k, v in chart.items():
+        if k == 'prototype':
+            continue
+        if k == 'animation' and isinstance(v, dict):
+            resolved['animation'] = dict(resolved.get('animation', {}))
+            resolved['animation']['phases'] = v.get('phases', resolved['animation'].get('phases', []))
+        elif k == 'dataSource' and isinstance(v, dict):
+            merged = dict(resolved.get('dataSource', {}))
+            merged.update(v)
+            resolved['dataSource'] = merged
+        else:
+            resolved[k] = v
+    return resolved
 
 # ── Resolve colour references ─────────────────────────────────────────
 # If a group or chart specifies a colour that matches a key in the
@@ -49,11 +75,13 @@ for group in groups:
     })
     # Chart cards for this group
     for chart in group.get("charts", []):
+        chart = resolve_prototype(chart, prototypes)
         card = {
             "type": chart["chartType"],
             "title": chart.get("title", ""),
             "label": chart.get("label", ""),
             "color": resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)"))),
+            "animation": chart.get("animation"),
             "dataSource": chart.get("dataSource", {"type": "inline"}),
         }
         cards.append(card)
@@ -97,6 +125,9 @@ scripts = [
     "src/cards/telemetry-grid.js",
     "src/cards/wireframe.js",
     "src/cards/polar.js",
+    "src/cards/sunburst.js",
+    "src/cards/streamgraph.js",
+    "src/cards/edge-bundling.js",
     "src/data/sources/inline.js",
     "src/data/sources/victoria.js",
     "src/data/fetcher.js",

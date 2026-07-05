@@ -14,6 +14,7 @@ window.HAL.cards['telemetry-grid'] = {
     var svgEl = document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';
+    var dataFont = (vis.fonts || {}).data || labelFont;
     var e = window.HAL.svg.el;
     var ns = window.HAL.svg.ns;
     var fg = window.HAL.svg.fg;
@@ -113,7 +114,7 @@ window.HAL.cards['telemetry-grid'] = {
         var val = ci < rowVals.length ? String(rowVals[ci]) : '—';
         var cell = e('text', {
           x: cx, y: rowY + 14, fill: fg('frame', 1.9), 'font-size': fs(15),
-          'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
+          'font-family': dataFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
         });
         cell.textContent = val;
         rowG.appendChild(cell);

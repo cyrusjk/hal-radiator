@@ -10,10 +10,24 @@
 //        type: 'victoria',
 //        url: 'http://192.168.50.9:8428',
 //        range: 300,            // time window in seconds (default 300)
+//        step: 30,              // [optional] seconds between points.
+//                               // If set, ALL points from VM are accepted
+//                               // and the renderer adapts its grid spacing
+//                               // to match the actual number of points.
+//                               // If omitted, falls back to 'points' (default 60)
+//                               // which computes step = range / (points - 1)
+//        points: 60,            // [optional, used only when step is not set]
+//                               // Target number of points (VM downsamples).
+//                               // Sets step = range / (points - 1)
 //        promql: '...',
 //        map: {
 //          group:  'name',        // Prometheus label → group name (band)
 //          series: 'le',          // Prometheus label → series label, or null
+//        },
+//        alias: {                 // [optional] rename series labels
+//          node_load1: "1 MIN",   //   exact match
+//          node_load5: "5 MIN",
+//          strip: "node_load"     //   or strip prefix from all series
 //        }
 //      }
 //    }
@@ -45,10 +59,18 @@ window.HAL.data.sources = window.HAL.data.sources || {};
 
       // Configurable time window: range in seconds (default 300 = 5 min)
       var windowSec = dataSource.range || 300;
-      var nPoints = dataSource.points || 9;
+      var step;
+      if (dataSource.step) {
+        // User specified exact step — use it. ALL points are returned.
+        step = dataSource.step;
+      } else {
+        // Fall back to points-based step for backward compatibility.
+        var nPoints = dataSource.points || 60;
+        step = Math.max(Math.floor(windowSec / (nPoints - 1)), 1);
+      }
+
       var now = Date.now() / 1000;
       var start = now - windowSec;
-      var step = Math.max(Math.floor(windowSec / (nPoints - 1)), 1);
 
       return fetch(url + '?' + [
         'query=' + encodeURIComponent(query),
@@ -57,17 +79,21 @@ window.HAL.data.sources = window.HAL.data.sources || {};
         'step=' + step
       ].join('&'))
         .then(function(r) { if (!r.ok) throw new Error('VM fetch failed: ' + r.status); return r.json(); })
-        .then(function(json) { return plugin.transform(json, groupLabel, seriesLabel); });
+        .then(function(json) { return plugin.transform(json, groupLabel, seriesLabel, dataSource); });
     },
 
     // ── Transform ─────────────────────────────────────────────────────
     // Parses a Prometheus query_range JSON response into the canonical
     // { groups: [ { name, series: [ { label, values } ] } ] } structure.
-    transform: function(json, groupLabel, seriesLabel) {
+    transform: function(json, groupLabel, seriesLabel, dataSource) {
       if (!json || !json.data || !json.data.result) return null;
 
       var results = json.data.result;
       var groupMap = {};  // { groupName: { seriesName: [values] } }
+
+      // Prepare alias map: exact matches take priority over strip
+      var alias = (dataSource && dataSource.alias) || {};
+      var strip = (typeof alias.strip === 'string') ? alias.strip : null;
 
       for (var i = 0; i < results.length; i++) {
         var metric = results[i].metric;
@@ -75,6 +101,12 @@ window.HAL.data.sources = window.HAL.data.sources || {};
 
         var grpName = metric[groupLabel] || 'unknown';
         var serName = seriesLabel ? (metric[seriesLabel] || 'value') : 'value';
+
+        // Apply alias: exact match first, then strip prefix
+        serName = alias[serName] || serName;
+        if (strip && serName.indexOf(strip) === 0) {
+          serName = serName.slice(strip.length);
+        }
 
         var vals = [];
         for (var vi = 0; vi < values.length; vi++) {

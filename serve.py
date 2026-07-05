@@ -16,13 +16,47 @@ PORT = 8009
 ROOT = os.path.dirname(os.path.abspath(__file__))
 YAML_PATH = os.path.join(ROOT, 'radiator.yaml')
 
+def resolve_prototype(chart, prototypes):
+    """Resolve a chart entry against card prototypes.
+
+    If chart has 'prototype' key, merge prototype fields first,
+    then overlay the chart's specific fields (title, label, color,
+    dataSource). If no 'prototype' key, return chart unchanged
+    for backward compatibility.
+    """
+    proto_name = chart.get('prototype')
+    if not proto_name:
+        return chart
+
+    base = prototypes.get(proto_name)
+    if base is None:
+        raise ValueError(f"Unknown card prototype: {proto_name}")
+
+    resolved = dict(base)            # start with prototype fields
+    for k, v in chart.items():
+        if k == 'prototype':
+            continue
+        if k == 'animation' and isinstance(v, dict):
+            # Deep merge animation.phases
+            resolved['animation'] = dict(resolved.get('animation', {}))
+            resolved['animation']['phases'] = v.get('phases', resolved['animation'].get('phases', []))
+        elif k == 'dataSource' and isinstance(v, dict):
+            merged = dict(resolved.get('dataSource', {}))
+            merged.update(v)
+            resolved['dataSource'] = merged
+        else:
+            resolved[k] = v
+    return resolved
+
+
 def flatten_config(cfg):
     """Convert the YAML groups structure into a flat card array,
-    matching what build.py produces."""
+    resolving card prototypes along the way."""
     colors = cfg.get("colors", {})
     timing = cfg.get("timing", {})
     visual = cfg.get("visual", {})
     groups = cfg.get("groups", [])
+    prototypes = cfg.get("cardPrototypes", {})
 
     def resolve_color(name):
         return colors.get(name, name) if isinstance(name, str) else name
@@ -38,6 +72,7 @@ def flatten_config(cfg):
         })
         # Chart cards
         for chart in group.get("charts", []):
+            chart = resolve_prototype(chart, prototypes)
             c = dict(chart)
             c["type"] = chart.get("chartType", "curve-family")
             c["label"] = chart.get("label", "")
