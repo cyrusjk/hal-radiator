@@ -1,0 +1,630 @@
+# ── Card Prototypes ── Named reusable templates ──────────────
+# Chart entries reference a prototype and override title, label, color,
+# dataSource, and optionally animation.phases.
+cardPrototypes:
+  curve-family-3d:
+    animation:
+      phases:
+      - action: blank
+      - action: wait
+        duration: 1000
+      - action: draw
+        duration: 500
+        groups:
+        - radialLines
+      - action: draw
+        duration: 10
+        gap: 20
+        groups:
+        - gridLines
+        order: sequential
+      - action: appear
+        groups:
+        - labels
+      - action: wait
+        duration: 1000
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 1000
+      - action: appear
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - radialLines
+        - gridLines
+        - labels
+        - header
+        - footer
+      - action: done
+    chartType: curve-family-3d
+  curve-family-default:
+    animation:
+      phases:
+      - action: blank
+      - action: wait
+        duration: 1000
+      - action: draw
+        duration: 5
+        gap: 20
+        groups:
+        - verticalLines
+        order: sequential
+      - action: appear
+        groups:
+        - header
+        - footer
+        - grid
+        - groupLabels
+      - action: wait
+        duration: 1000
+      - action: flickerIn
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 2000
+      - action: appear
+        groups:
+        - minValues
+      - action: appear
+        groups:
+        - maxValues
+      - action: wait
+        duration: 2000
+      - action: throb
+        count: 3
+        duration: 330
+        groups:
+        - minValues
+        order: simultaneous
+      - action: throb
+        count: 3
+        duration: 330
+        groups:
+        - maxValues
+        order: simultaneous
+      - action: wait
+        duration: 1000
+      - action: flickerOut
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 1000
+      - action: disappear
+        groups:
+        - header
+        - footer
+        - grid
+        - groupLabels
+        - verticalLines
+      - action: wait
+        duration: 1000
+      - action: done
+    chartType: curve-family
+  curve-family-lat:
+    animation:
+      phases:
+      - action: blank
+      - action: wait
+        duration: 1000
+      - action: draw
+        duration: 2
+        gap: 5
+        groups:
+        - verticalLines
+        order: sequential
+      - action: appear
+        groups:
+        - header
+        - footer
+        - grid
+        - groupLabels
+        - verticalLines
+      - action: wait
+        duration: 1000
+      - action: flickerIn
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 2000
+      - action: appear
+        groups:
+        - minValues
+      - action: appear
+        groups:
+        - maxValues
+      - action: wait
+        duration: 2000
+      - action: throb
+        count: 3
+        duration: 330
+        groups:
+        - minValues
+        order: simultaneous
+      - action: wait
+        duration: 500
+      - action: throb
+        count: 3
+        duration: 330
+        groups:
+        - maxValues
+        order: simultaneous
+      - action: wait
+        duration: 1000
+      - action: flickerOut
+        groups:
+        - maxValues
+      - action: flickerOut
+        groups:
+        - minValues
+      - action: wait
+        duration: 1000
+      - action: flickerOut
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+        - grid
+        - groupLabels
+        - verticalLines
+      - action: wait
+        duration: 1000
+      - action: done
+    chartType: curve-family
+  curve-family-stacked:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 1000
+      - action: appear
+        gap: 167
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - bands
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+      - action: done
+    chartType: curve-family-stacked
+  edge-bundling-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 500
+      - action: appear
+        groups:
+        - nodes
+      - action: wait
+        duration: 400
+      - action: appear
+        gap: 100
+        groups:
+        - connections
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - connections
+        order: reverse
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - nodes
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+      - action: done
+    chartType: edge-bundling
+  orbital-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 400
+      - action: appear
+        groups:
+        - centerBody
+      - action: appear
+        groups:
+        - centerLabel
+      - action: appear
+        groups:
+        - axis
+      - action: wait
+        duration: 200
+      - action: draw
+        groups:
+        - line_0
+        duration: 200
+      - action: draw
+        groups:
+        - line_1
+        duration: 200
+      - action: draw
+        groups:
+        - line_2
+        duration: 200
+      - action: draw
+        groups:
+        - line_3
+        duration: 200
+      - action: draw
+        groups:
+        - line_4
+        duration: 200
+      - action: draw
+        groups:
+        - line_5
+        duration: 200
+      - action: draw
+        groups:
+        - line_6
+        duration: 200
+      - action: draw
+        groups:
+        - line_7
+        duration: 200
+      - action: wait
+        duration: 300
+      - action: appear
+        groups:
+        - bold_0
+        - bold_1
+        - bold_2
+        - bold_3
+        - bold_4
+        - bold_5
+        - bold_6
+        - bold_7
+      - action: appear
+        groups:
+        - moon_0
+        - moon_1
+        - moon_2
+        - moon_3
+        - moon_4
+        - moon_5
+        - moon_6
+        - moon_7
+      - action: appear
+        groups:
+        - markers
+      - action: appear
+        groups:
+        - labels
+      - action: wait
+        duration: 3000
+      - action: disappear
+        gap: 60
+        groups:
+        - labels
+        order: reverse
+      - action: disappear
+        gap: 60
+        groups:
+        - markers
+        order: reverse
+      - action: disappear
+        gap: 60
+        groups:
+        - moon_7
+        - moon_6
+        - moon_5
+        - moon_4
+        - moon_3
+        - moon_2
+        - moon_1
+        - moon_0
+        order: reverse
+      - action: wait
+        duration: 150
+      - action: disappear
+        gap: 60
+        groups:
+        - bold_7
+        - bold_6
+        - bold_5
+        - bold_4
+        - bold_3
+        - bold_2
+        - bold_1
+        - bold_0
+        order: reverse
+      - action: disappear
+        gap: 60
+        groups:
+        - line_7
+        - line_6
+        - line_5
+        - line_4
+        - line_3
+        - line_2
+        - line_1
+        - line_0
+        order: reverse
+      - action: disappear
+        groups:
+        - axis
+      - action: disappear
+        groups:
+        - centerLabel
+      - action: disappear
+        groups:
+        - centerBody
+      - action: wait
+        duration: 150
+      - action: disappear
+        groups:
+        - header
+        - footer
+      - action: done
+    chartType: orbital
+  polar-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 800
+      - action: appear
+        gap: 100
+        groups:
+        - rings
+        order: sequential
+      - action: appear
+        groups:
+        - spokes
+        order: simultaneous
+      - action: wait
+        duration: 600
+      - action: appear
+        gap: 167
+        groups:
+        - dataPolygons
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - dataPolygons
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - spokes
+        order: simultaneous
+      - action: disappear
+        gap: 100
+        groups:
+        - rings
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+      - action: done
+    chartType: polar
+  streamgraph-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 800
+      - action: appear
+        gap: 167
+        groups:
+        - ribbons
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - ribbons
+        order: reverse
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+      - action: done
+    chartType: streamgraph
+  sunburst-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+      - action: wait
+        duration: 500
+      - action: appear
+        gap: 167
+        groups:
+        - rings
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - rings
+        order: reverse
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+      - action: done
+    chartType: sunburst
+  tabular-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+        - separators
+      - action: wait
+        duration: 1000
+      - action: appear
+        gap: 167
+        groups:
+        - rows
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - rows
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+        - separators
+      - action: done
+    chartType: tabular
+  telemetry-grid-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+        - columnHeaders
+        - separators
+      - action: wait
+        duration: 1000
+      - action: appear
+        gap: 167
+        groups:
+        - rows
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - rows
+        order: sequential
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+        - columnHeaders
+        - separators
+      - action: done
+    chartType: telemetry-grid
+  wireframe-default:
+    animation:
+      phases:
+      - action: appear
+        groups:
+        - header
+        - footer
+        - grid
+      - action: wait
+        duration: 1000
+      - action: appear
+        groups:
+        - connections
+        order: simultaneous
+      - action: wait
+        duration: 600
+      - action: appear
+        gap: 167
+        groups:
+        - dataPoints
+        order: sequential
+      - action: wait
+        duration: 5000
+      - action: disappear
+        gap: 100
+        groups:
+        - dataPoints
+        order: sequential
+      - action: wait
+        duration: 400
+      - action: disappear
+        groups:
+        - connections
+        order: simultaneous
+      - action: wait
+        duration: 300
+      - action: disappear
+        groups:
+        - header
+        - footer
+        - grid
+      - action: done
+    chartType: wireframe

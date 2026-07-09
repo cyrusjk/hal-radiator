@@ -25,26 +25,30 @@ window.HAL.anim = window.HAL.anim || {};
     el.style.opacity = val;
   }
 
-  function flickerOne(el, dir) {
+  function flickerOne(el, dir, dur) {
     var cls = dir === 'in' ? 'blink-in' : 'blink-out';
     if (el instanceof Array) {
-      for (var i = 0; i < el.length; i++) flickerOne(el[i], dir);
+      for (var i = 0; i < el.length; i++) flickerOne(el[i], dir, dur);
       return;
     }
+    var ms = dur || (window.HAL_CONFIG.timing && window.HAL_CONFIG.timing.flickerDuration) || 1000;
+    el.style.animationDuration = ms + 'ms';
     el.classList.add(cls);
   }
 
   // Throb: snap visible → linear fade out → snap visible → repeat count times.
-  // Fade-out is 1000ms. Total cycle is 1000ms. 1 cycle/s.
-  function throbOne(el, count, cb) {
+  // fadeMs: duration of each fade-out (default 1000ms).
+  // count: number of throb cycles (default 2).
+  function throbOne(el, count, fadeMs, cb) {
     if (el instanceof Array) {
       var done = 0, total = el.length;
       for (var i = 0; i < total; i++) {
-        throbOne(el[i], count, function() { done++; if (done >= total && cb) cb(); });
+        throbOne(el[i], count, fadeMs, function() { done++; if (done >= total && cb) cb(); });
       }
       return;
     }
     var cycles = count || 2;
+    var fadeDur = fadeMs || 1000;
     var step = 0;
     var running = true;
 
@@ -52,7 +56,7 @@ window.HAL.anim = window.HAL.anim || {};
       var start = performance.now();
       (function tick(now) {
         if (!running) return;
-        var t = (now - start) / 1000;
+        var t = (now - start) / fadeDur;
         if (t >= 1) { el.style.opacity = '0'; onDone(); return; }
         el.style.opacity = 1 - t;
         requestAnimationFrame(tick);
@@ -77,10 +81,11 @@ window.HAL.anim = window.HAL.anim || {};
     appear: function(elements, phase, onDone) {
       var list = asArray(elements);
       if (list.length === 0) { if (onDone) onDone(); return; }
+      var target = phase.opacity !== undefined ? phase.opacity : 1;
       if (phase.order === 'sequential') {
         appearSequence(list, phase.gap || 0, onDone);
       } else {
-        setOpacity(list, 1);
+        setOpacity(list, target);
         if (onDone) onDone();
       }
     },
@@ -98,29 +103,48 @@ window.HAL.anim = window.HAL.anim || {};
 
     flickerIn: function(elements, phase, onDone) {
       var gap = phase.gap || window.HAL_CONFIG.timing.groupGap;
-      blinkSequence(asArray(elements), 'in', gap, onDone);
+      var dur = phase.duration;
+      if (phase.order === 'simultaneous') {
+        var list = asArray(elements);
+        for (var i = 0; i < list.length; i++) flickerOne(list[i], 'in', dur);
+        var ms = dur || window.HAL_CONFIG.timing.flickerDuration || 1000;
+        setTimeout(onDone, ms);
+      } else {
+        blinkSequence(asArray(elements), 'in', gap, onDone, dur);
+      }
     },
 
     flickerOut: function(elements, phase, onDone) {
-      var gap = phase.gap || window.HAL_CONFIG.timing.groupGap;
-      blinkSequence(asArray(elements), 'out', gap, onDone);
+      var list = asArray(elements);
+      if (list.length === 0) { if (onDone) onDone(); return; }
+      if (phase.order === 'sequential') {
+        var gap = phase.gap || window.HAL_CONFIG.timing.groupGap;
+        var dur = phase.duration;
+        blinkSequence(list, 'out', gap, onDone, dur);
+      } else {
+        var dur = phase.duration;
+        for (var i = 0; i < list.length; i++) flickerOne(list[i], 'out', dur);
+        var ms = dur || window.HAL_CONFIG.timing.flickerDuration || 1000;
+        setTimeout(onDone, ms);
+      }
     },
 
     throb: function(elements, phase, onDone) {
       var list = asArray(elements);
       var count = phase.count || 2;
+      var fadeMs = phase.duration || 1000;
       if (phase.order === 'simultaneous') {
         var remaining = list.length;
         if (remaining === 0) { if (onDone) onDone(); return; }
         for (var i = 0; i < list.length; i++) {
-          throbOne(list[i], count, function() {
+          throbOne(list[i], count, fadeMs, function() {
             remaining--;
             if (remaining <= 0 && onDone) onDone();
           });
         }
       } else {
         var gap = phase.gap || 400;
-        throbSequence(list, gap, count, onDone);
+        throbSequence(list, gap, count, fadeMs, onDone);
       }
     },
 
@@ -175,14 +199,14 @@ window.HAL.anim = window.HAL.anim || {};
 
   // ── Sequential blink helper ─────────────────────────────────────────
 
-  function blinkSequence(list, dir, gap, onDone) {
-    var dur = window.HAL_CONFIG.timing.flickerDuration || 1000;
+  function blinkSequence(list, dir, gap, onDone, dur) {
     var i = 0;
     function tick() {
       if (i >= list.length) { if (onDone) onDone(); return; }
-      flickerOne(list[i], dir);
+      var ms = dur || window.HAL_CONFIG.timing.flickerDuration || 1000;
+      flickerOne(list[i], dir, dur);
       i++;
-      setTimeout(tick, dur + (gap || 0));
+      setTimeout(tick, ms + (gap || 0));
     }
     tick();
   }
@@ -212,13 +236,13 @@ window.HAL.anim = window.HAL.anim || {};
   }
 
   // Sequential throb
-  function throbSequence(list, gap, count, onDone) {
+  function throbSequence(list, gap, count, fadeMs, onDone) {
     var i = 0;
     function tick() {
       if (i >= list.length) { if (onDone) onDone(); return; }
-      throbOne(list[i], count);
+      throbOne(list[i], count, fadeMs);
       i++;
-      setTimeout(tick, (count * 1000) + (gap || 0));
+      setTimeout(tick, (count * fadeMs) + (gap || 0));
     }
     tick();
   }
@@ -274,19 +298,34 @@ window.HAL.anim = window.HAL.anim || {};
       }
       return;
     }
-    var x1 = parseFloat(el.getAttribute('x1') || 0);
-    var y1 = parseFloat(el.getAttribute('y1') || 0);
-    var x2 = parseFloat(el.getAttribute('x2') || 0);
-    var y2 = parseFloat(el.getAttribute('y2') || 0);
-    var len = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-    if (len < 0.5) { if (cb) cb(); return; }
-    el.style.opacity = '1';
+    var len;
+    if (el.getTotalLength) {
+      len = el.getTotalLength();
+    } else {
+      var x1 = parseFloat(el.getAttribute('x1') || 0);
+      var y1 = parseFloat(el.getAttribute('y1') || 0);
+      var x2 = parseFloat(el.getAttribute('x2') || 0);
+      var y2 = parseFloat(el.getAttribute('y2') || 0);
+      len = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    }
+    if (len < 0.5) { el.style.opacity = '1'; if (cb) cb(); return; }
+    var origDash = el.getAttribute('stroke-dasharray');
     el.setAttribute('stroke-dasharray', len);
     el.setAttribute('stroke-dashoffset', len);
     var start = performance.now();
     (function tick(now) {
       var t = (now - start) / dur;
-      if (t >= 1) { el.setAttribute('stroke-dashoffset', '0'); if (cb) cb(); return; }
+      if (t >= 1) {
+        el.setAttribute('stroke-dashoffset', '0');
+        if (origDash !== null) {
+          el.setAttribute('stroke-dasharray', origDash);
+        } else {
+          el.removeAttribute('stroke-dasharray');
+        }
+        el.style.opacity = '1';   // show AFTER draw completes
+        if (cb) cb();
+        return;
+      }
       el.setAttribute('stroke-dashoffset', len * (1 - t));
       requestAnimationFrame(tick);
     })(performance.now());
