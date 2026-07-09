@@ -49,7 +49,7 @@ window.HAL.cards['orbital'] = {
     }
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
-      x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
+      x: 20, y: 25, fill: '#ffffff', 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       filter: 'url(#txtGlow)',
     });
@@ -59,7 +59,7 @@ window.HAL.cards['orbital'] = {
 
     // ── Footer ────────────────────────────────────────────────────────
     var footer = e('text', {
-      x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
+      x: 20, y: 735, fill: '#ffffff', 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       filter: 'url(#txtGlow)',
     });
@@ -138,7 +138,7 @@ window.HAL.cards['orbital'] = {
 
     if (centerLabel) {
       var cl = e('text', {
-        x: cx, y: cy + 4, fill: fg('frame', 0.9),
+        x: cx, y: cy + 4, fill: '#ffffff',
         'font-size': fs(8), 'font-family': labelFont,
         'text-anchor': 'middle', 'dominant-baseline': 'central',
         'text-rendering': 'optimizeLegibility',
@@ -236,7 +236,7 @@ window.HAL.cards['orbital'] = {
       var anchor = (bAngle > 90 && bAngle < 270) ? 'end' : 'start';
       var ml = e('text', {
         x: lp.x, y: lp.y,
-        fill: fg('frame', 0.9), 'font-size': fs(7),
+        fill: '#ffffff', 'font-size': fs(7),
         'font-family': labelFont, 'text-anchor': anchor,
         'dominant-baseline': 'central',
         'text-rendering': 'optimizeLegibility',
@@ -288,7 +288,7 @@ window.HAL.cards['orbital'] = {
             var radialAngle = mk2.angle - 90;
             txt = e('text', {
               x: tp.x, y: tp.y,
-              fill: fg('frame', 0.75), 'font-size': fs(5),
+              fill: '#ffffff', 'font-size': fs(5),
               'font-family': labelFont,
               'text-anchor': 'start', 'dominant-baseline': 'central',
               'text-rendering': 'optimizeLegibility',
@@ -299,7 +299,7 @@ window.HAL.cards['orbital'] = {
             var ha = mk2.angle > 90 && mk2.angle < 270 ? 'end' : 'start';
             txt = e('text', {
               x: tp.x, y: tp.y,
-              fill: fg('frame', 0.75), 'font-size': fs(5),
+              fill: '#ffffff', 'font-size': fs(5),
               'font-family': labelFont,
               'text-anchor': ha, 'dominant-baseline': 'central',
               'text-rendering': 'optimizeLegibility',
