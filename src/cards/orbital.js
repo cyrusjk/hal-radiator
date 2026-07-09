@@ -42,7 +42,7 @@ window.HAL.cards['orbital'] = {
       var defs = e('defs');
       defs.innerHTML = '<radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">'
         + '<stop offset="0%" stop-color="rgba(255,255,255,1)"/>'
-        + '<stop offset="42%" stop-color="rgba(255,255,255,1)"/>'
+        + '<stop offset="29%" stop-color="rgba(255,255,255,1)"/>'
         + '<stop offset="100%" stop-color="rgba(255,255,255,0)"/>'
         + '</radialGradient>';
       svgEl.appendChild(defs);
@@ -269,7 +269,7 @@ window.HAL.cards['orbital'] = {
         if (mk2.glow) {
           var glowCfg = typeof mk2.glow === 'object' ? mk2.glow : {};
           var gh = e('circle', {
-            cx: mp.x, cy: mp.y, r: glowCfg.r || 12,
+            cx: mp.x, cy: mp.y, r: glowCfg.r || 17,
             fill: 'url(#glowGrad)',
             stroke: 'none',
           });
