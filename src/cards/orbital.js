@@ -38,11 +38,13 @@ window.HAL.cards['orbital'] = {
     svgEl.appendChild(bg);
 
     // ── Glow filter defs ──────────────────────────────────────────────
-    if (!svgEl.querySelector('#glowDot')) {
+    if (!svgEl.querySelector('#glowGrad')) {
       var defs = e('defs');
-      defs.innerHTML = '<filter id="glowDot" x="-50%" y="-50%" width="200%" height="200%">'
-        + '<feGaussianBlur stdDeviation="4" result="blur"/>'
-        + '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+      defs.innerHTML = '<radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">'
+        + '<stop offset="0%" stop-color="rgba(255,255,255,1)"/>'
+        + '<stop offset="30%" stop-color="rgba(255,255,255,0.6)"/>'
+        + '<stop offset="100%" stop-color="rgba(255,255,255,0)"/>'
+        + '</radialGradient>';
       svgEl.appendChild(defs);
     }
     // ── Header ────────────────────────────────────────────────────────
@@ -263,14 +265,13 @@ window.HAL.cards['orbital'] = {
           gMarkers.appendChild(md);
         }
 
-        // Glow highlight — fuzzy bright white bloom
+        // Glow highlight — opaque white center, fades to transparent
         if (mk2.glow) {
           var glowCfg = typeof mk2.glow === 'object' ? mk2.glow : {};
           var gh = e('circle', {
-            cx: mp.x, cy: mp.y, r: glowCfg.r || 12,
-            fill: 'rgba(255,255,255,0.7)',
+            cx: mp.x, cy: mp.y, r: glowCfg.r || 14,
+            fill: 'url(#glowGrad)',
             stroke: 'none',
-            filter: 'url(#glowDot)',
           });
           gh.style.opacity = '0';
           gGlow.appendChild(gh);
