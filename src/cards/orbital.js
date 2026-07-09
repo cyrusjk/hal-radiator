@@ -121,7 +121,7 @@ window.HAL.cards['orbital'] = {
     // ── Center body ───────────────────────────────────────────────────
     var centerR = data.centerR || (series.length > 6 ? 10 : 14);
     var centerDot = e('circle', {
-      cx: cx, cy: cy, r: centerR, fill: fg('frame', 0.7), stroke: 'none',
+      cx: cx, cy: cy, r: centerR, fill: '#ffffff', stroke: 'none',
     });
     centerDot.style.opacity = '0';
     gCenter.appendChild(centerDot);
@@ -216,7 +216,7 @@ window.HAL.cards['orbital'] = {
       var bodyR = Math.max(4, Math.min(10, (s.value || 5) / 10));
       var dot = e('circle', {
         cx: bp.x, cy: bp.y, r: bodyR,
-        fill: fg('frame', 0.9), stroke: fg('frame', 1.5), 'stroke-width': 1.0,
+        fill: '#ffffff', stroke: 'none',
       });
       dot.style.opacity = '0';
       gMoon.appendChild(dot);
@@ -259,7 +259,7 @@ window.HAL.cards['orbital'] = {
         if (mk2.glow) {
           var glowCfg = typeof mk2.glow === 'object' ? mk2.glow : {};
           var gh = e('circle', {
-            cx: mp.x, cy: mp.y, r: glowCfg.r || 6,
+            cx: mp.x, cy: mp.y, r: glowCfg.r || 10,
             fill: 'rgba(255,255,255,0.45)',
             stroke: 'none',
           });
