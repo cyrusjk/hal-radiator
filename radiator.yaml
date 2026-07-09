@@ -457,6 +457,7 @@ groups:
         - angle: 45
           label: IO
           style: solid
+          glow: {}
         - angle: 120
           label: VEC°
           style: dashed

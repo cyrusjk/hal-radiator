@@ -285,40 +285,20 @@ cardPrototypes:
         - axis
       - action: wait
         duration: 200
-      - action: draw
+      # Graph appears complete — all orbit lines at once
+      - action: appear
         groups:
         - line_0
-        duration: 200
-      - action: draw
-        groups:
         - line_1
-        duration: 200
-      - action: draw
-        groups:
         - line_2
-        duration: 200
-      - action: draw
-        groups:
         - line_3
-        duration: 200
-      - action: draw
-        groups:
         - line_4
-        duration: 200
-      - action: draw
-        groups:
         - line_5
-        duration: 200
-      - action: draw
-        groups:
         - line_6
-        duration: 200
-      - action: draw
-        groups:
         - line_7
-        duration: 200
       - action: wait
         duration: 300
+      # Bold arcs + text pop in together
       - action: appear
         groups:
         - bold_0
@@ -329,8 +309,6 @@ cardPrototypes:
         - bold_5
         - bold_6
         - bold_7
-      - action: appear
-        groups:
         - moon_0
         - moon_1
         - moon_2
@@ -339,14 +317,80 @@ cardPrototypes:
         - moon_5
         - moon_6
         - moon_7
-      - action: appear
-        groups:
         - markers
-      - action: appear
-        groups:
         - labels
       - action: wait
+        duration: 400
+      # Glowing highlights appear sequentially
+      - action: appear
+        groups:
+        - glow_0
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_1
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_2
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_3
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_4
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_5
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_6
+        duration: 600
+        order: sequential
+      - action: wait
+        duration: 200
+      - action: appear
+        groups:
+        - glow_7
+        duration: 600
+        order: sequential
+      - action: wait
         duration: 3000
+      # Disappear in reverse
+      - action: disappear
+        gap: 60
+        groups:
+        - glow_7
+        - glow_6
+        - glow_5
+        - glow_4
+        - glow_3
+        - glow_2
+        - glow_1
+        - glow_0
+        order: reverse
       - action: disappear
         gap: 60
         groups:
