@@ -266,18 +266,27 @@ window.HAL.cards['orbital'] = {
           gMarkers.appendChild(md);
         }
 
-        // Glow highlight at this marker position
+        // Glow highlight at this marker position — solid white dot + halo
         if (mk2.glow) {
-          var glowR = mk2.glow.r || 10;
-          var glowColor = mk2.glow.color || 'rgba(255,200,100,0.6)';
-          var gh = e('circle', {
-            cx: mp.x, cy: mp.y, r: glowR,
-            fill: glowColor, stroke: 'rgba(255,230,180,0.9)',
-            'stroke-width': 1.5,
+          var glowCfg = typeof mk2.glow === 'object' ? mk2.glow : {};
+          var haloR = glowCfg.haloR || 12;
+          var coreR = glowCfg.coreR || 3;
+          // Solid white core dot
+          var core = e('circle', {
+            cx: mp.x, cy: mp.y, r: coreR,
+            fill: '#ffffff', stroke: 'none',
+          });
+          core.style.opacity = '0';
+          gGlow.appendChild(core);
+          // Blurred white halo
+          var halo = e('circle', {
+            cx: mp.x, cy: mp.y, r: haloR,
+            fill: 'rgba(255,255,255,0.25)',
+            stroke: 'none',
             filter: 'url(#glowDot)',
           });
-          gh.style.opacity = '0';
-          gGlow.appendChild(gh);
+          halo.style.opacity = '0';
+          gGlow.appendChild(halo);
         }
 
         // Label + leader
