@@ -138,7 +138,7 @@ window.HAL.cards['orbital'] = {
 
     if (centerLabel) {
       var cl = e('text', {
-        x: cx, y: cy + 4, fill: '#ffffff',
+        x: cx, y: cy + 22, fill: '#ffffff',
         'font-size': fs(8), 'font-family': labelFont,
         'text-anchor': 'middle', 'dominant-baseline': 'central',
         'text-rendering': 'optimizeLegibility',
