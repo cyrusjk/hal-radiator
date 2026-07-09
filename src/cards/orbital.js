@@ -37,6 +37,14 @@ window.HAL.cards['orbital'] = {
     var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
     svgEl.appendChild(bg);
 
+    // ── Glow filter defs ──────────────────────────────────────────────
+    if (!svgEl.querySelector('#glowDot')) {
+      var defs = e('defs');
+      defs.innerHTML = '<filter id="glowDot" x="-50%" y="-50%" width="200%" height="200%">'
+        + '<feGaussianBlur stdDeviation="4" result="blur"/>'
+        + '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+      svgEl.appendChild(defs);
+    }
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
@@ -255,13 +263,14 @@ window.HAL.cards['orbital'] = {
           gMarkers.appendChild(md);
         }
 
-        // Glow highlight — semi-transparent white filled circle
+        // Glow highlight — fuzzy bright white bloom
         if (mk2.glow) {
           var glowCfg = typeof mk2.glow === 'object' ? mk2.glow : {};
           var gh = e('circle', {
-            cx: mp.x, cy: mp.y, r: glowCfg.r || 10,
-            fill: 'rgba(255,255,255,0.45)',
+            cx: mp.x, cy: mp.y, r: glowCfg.r || 12,
+            fill: 'rgba(255,255,255,0.7)',
             stroke: 'none',
+            filter: 'url(#glowDot)',
           });
           gh.style.opacity = '0';
           gGlow.appendChild(gh);
