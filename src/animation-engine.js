@@ -300,7 +300,8 @@ window.HAL.anim = window.HAL.anim || {};
     }
     var len;
     if (el.getTotalLength) {
-      len = el.getTotalLength();
+      try { len = el.getTotalLength(); }
+      catch(e) { len = 0; }
     } else {
       var x1 = parseFloat(el.getAttribute('x1') || 0);
       var y1 = parseFloat(el.getAttribute('y1') || 0);

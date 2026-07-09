@@ -5,7 +5,7 @@
 #   - Serves /api/config from radiator.yaml (flattened to card array)
 # ═══════════════════════════════════════════════════════════════════════
 
-import json, yaml, os, io, email.utils, mimetypes, urllib.parse
+import json, yaml, os, io, email.utils, mimetypes, urllib.parse, urllib.request, re
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
@@ -110,6 +110,10 @@ class Handler(BaseHTTPRequestHandler):
             self._serve_config()
             return
 
+        if path == '/api/ephemeris':
+            self._serve_ephemeris(parsed.query)
+            return
+
         self._serve_static(path)
 
     def _serve_config(self):
@@ -124,6 +128,81 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             import traceback
             self.wfile.write(json.dumps({'error': str(e), 'trace': traceback.format_exc()}).encode())
+
+    def _send_json(self, data, status=200):
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Connection', 'close')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _parse_jpl_response(self, raw):
+        """Parse JPL Horizons batch output, return {x, y, z} or None."""
+        for line in raw.split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+            # Try "X = <val> Y = <val> Z = <val>"
+            m = re.search(
+                r'X\s*=\s*([\d\.Ee+\-]+)\s+Y\s*=\s*([\d\.Ee+\-]+)\s+Z\s*=\s*([\d\.Ee+\-]+)',
+                line
+            )
+            if m:
+                return {'x': float(m.group(1)), 'y': float(m.group(2)), 'z': float(m.group(3))}
+            # Try CSV: JDTDB, ... X, Y, Z, ...
+            parts = line.split(',')
+            if len(parts) >= 5:
+                try:
+                    x = float(parts[2].strip())
+                    y = float(parts[3].strip())
+                    z = float(parts[4].strip())
+                    return {'x': x, 'y': y, 'z': z}
+                except (ValueError, IndexError):
+                    pass
+        return None
+
+    def _serve_ephemeris(self, query_string):
+        params = urllib.parse.parse_qs(query_string)
+        body = (params.get('body') or [''])[0]
+        center = (params.get('center') or ['500@0'])[0]
+        time = (params.get('time') or [''])[0]
+        if not body:
+            self._send_json({'error': 'missing body param'}, 400)
+            return
+        # Build JPL Horizons batch URL
+        # JPL needs start < stop; use 1-day window
+        start_time = time or '2026-07-09'
+        import datetime
+        try:
+            dt = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+            stop_time = (dt + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+        except ValueError:
+            stop_time = start_time  # fallback, may error
+        jpl_url = (
+            'https://ssd.jpl.nasa.gov/api/horizons.api'
+            '?format=text'
+            '&MAKE_EPHEM=YES'
+            '&TABLE_TYPE=VECTORS'
+            '&CSV_FORMAT=YES'
+            f'&COMMAND={body}'
+            f'&CENTER={center}'
+            f'&START_TIME={start_time}'
+            f'&STOP_TIME={stop_time}'
+            '&OUT_UNITS=KM-D'
+        )
+        try:
+            req = urllib.request.urlopen(jpl_url, timeout=15)
+            raw = req.read().decode()
+            result = self._parse_jpl_response(raw)
+            if result:
+                self._send_json(result)
+            else:
+                self._send_json({'error': 'no position data parsed'}, 502)
+        except Exception as e:
+            self._send_json({'error': str(e)}, 502)
 
     def _serve_static(self, path):
         if path == '/' or path == '':
