@@ -37,17 +37,6 @@ window.HAL.cards['orbital'] = {
     var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
     svgEl.appendChild(bg);
 
-    // ── Glow filter defs ──────────────────────────────────────────────
-    if (!data._container && !svgEl.querySelector('#glowDot')) {
-      var defs = e('defs');
-      defs.id = '__orbitalDefs';
-      // Glow halo filter
-      defs.innerHTML = '<filter id="glowDot" x="-50%" y="-50%" width="200%" height="200%">'
-        + '<feGaussianBlur stdDeviation="3" result="blur"/>'
-        + '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-      svgEl.appendChild(defs);
-    }
-
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
@@ -266,27 +255,16 @@ window.HAL.cards['orbital'] = {
           gMarkers.appendChild(md);
         }
 
-        // Glow highlight at this marker position — solid white dot + halo
+        // Glow highlight — semi-transparent white filled circle
         if (mk2.glow) {
           var glowCfg = typeof mk2.glow === 'object' ? mk2.glow : {};
-          var haloR = glowCfg.haloR || 12;
-          var coreR = glowCfg.coreR || 3;
-          // Solid white core dot
-          var core = e('circle', {
-            cx: mp.x, cy: mp.y, r: coreR,
-            fill: '#ffffff', stroke: 'none',
-          });
-          core.style.opacity = '0';
-          gGlow.appendChild(core);
-          // Blurred white halo
-          var halo = e('circle', {
-            cx: mp.x, cy: mp.y, r: haloR,
-            fill: 'rgba(255,255,255,0.25)',
+          var gh = e('circle', {
+            cx: mp.x, cy: mp.y, r: glowCfg.r || 6,
+            fill: 'rgba(255,255,255,0.45)',
             stroke: 'none',
-            filter: 'url(#glowDot)',
           });
-          halo.style.opacity = '0';
-          gGlow.appendChild(halo);
+          gh.style.opacity = '0';
+          gGlow.appendChild(gh);
         }
 
         // Label + leader
