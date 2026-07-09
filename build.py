@@ -21,10 +21,17 @@ if not yaml_path.exists():
 with open(yaml_path) as f:
     cfg = yaml.safe_load(f)
 
+# Load prototypes from separate file if not in main config
+protos_path = ROOT / "prototypes.yaml"
+prototypes = cfg.get("cardPrototypes", {})
+if not prototypes and protos_path.exists():
+    with open(protos_path) as f:
+        protos_data = yaml.safe_load(f) or {}
+    prototypes = protos_data.get("cardPrototypes", {})
+
 timing = cfg.get("timing", {})
 groups = cfg.get("groups", [])
 colors = cfg.get("colors", {})
-prototypes = cfg.get("cardPrototypes", {})
 
 # ── Resolve card prototypes ───────────────────────────────────────────
 # Chart entries with 'prototype' key inherit chartType and animation

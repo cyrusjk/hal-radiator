@@ -15,6 +15,20 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 PORT = 8009
 ROOT = os.path.dirname(os.path.abspath(__file__))
 YAML_PATH = os.path.join(ROOT, 'radiator.yaml')
+PROTOTYPES_PATH = os.path.join(ROOT, 'prototypes.yaml')
+
+def load_config():
+    """Load radiator.yaml and merge prototypes.yaml into it."""
+    with open(YAML_PATH, 'r') as f:
+        cfg = yaml.safe_load(f) or {}
+    try:
+        with open(PROTOTYPES_PATH, 'r') as f:
+            protos = yaml.safe_load(f) or {}
+    except FileNotFoundError:
+        protos = {}
+    if 'cardPrototypes' not in cfg and 'cardPrototypes' in protos:
+        cfg['cardPrototypes'] = protos['cardPrototypes']
+    return cfg
 
 def resolve_prototype(chart, prototypes):
     """Resolve a chart entry against card prototypes.
@@ -105,9 +119,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Connection', 'close')
         self.end_headers()
         try:
-            with open(YAML_PATH) as f:
-                raw = yaml.safe_load(f)
-            flat = flatten_config(raw)
+            flat = flatten_config(load_config())
             self.wfile.write(json.dumps(flat).encode())
         except Exception as e:
             import traceback
