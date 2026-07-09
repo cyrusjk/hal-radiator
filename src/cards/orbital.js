@@ -42,7 +42,7 @@ window.HAL.cards['orbital'] = {
       var defs = e('defs');
       defs.innerHTML = '<radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">'
         + '<stop offset="0%" stop-color="rgba(255,255,255,1)"/>'
-        + '<stop offset="60%" stop-color="rgba(255,255,255,0.85)"/>'
+        + '<stop offset="67%" stop-color="rgba(255,255,255,1)"/>'
         + '<stop offset="100%" stop-color="rgba(255,255,255,0)"/>'
         + '</radialGradient>';
       svgEl.appendChild(defs);
