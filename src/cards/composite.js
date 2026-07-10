@@ -122,7 +122,8 @@ window.HAL.cards['composite'] = {
             } else {
               zDone();
             }
-          }).catch(function() {
+          }).catch(function(e) {
+            console.error('Zone fetch error [', zone.chartType, ']:', e);
             zDone();
           });
         })(childData, window.HAL.cards[zone.chartType], zoneDone);

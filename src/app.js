@@ -71,9 +71,9 @@
               var r = window.HAL.cards[c.type];
               var cb = guard(onDone, myGen);
               r && r.render ? r.render(c, cb) : cb && cb();
-            } catch(e) { var cb = guard(onDone, myGen); cb && cb(); }
+            } catch(e) { console.error('Card render error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); }
           })
-          .catch(function() { var cb = guard(onDone, myGen); cb && cb(); });
+          .catch(function(e) { console.error('Card fetch error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); });
       } else {
         window.HAL.cards.title.render(c);
         if (onDone) {
