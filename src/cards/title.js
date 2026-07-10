@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards.title = {
 
   render: function(data) {
-    var svgEl = data._container || document.getElementById('card');
+    var svgEl = window.HAL.svg.getContainer(data);
     var titleFont = window.HAL_CONFIG.visual.fonts.title;
     var labelFont = window.HAL_CONFIG.visual.fonts.label;
     var e = window.HAL.svg.el;

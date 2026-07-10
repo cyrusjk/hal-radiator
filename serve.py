@@ -63,6 +63,10 @@ def resolve_prototype(chart, prototypes):
     return resolved
 
 
+def resolve_color(name, colors):
+    return colors.get(name, name) if isinstance(name, str) else name
+
+
 def flatten_config(cfg):
     """Convert the YAML groups structure into a flat card array,
     resolving card prototypes along the way."""
@@ -71,9 +75,6 @@ def flatten_config(cfg):
     visual = cfg.get("visual", {})
     groups = cfg.get("groups", [])
     prototypes = cfg.get("cardPrototypes", {})
-
-    def resolve_color(name):
-        return colors.get(name, name) if isinstance(name, str) else name
 
     cards = []
     for group in groups:
@@ -96,15 +97,15 @@ def flatten_config(cfg):
                         pass  # unknown prototype, skip chartType resolution
                 # Resolve named color references in zone
                 if "color" in z:
-                    z["color"] = resolve_color(z["color"])
+                    z["color"] = resolve_color(z["color"], colors)
                 if "bg" in z:
-                    z["bg"] = resolve_color(z["bg"])
+                    z["bg"] = resolve_color(z["bg"], colors)
                 zones.append(z)
             cards.append({
                 "type": "composite",
                 "title": group.get("title", ""),
                 "label": group.get("subheading", ""),
-                "color": resolve_color(group.get("color", "rgb(0,0,0)")),
+                "color": resolve_color(group.get("color", "rgb(0,0,0, colors)")),
                 "zones": zones,
             })
             continue
@@ -114,7 +115,7 @@ def flatten_config(cfg):
             "type": "title",
             "title": group["title"],
             "label": group.get("subheading", ""),
-            "color": resolve_color(group.get("color", "rgb(0,0,0)")),
+            "color": resolve_color(group.get("color", "rgb(0,0,0, colors)")),
         })
         # Chart cards
         for chart in group.get("charts", []):
@@ -125,7 +126,7 @@ def flatten_config(cfg):
             c = dict(chart)
             c["type"] = chart.get("chartType", "curve-family")
             c["label"] = chart.get("label", "")
-            c["color"] = resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)")))
+            c["color"] = resolve_color(chart.get("color", group.get("color", "rgb(0,0,0, colors)")))
             c.pop("chartType", None)
             cards.append(c)
 

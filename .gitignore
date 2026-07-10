@@ -12,3 +12,8 @@ assets/fonts/*.html
 # OS
 Thumbs.db
 .DS_Store
+
+# Unused Folio variants
+assets/fonts/Folio-Std-Light.ttf
+assets/fonts/Folio-Std-Extra-Bold.ttf
+assets/fonts/Folio-Std-Bold-Condensed.ttf

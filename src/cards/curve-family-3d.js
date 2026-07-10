@@ -12,7 +12,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['curve-family-3d'] = {
 
   render: function(data, onDone) {
-    var svgEl = data._container || document.getElementById('card');
+    var svgEl = window.HAL.svg.getContainer(data);
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';

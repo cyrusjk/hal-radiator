@@ -10,7 +10,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['curve-family-stacked'] = {
 
   render: function(data, onDone) {
-    var svgEl = data._container || document.getElementById('card');
+    var svgEl = window.HAL.svg.getContainer(data);
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
     var x0 = 80, pad = 60;

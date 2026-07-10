@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['orbital'] = {
 
   render: function(data, onDone) {
-    var svgEl = data._container || document.getElementById('card');
+    var svgEl = window.HAL.svg.getContainer(data);
     var vis = window.HAL_CONFIG.visual || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var e = window.HAL.svg.el;

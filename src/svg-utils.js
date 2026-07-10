@@ -42,4 +42,14 @@ window.HAL.svg = {
     var scale = window.HAL.svg.vis().fontScale || 1.0;
     return Math.round(px * scale);
   },
+
+  // ── Container helper ────────────────────────────────────────────────
+  // Returns the SVG element to render into. Inside a composite card child
+  // zone, data._container is set; in standalone mode, falls back to the
+  // root #card element.  Standalone call clears the card first.
+  getContainer: function(data) {
+    var el = (data && data._container) || document.getElementById('card');
+    if (!data || !data._container) el.innerHTML = '';
+    return el;
+  },
 };

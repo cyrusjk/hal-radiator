@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['curve-family'] = {
 
   render: function(data, onDone) {
-    var svgEl = data._container || document.getElementById('card');
+    var svgEl = window.HAL.svg.getContainer(data);
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
     var x0 = vc.x0 || 80, y0 = vc.y0 || 70;
