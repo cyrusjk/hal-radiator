@@ -77,6 +77,30 @@ def flatten_config(cfg):
 
     cards = []
     for group in groups:
+        # Check if this is a layout/composite card (has layout.zones)
+        layout = group.get("layout")
+        if layout and layout.get("zones"):
+            # Emit as a composite card
+            zones = []
+            for zone in layout.get("zones", []):
+                z = dict(zone)
+                zt = zone.get("type", "")
+                if zt == "chart":
+                    # Resolve prototype for chart zones
+                    chart = resolve_prototype(zone, prototypes)
+                    z["chartType"] = chart.get("chartType", "curve-family")
+                    z["dataSource"] = chart.get("dataSource", zone.get("dataSource", {}))
+                    z.pop("prototype", None)
+                zones.append(z)
+            cards.append({
+                "type": "composite",
+                "title": group.get("title", ""),
+                "label": group.get("subheading", ""),
+                "color": resolve_color(group.get("color", "rgb(0,0,0)")),
+                "zones": zones,
+            })
+            continue
+
         # Title card
         cards.append({
             "type": "title",

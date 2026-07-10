@@ -77,7 +77,7 @@ window.HAL.data.sources = window.HAL.data.sources || {};
         'start=' + start,
         'end=' + now,
         'step=' + step
-      ].join('&'))
+      ].join('&'), { signal: AbortSignal.timeout(10000) })
         .then(function(r) { if (!r.ok) throw new Error('VM fetch failed: ' + r.status); return r.json(); })
         .then(function(json) { return plugin.transform(json, groupLabel, seriesLabel, dataSource); });
     },

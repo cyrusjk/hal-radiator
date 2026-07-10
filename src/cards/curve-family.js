@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['curve-family'] = {
 
   render: function(data, onDone) {
-    var svgEl = document.getElementById('card');
+    var svgEl = data._container || document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
     var x0 = vc.x0 || 80, y0 = vc.y0 || 70;
@@ -54,7 +54,7 @@ window.HAL.cards['curve-family'] = {
     var groupLabels = [];       // band/group name text elements
 
     // ── Card background ───────────────────────────────────────────────
-    svgEl.innerHTML = '';
+    if (!data._container) svgEl.innerHTML = '';
     var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
     svgEl.appendChild(bg);
 

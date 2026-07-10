@@ -98,11 +98,11 @@
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
-        e.preventDefault(); locked = false;
+        e.preventDefault(); locked = true;
         transitionTo((idx - 1 + cfg.cards.length) % cfg.cards.length);
       }
       else if (e.key === 'ArrowRight') {
-        e.preventDefault(); locked = false;
+        e.preventDefault(); locked = true;
         transitionTo((idx + 1) % cfg.cards.length);
       }
       else if (e.key === ' ') {
@@ -125,8 +125,16 @@
       }
     });
 
+    // ── Expose gotoCard for console / URL params
+    window.HAL.gotoCard = transitionTo;
+
     // ── Boot sequence ──────────────────────────────────────────────────
-    showCard(0);
-    autoTimer = setTimeout(transitionTo, cfg.timing.titleCardDisplay * 1000, 1);
+    var startIdx = 0;
+    try {
+      var m = (window.location.search || '').match(/[?&]card=(\d+)/);
+      if (m) startIdx = Math.min(Math.max(parseInt(m[1], 10), 0), cfg.cards.length - 1);
+    } catch(e) {}
+    showCard(startIdx);
+    autoTimer = setTimeout(function() { transitionTo((startIdx + 1) % cfg.cards.length); }, cfg.timing.titleCardDisplay * 1000);
   }
 })();

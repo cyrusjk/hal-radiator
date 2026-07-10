@@ -669,6 +669,9 @@ groups:
   subheading: RADAR SWEEP
   title: RAD
 - color: main-blue
+  subheading: CHIP DEMO
+  title: CHP
+- color: main-blue
   layout:
     zones:
     - h: 60

@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['sunburst'] = {
 
   render: function(data, onDone) {
-    var svgEl = document.getElementById('card');
+    var svgEl = data._container || document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var dataFont = (vis.fonts || {}).data || labelFont;
@@ -31,7 +31,7 @@ window.HAL.cards['sunburst'] = {
     var ringPadding = 4;
 
     // Background
-    svgEl.innerHTML = '';
+    if (!data._container) svgEl.innerHTML = '';
     svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
 
     // Header
