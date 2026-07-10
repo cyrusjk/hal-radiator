@@ -27,7 +27,7 @@
     if (!cfg || !cfg.cards || !cfg.cards.length) return;
     if (!window.HAL.cards || !window.HAL.cards.title) { document.body.innerHTML += 'ERROR: title renderer missing'; return; }
 
-    var idx = 0, locked = false, autoTimer = null, zoom = 1.0;
+    var idx = 0, locked = false, manualNav = false, autoTimer = null, zoom = 1.0;
     var wrap = document.getElementById('wrap');
     var gen = 0;  // incremented on every showCard → invalidates stale callbacks
 
@@ -83,6 +83,7 @@
     }
 
     function cardDone() {
+      if (manualNav) { manualNav = false; return; }
       locked ? showCard(idx, cardDone) : scheduleNext();
     }
 
@@ -98,15 +99,15 @@
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
-        e.preventDefault(); locked = true;
+        e.preventDefault(); manualNav = true;
         transitionTo((idx - 1 + cfg.cards.length) % cfg.cards.length);
       }
       else if (e.key === 'ArrowRight') {
-        e.preventDefault(); locked = true;
+        e.preventDefault(); manualNav = true;
         transitionTo((idx + 1) % cfg.cards.length);
       }
       else if (e.key === ' ') {
-        e.preventDefault(); locked = !locked;
+        e.preventDefault(); manualNav = false; locked = !locked;
         locked ? showCard(idx, cardDone) : scheduleNext();
       }
       else if (e.key === '=' || e.key === '+') {

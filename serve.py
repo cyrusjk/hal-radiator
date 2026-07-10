@@ -87,10 +87,18 @@ def flatten_config(cfg):
                 zt = zone.get("type", "")
                 if zt == "chart":
                     # Resolve prototype for chart zones
-                    chart = resolve_prototype(zone, prototypes)
-                    z["chartType"] = chart.get("chartType", "curve-family")
-                    z["dataSource"] = chart.get("dataSource", zone.get("dataSource", {}))
-                    z.pop("prototype", None)
+                    try:
+                        chart = resolve_prototype(zone, prototypes)
+                        z["chartType"] = chart.get("chartType", "curve-family")
+                        z["dataSource"] = chart.get("dataSource", zone.get("dataSource", {}))
+                        z.pop("prototype", None)
+                    except ValueError:
+                        pass  # unknown prototype, skip chartType resolution
+                # Resolve named color references in zone
+                if "color" in z:
+                    z["color"] = resolve_color(z["color"])
+                if "bg" in z:
+                    z["bg"] = resolve_color(z["bg"])
                 zones.append(z)
             cards.append({
                 "type": "composite",
@@ -110,7 +118,10 @@ def flatten_config(cfg):
         })
         # Chart cards
         for chart in group.get("charts", []):
-            chart = resolve_prototype(chart, prototypes)
+            try:
+                chart = resolve_prototype(chart, prototypes)
+            except ValueError:
+                continue
             c = dict(chart)
             c["type"] = chart.get("chartType", "curve-family")
             c["label"] = chart.get("label", "")
