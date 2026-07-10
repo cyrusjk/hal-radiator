@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['telemetry-grid'] = {
 
   render: function(data, onDone) {
-    var svgEl = document.getElementById('card');
+    var svgEl = data._container || document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';
     var dataFont = (vis.fonts || {}).data || labelFont;
@@ -33,8 +33,8 @@ window.HAL.cards['telemetry-grid'] = {
     var sepY  = vPad - 18; // separator above column headers
 
     // ── Card background ───────────────────────────────────────────────
-    svgEl.innerHTML = '';
-    var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
+    if (!data._container) svgEl.innerHTML = '';
+    var bg = e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color });
     svgEl.appendChild(bg);
 
     // ── Header ────────────────────────────────────────────────────────

@@ -111,6 +111,7 @@ window.HAL.cards['composite'] = {
         if (zone.chartType)  childData.type = zone.chartType;
 
         childData._container = zG;
+        childData.w = (zw || 1000); childData.h = (zh || 750);
 
         // Fetch data for this chart zone, then render
         (function(zChild, zRenderer, zDone) {

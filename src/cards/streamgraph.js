@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards['streamgraph'] = {
 
   render: function(data, onDone) {
-    var svgEl = document.getElementById('card');
+    var svgEl = data._container || document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';
@@ -33,8 +33,8 @@ window.HAL.cards['streamgraph'] = {
     var x0 = 80, y0 = 80, cw = 840, ch = 560;
 
     // Background
-    svgEl.innerHTML = '';
-    svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
+    if (!data._container) svgEl.innerHTML = '';
+    svgEl.appendChild(e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color }));
 
     // Header
     var header = e('text', {

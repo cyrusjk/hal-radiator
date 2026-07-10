@@ -11,7 +11,7 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards.tabular = {
 
   render: function(data, onDone) {
-    var svgEl = document.getElementById('card');
+    var svgEl = data._container || document.getElementById('card');
     var vis = window.HAL_CONFIG.visual || {};
     var titleFont = (vis.fonts || {}).title || 'sans-serif';
     var labelFont = (vis.fonts || {}).label || 'monospace';
@@ -24,8 +24,8 @@ window.HAL.cards.tabular = {
     if (rows.length === 0) { if (onDone) onDone(); return; }
 
     // ── Card background ───────────────────────────────────────────────
-    svgEl.innerHTML = '';
-    var bg = e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color });
+    if (!data._container) svgEl.innerHTML = '';
+    var bg = e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color });
     svgEl.appendChild(bg);
 
     // ── Layout ────────────────────────────────────────────────────────

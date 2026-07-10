@@ -11,14 +11,14 @@ window.HAL.cards = window.HAL.cards || {};
 window.HAL.cards.title = {
 
   render: function(data) {
-    var svgEl = document.getElementById('card');
+    var svgEl = data._container || document.getElementById('card');
     var titleFont = window.HAL_CONFIG.visual.fonts.title;
     var labelFont = window.HAL_CONFIG.visual.fonts.label;
     var e = window.HAL.svg.el;
     var fg = window.HAL.svg.fg;
 
     // Build SVG via DOM methods (reliable across all browsers and protocols)
-    svgEl.innerHTML = '';
+    if (!data._container) svgEl.innerHTML = '';
 
     svgEl.appendChild(e('rect', {
       x: 0, y: 0, width: 1000, height: 750, fill: data.color,

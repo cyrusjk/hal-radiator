@@ -46,7 +46,7 @@ window.HAL.cards['curve-family-3d'] = {
 
     // Background
     if (!data._container) svgEl.innerHTML = '';
-    svgEl.appendChild(e('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
+    svgEl.appendChild(e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color }));
 
     // Header / footer
     var header = e('text', { x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility' });
