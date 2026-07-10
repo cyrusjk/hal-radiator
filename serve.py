@@ -105,7 +105,7 @@ def flatten_config(cfg):
                 "type": "composite",
                 "title": group.get("title", ""),
                 "label": group.get("subheading", ""),
-                "color": resolve_color(group.get("color", "rgb(0,0,0, colors)")),
+                "color": resolve_color(group.get("color", "rgb(0,0,0)"), colors),
                 "zones": zones,
             })
             continue
@@ -115,7 +115,7 @@ def flatten_config(cfg):
             "type": "title",
             "title": group["title"],
             "label": group.get("subheading", ""),
-            "color": resolve_color(group.get("color", "rgb(0,0,0, colors)")),
+            "color": resolve_color(group.get("color", "rgb(0,0,0)"), colors),
         })
         # Chart cards
         for chart in group.get("charts", []):
@@ -126,7 +126,7 @@ def flatten_config(cfg):
             c = dict(chart)
             c["type"] = chart.get("chartType", "curve-family")
             c["label"] = chart.get("label", "")
-            c["color"] = resolve_color(chart.get("color", group.get("color", "rgb(0,0,0, colors)")))
+            c["color"] = resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)")), colors)
             c.pop("chartType", None)
             cards.append(c)
 
