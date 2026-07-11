@@ -83,7 +83,7 @@
     }
 
     function cardDone() {
-      if (manualNav) { manualNav = false; return; }
+      manualNav = false;
       locked ? showCard(idx, cardDone) : scheduleNext();
     }
 
