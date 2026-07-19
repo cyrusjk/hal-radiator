@@ -33,7 +33,6 @@ window.HAL.cards['streamgraph'] = {
     var x0 = 80, y0 = 80, cw = 840, ch = 560;
 
     // Background
-    if (!data._container) svgEl.innerHTML = '';
     svgEl.appendChild(e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color }));
 
     // Header

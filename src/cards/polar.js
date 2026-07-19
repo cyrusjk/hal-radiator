@@ -38,10 +38,9 @@ window.HAL.cards['polar'] = {
       }
     }
 
-    // ── Card background ───────────────────────────────────────────────
-    if (!data._container) svgEl.innerHTML = '';
-    var bg = e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color });
-    svgEl.appendChild(bg);
+    // Card background
+    svgEl.appendChild(e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color }));
+    // Header text
 
     // ── Header ────────────────────────────────────────────────────────
     var header = e('text', {

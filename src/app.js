@@ -65,6 +65,8 @@
             if (data) for (var k in data) if (data[k] !== undefined && data[k] !== null && (typeof data[k] !== 'object' || Object.keys(data[k]).length > 0)) c[k] = data[k];
             try {
               var r = window.HAL.cards[c.type];
+              // Lifecycle: run _cleanup before next render
+              if (r && r._cleanup) r._cleanup();
               var cb = guard(onDone, myGen);
               r && r.render ? r.render(c, cb) : cb && cb();
             } catch(e) { console.error('Card render error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); }

@@ -10,7 +10,7 @@ window.HAL.cards = window.HAL.cards || {};
 
 window.HAL.cards.title = {
 
-  render: function(data) {
+  render: function(data, onDone) {
     var svgEl = window.HAL.svg.getContainer(data);
     var titleFont = window.HAL_CONFIG.visual.fonts.title;
     var labelFont = window.HAL_CONFIG.visual.fonts.label;
@@ -18,7 +18,6 @@ window.HAL.cards.title = {
     var fg = window.HAL.svg.fg;
 
     // Build SVG via DOM methods (reliable across all browsers and protocols)
-    if (!data._container) svgEl.innerHTML = '';
 
     svgEl.appendChild(e('rect', {
       x: 0, y: 0, width: 1000, height: 750, fill: data.color,

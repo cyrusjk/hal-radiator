@@ -26,6 +26,32 @@ window.HAL.svg = {
     return window.HAL_CONFIG.visual || {};
   },
 
+  // Merge card defaults + per-card overrides (no mutation)
+  // Returns a new object; does not modify either input.
+  mergeConfig: function(defaults, overrides) {
+    var cfg = {};
+    for (var k in defaults) cfg[k] = defaults[k];
+    if (overrides) for (var k in overrides) cfg[k] = overrides[k];
+    return cfg;
+  },
+
+  // One-stop shop for everything a card renderer needs.
+  // Returns { el (SVG element), e (element creator), fg, fs, ns, cfg (merged config) }.
+  //   data: the render(data, onDone) data argument
+  //   defaults: card.config (optional) — merged with data.cfg to produce cfg
+  cardHelpers: function(data, defaults) {
+    var svgEl = this.getContainer(data);
+    var cfg = defaults ? this.mergeConfig(defaults, data.cfg) : {};
+    return {
+      el:  svgEl,
+      e:   this.el,
+      fg:  this.fg,
+      fs:  this.fs,
+      ns:  this.ns,
+      cfg: cfg,
+    };
+  },
+
   // Returns an rgba string with opacity = baseBrightness * multiplier.
   //   type: 'frame' or 'data' — selects from visual.frameBrightness or dataBrightness
   //   mult: brightness multiplier (e.g. 0.15 for subtle grid lines, 2.0 for header)

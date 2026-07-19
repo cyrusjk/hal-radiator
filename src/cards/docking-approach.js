@@ -36,16 +36,12 @@ window.HAL.cards['docking-approach'] = {
     var svgEl = window.HAL.svg.getContainer(data);
     var e = window.HAL.svg.el;
     var fg = window.HAL.svg.fg;
-    var cfg = this.config;
+    var cfg = window.HAL.svg.mergeConfig(this.config, data.cfg);
     var rects = this.rects;
     var cc = cfg.crossColor;
     var w = data.w || 1000;
     var h = data.h || 750;
     var bgColor = data.color || '#111214';
-
-    if (data.cfg) for (var k in data.cfg) cfg[k] = data.cfg[k];
-
-    if (!data._container) svgEl.innerHTML = '';
 
     // ── Background ────────────────────────────────────────────────────
     svgEl.appendChild(e('rect', { x: 0, y: 0, width: w, height: h, fill: bgColor }));

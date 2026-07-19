@@ -94,13 +94,15 @@ window.HAL.cards['dock-stack'] = {
 
   // ── Render ────────────────────────────────────────────────────────
   render: function(data, onDone) {
-    var cfg = this.config;
-    if (data.cfg) for (var k in data.cfg) cfg[k] = data.cfg[k];
-
     var bgColor = data.color || '#1a1a1a';
 
     // ── Cleanup previous run ────────────────────────────────────────
     this._cleanup();
+
+    // ── Local config (don't mutate this.config) ──────────────────────
+    var cfg = {};
+    for (var k in this.config) cfg[k] = this.config[k];
+    if (data.cfg) for (var k in data.cfg) cfg[k] = data.cfg[k];
 
     // ── Background rect on the card SVG ─────────────────────────────
     var e = window.HAL.svg.el;
@@ -114,46 +116,6 @@ window.HAL.cards['dock-stack'] = {
       'position:fixed;z-index:5;pointer-events:none;overflow:hidden;' +
       'top:0;left:0;width:100vw;height:100vh;';
     document.body.appendChild(overlay);
-
-    // ── Overlay markers SVG ─────────────────────────────────────────
-    // viewBox "0 0 640 360" scaled to fill the viewport via
-    // position:fixed (same coordinate space as the 3D scene).
-    var markSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    markSvg.setAttribute('viewBox', '0 0 640 360');
-    markSvg.style.cssText = 'display:block;width:100vw;height:100vh;';
-    markSvg.innerHTML =
-      '<g stroke="rgba(220,120,125,0.8)" stroke-linecap="round" fill="none" opacity="0.8">' +
-      '<g stroke-width="2.3">' +
-      '<line x1="353.2" y1="213.2" x2="374.4" y2="234.4"/>' +
-      '<line x1="380.8" y1="240.8" x2="384.0" y2="244.0"/>' +
-      '<line x1="390.7" y1="250.7" x2="473.6" y2="333.6"/>' +
-      '<line x1="286.8" y1="213.2" x2="265.6" y2="234.4"/>' +
-      '<line x1="259.2" y1="240.8" x2="256.0" y2="244.0"/>' +
-      '<line x1="249.3" y1="250.7" x2="166.4" y2="333.6"/>' +
-      '<line x1="286.8" y1="146.8" x2="265.6" y2="125.6"/>' +
-      '<line x1="259.2" y1="119.2" x2="256.0" y2="116.0"/>' +
-      '<line x1="249.3" y1="109.3" x2="166.4" y2="26.4"/>' +
-      '<line x1="353.2" y1="146.8" x2="374.4" y2="125.6"/>' +
-      '<line x1="380.8" y1="119.2" x2="384.0" y2="116.0"/>' +
-      '<line x1="390.7" y1="109.3" x2="473.6" y2="26.4"/>' +
-      // horizontal & vertical guide lines
-      '<line x1="175" y1="180" x2="151" y2="180"/>' +
-      '<line x1="320" y1="35" x2="320" y2="11"/>' +
-      '<line x1="465" y1="180" x2="489" y2="180"/>' +
-      '<line x1="320" y1="325" x2="320" y2="349"/>' +
-      '</g>' +
-      '<g stroke-width="1.8">' +
-      '<path d="M 470.0 172.0 Q 471.5 180.0 470.0 188.0"/>' +
-      '<path d="M 328.0 330.0 Q 320.0 331.5 312.0 330.0"/>' +
-      '<path d="M 170.0 188.0 Q 168.5 180.0 170.0 172.0"/>' +
-      '<path d="M 312.0 30.0 Q 320.0 28.5 328.0 30.0"/>' +
-      '<path d="M 443.7 268.4 Q 428.2 288.2 408.4 303.7"/>' +
-      '<path d="M 231.6 303.7 Q 211.8 288.2 196.3 268.4"/>' +
-      '<path d="M 196.3 91.6 Q 211.8 71.8 231.6 56.3"/>' +
-      '</g>' +
-      '</g>' +
-      '<circle cx="320" cy="180" r="30" fill="none" stroke="rgba(255,255,255,1)" stroke-width="2.3"/>';
-    overlay.appendChild(markSvg);
 
     // ── 3D CSS scene ──────────────────────────────────────────────
     var scene = document.createElement('div');
@@ -194,6 +156,48 @@ window.HAL.cards['dock-stack'] = {
     }
 
     overlay.appendChild(scene);
+
+    // ── Overlay markers SVG ─────────────────────────────────────────
+    // Appended AFTER the 3D scene so markers render ON TOP.
+    // viewBox "0 0 640 360" scaled to fill the viewport via
+    // position:fixed (same coordinate space as the 3D scene).
+    var markSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    markSvg.setAttribute('viewBox', '0 0 640 360');
+    markSvg.style.cssText = 'display:block;width:100vw;height:100vh;';
+    markSvg.innerHTML =
+      '<g stroke="rgba(220,120,125,0.8)" stroke-linecap="round" fill="none" opacity="0.8">' +
+      '<g stroke-width="2.3">' +
+      '<line x1="353.2" y1="213.2" x2="374.4" y2="234.4"/>' +
+      '<line x1="380.8" y1="240.8" x2="384.0" y2="244.0"/>' +
+      '<line x1="390.7" y1="250.7" x2="473.6" y2="333.6"/>' +
+      '<line x1="286.8" y1="213.2" x2="265.6" y2="234.4"/>' +
+      '<line x1="259.2" y1="240.8" x2="256.0" y2="244.0"/>' +
+      '<line x1="249.3" y1="250.7" x2="166.4" y2="333.6"/>' +
+      '<line x1="286.8" y1="146.8" x2="265.6" y2="125.6"/>' +
+      '<line x1="259.2" y1="119.2" x2="256.0" y2="116.0"/>' +
+      '<line x1="249.3" y1="109.3" x2="166.4" y2="26.4"/>' +
+      '<line x1="353.2" y1="146.8" x2="374.4" y2="125.6"/>' +
+      '<line x1="380.8" y1="119.2" x2="384.0" y2="116.0"/>' +
+      '<line x1="390.7" y1="109.3" x2="473.6" y2="26.4"/>' +
+      // horizontal & vertical guide lines
+      '<line x1="175" y1="180" x2="151" y2="180"/>' +
+      '<line x1="320" y1="35" x2="320" y2="11"/>' +
+      '<line x1="465" y1="180" x2="489" y2="180"/>' +
+      '<line x1="320" y1="325" x2="320" y2="349"/>' +
+      '</g>' +
+      '<g stroke-width="1.8">' +
+      '<path d="M 470.0 172.0 Q 471.5 180.0 470.0 188.0"/>' +
+      '<path d="M 328.0 330.0 Q 320.0 331.5 312.0 330.0"/>' +
+      '<path d="M 170.0 188.0 Q 168.5 180.0 170.0 172.0"/>' +
+      '<path d="M 312.0 30.0 Q 320.0 28.5 328.0 30.0"/>' +
+      '<path d="M 443.7 268.4 Q 428.2 288.2 408.4 303.7"/>' +
+      '<path d="M 231.6 303.7 Q 211.8 288.2 196.3 268.4"/>' +
+      '<path d="M 196.3 91.6 Q 211.8 71.8 231.6 56.3"/>' +
+      '</g>' +
+      '</g>' +
+      '<circle cx="320" cy="180" r="30" fill="none" stroke="rgba(255,255,255,1)" stroke-width="2.3"/>';
+    overlay.appendChild(markSvg);
+
     this._overlay = overlay;
     this._uidStr = uid;
 
@@ -288,6 +292,7 @@ window.HAL.cards['dock-stack'] = {
     if (this._uidStr) {
       var style = document.getElementById('dock-stack-keyframes-' + this._uidStr);
       if (style) style.parentNode.removeChild(style);
+      this._uidStr = null;
     }
 
     if (this._timer) {

@@ -24,7 +24,6 @@ window.HAL.cards.tabular = {
     if (rows.length === 0) { if (onDone) onDone(); return; }
 
     // ── Card background ───────────────────────────────────────────────
-    if (!data._container) svgEl.innerHTML = '';
     var bg = e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color });
     svgEl.appendChild(bg);
 
