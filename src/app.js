@@ -27,6 +27,48 @@
     if (!cfg || !cfg.cards || !cfg.cards.length) return;
     if (!window.HAL.cards || !window.HAL.cards.title) { document.body.innerHTML += 'ERROR: title renderer missing'; return; }
 
+    // ── Validate every card type has a registered renderer ─────────
+    var missing = [];
+    for (var i = 0; i < cfg.cards.length; i++) {
+      var t = cfg.cards[i].type;
+      if (t === 'composite') {
+        var zones = cfg.cards[i].zones || [];
+        for (var j = 0; j < zones.length; j++) {
+          var ct = zones[j].chartType;
+          if (ct && !window.HAL.cards[ct]) missing.push(ct + ' (zone ' + j + ' of card ' + i + ')');
+        }
+      }
+      if (!window.HAL.cards[t]) missing.push(t + ' (card ' + i + ')');
+    }
+    if (missing.length > 0) {
+      svgEl.style.display = 'none';
+      var errEl = document.getElementById('boot-error');
+      if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.id = 'boot-error';
+        document.body.insertBefore(errEl, document.body.firstChild);
+      }
+      errEl.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;' +
+        'background:#0a0e12;color:#e8e8e8;font-family:monospace;font-size:14px;' +
+        'overflow:auto;z-index:9999;display:flex;flex-direction:column;' +
+        'align-items:center;justify-content:center;padding:40px;box-sizing:border-box;';
+      errEl.innerHTML =
+        '<div style="max-width:700px">' +
+        '<h2 style="color:#ff6b7a;margin:0 0 8px">CONFIGURATION ERROR</h2>' +
+        '<p style="color:#aaa;margin:0 0 20px">' + missing.length + ' card renderer(s) not found</p>' +
+        '<div style="background:#161a20;border:1px solid #2a2e36;border-radius:6px;padding:16px;margin-bottom:20px">' +
+        '<code style="white-space:pre-wrap;line-height:1.6">' +
+        missing.join('\n') +
+        '</code></div>' +
+        '<p style="color:#888;font-size:13px;margin:0">' +
+        'Each card type must have a corresponding renderer registered as ' +
+        '<code>window.HAL.cards["&lt;type&gt;"]</code> in a .js file under ' +
+        '<code>src/cards/</code>. The filename does not need to match the type name — ' +
+        'the renderer registers itself by setting <code>window.HAL.cards[type]</code>.</p>' +
+        '</div>';
+      return;
+    }
+
     var idx = 0, locked = false, autoTimer = null, zoom = 1.0;
     var wrap = document.getElementById('wrap');
     var gen = 0;  // incremented on every showCard → invalidates stale callbacks
