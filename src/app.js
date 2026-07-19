@@ -94,6 +94,7 @@
     var idx = 0, locked = false, autoTimer = null, zoom = 1.0;
     var wrap = document.getElementById('wrap');
     var gen = 0;  // incremented on every showCard → invalidates stale callbacks
+    var currentCardType = null;  // tracks last-shown card type for _cleanup
 
     function clearAuto() {
       if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
@@ -120,6 +121,13 @@
       gen++;
       var myGen = gen;
       var c = cfg.cards[i % cfg.cards.length];
+
+      // Lifecycle: clean up the previous card's renderer before switching
+      if (currentCardType && currentCardType !== c.type) {
+        var prev = window.HAL.cards[currentCardType];
+        if (prev && prev._cleanup) prev._cleanup();
+      }
+
       clearCard(c.color);
 
       if (c.type !== 'title') {
@@ -149,6 +157,7 @@
             try {
               var r = window.HAL.cards[cardType];
               if (r && r._cleanup) r._cleanup();
+              currentCardType = cardType;
               var cb = guard(onDone, myGen);
               r && r.render ? r.render(c, cb) : cb && cb();
             } catch(e) { console.error('Card render error [', cardType, ']:', e); var cb = guard(onDone, myGen); cb && cb(); }
@@ -156,6 +165,7 @@
           .catch(function(e) { console.error('Card fetch error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); });
       } else {
         window.HAL.cards.title.render(c);
+        currentCardType = 'title';
         if (onDone) {
           autoTimer = setTimeout(guard(onDone, myGen), cfg.timing.titleCardDisplay * 1000);
         }
