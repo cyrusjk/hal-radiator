@@ -114,6 +114,8 @@ window.HAL.cards['composite'] = {
 
         childData._container = zG;
         childData.w = (zw || 1000); childData.h = (zh || 750);
+        // ── Zone bounds: position + size for custom DOM card positioning ──
+        childData.zoneBounds = { x: zx, y: zy, w: zw, h: zh };
 
         // Fetch data for this chart zone, then render
         (function(zChild, zRenderer, zDone) {

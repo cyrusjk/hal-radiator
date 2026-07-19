@@ -73,9 +73,15 @@ window.HAL.svg = {
   // Returns the SVG element to render into. Inside a composite card child
   // zone, data._container is set; in standalone mode, falls back to the
   // root #card element.  Standalone call clears the card first.
-  getContainer: function(data) {
-    var el = (data && data._container) || document.getElementById('card');
-    if (!data || !data._container) el.innerHTML = '';
+  //
+  //   data:      render(data, onDone) data argument — carries _container
+  //              and _containerType ('svg'|'div'|'canvas') when set
+  //   fallback:  optional element id (default '#card') for custom containers
+  getContainer: function(data, fallback) {
+    if (data && data._container) return data._container;
+    var id = fallback || 'card';
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '';
     return el;
   },
 };
