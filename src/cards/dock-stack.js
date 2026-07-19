@@ -207,8 +207,7 @@ window.HAL.cards['dock-stack'] = {
     var totalMs = cfg.duration + endDelay;
     var that = this;
     var timer = setTimeout(function() {
-      that._removeVisuals();
-      that._timer = null;
+      that._cleanup();
       if (onDone) onDone();
     }, totalMs);
 
