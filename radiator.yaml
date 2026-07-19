@@ -862,6 +862,18 @@ groups:
         y: 0
     w: 700
     h: 500
+
+- charts:
+  - chartType: dock-stack
+    color: "rgb(17,18,20)"
+    label: APPROACH
+    title: DOCK
+    cfg:
+      endDelay: 5000
+  color: near-black
+  subheading: ''
+  title: DOCK
+
 timing:
   flickerDuration: 200
   groupGap: 167

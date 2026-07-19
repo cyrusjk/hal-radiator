@@ -135,7 +135,7 @@ window.HAL.cards['composite'] = {
         }
 
       } else if (zone.type === 'label') {
-        // ── Static label zone: single text line (for simple readouts) ─
+        // ── Label zone: text line + optional chips ──
         var labelEl = e('text', {
           x: zone.padX || 20,
           y: zone.padY || 30,
@@ -146,6 +146,16 @@ window.HAL.cards['composite'] = {
         });
         labelEl.textContent = zone.text || '';
         zG.appendChild(labelEl);
+
+        // Render nested chips (e.g. AVG/MIN/MAX badges)
+        var labelChips = zone.chips || [];
+        for (var lci = 0; lci < labelChips.length; lci++) {
+          var lchip = Object.assign({}, labelChips[lci]);
+          lchip.x = (lchip.x || 0) - zx;
+          lchip.y = (lchip.y || 0) - zy;
+          renderChip(zG, lchip);
+        }
+
         zoneDone();
 
       } else if (zone.type === 'chip') {

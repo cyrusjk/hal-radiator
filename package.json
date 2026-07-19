@@ -1,0 +1,14 @@
+{
+  "name": "hal-title-card-generator",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run && uv run python -m pytest tests/ -v",
+    "test:js": "vitest run",
+    "test:py": "uv run python -m pytest tests/ -v",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
+  }
+}

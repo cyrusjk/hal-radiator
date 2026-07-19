@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAL 9000 — Metrics Radiator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: rgb(45, 78, 161); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  svg { display: block; }
+
+  @keyframes blinkIn {
+    0%   { opacity: 0; }  4%   { opacity: 1; }  8%   { opacity: 0; }
+    12%  { opacity: 1; }  16%  { opacity: 0; }  20%  { opacity: 1; }
+    24%  { opacity: 0; }  28%  { opacity: 1; }  32%  { opacity: 0; }
+    36%  { opacity: 1; }  40%  { opacity: 0; }  44%  { opacity: 1; }
+    48%  { opacity: 0; }  52%  { opacity: 1; }  56%  { opacity: 0; }
+    60%  { opacity: 1; }  64%  { opacity: 0; }  68%  { opacity: 1; }
+    72%  { opacity: 0; }  76%  { opacity: 1; }  80%  { opacity: 0; }
+    84%  { opacity: 1; }  88%  { opacity: 0; }  92%  { opacity: 1; }
+    96%  { opacity: 0; }  100% { opacity: 1; }
+  }
+  @keyframes blinkOut {
+    0%   { opacity: 1; }  4%   { opacity: 0; }  8%   { opacity: 1; }
+    12%  { opacity: 0; }  16%  { opacity: 1; }  20%  { opacity: 0; }
+    24%  { opacity: 1; }  28%  { opacity: 0; }  32%  { opacity: 1; }
+    36%  { opacity: 0; }  40%  { opacity: 1; }  44%  { opacity: 0; }
+    48%  { opacity: 1; }  52%  { opacity: 0; }  56%  { opacity: 1; }
+    60%  { opacity: 0; }  64%  { opacity: 1; }  68%  { opacity: 0; }
+    72%  { opacity: 1; }  76%  { opacity: 0; }  80%  { opacity: 1; }
+    84%  { opacity: 0; }  88%  { opacity: 1; }  92%  { opacity: 0; }
+    96%  { opacity: 1; }  100% { opacity: 0; }
+  }
+  .blink-in  { animation: blinkIn   1s ease-in-out forwards; }
+  .blink-out { animation: blinkOut  1s ease-in-out forwards; }
+
+  @font-face { font-family: 'EurostileLocal'; src: url('file:///C:/Users/micro/AppData/Local/Microsoft/Windows/Fonts/Eurostile-Bold-Extended.otf') format('opentype'); }
+  @font-face { font-family: 'RajdhaniLightLocal'; src: url('file:///C:/Users/micro/AppData/Local/Microsoft/Windows/Fonts/Rajdhani-Light.ttf') format('truetype'); }
+</style>
+</head>
+<body>
+<svg id="card" width="1000" height="750" viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════
+
+const SHOW_MS = 5000;         // title card display duration
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+const TITLE_FONT = 'EurostileLocal, sans-serif';
+const LABEL_FONT = 'RajdhaniLightLocal, Rajdhani, monospace';
+
+const CHART = { x0: 80, y0: 70, w: 700, h: 520 };
+const DATA_PTS = 9;
+const SEGMENTS = DATA_PTS - 1;
+
+const STROKE_WIDTHS = [1.5, 1.0, 0.7];
+const DASH_PATTERNS = [null, '4,3', '1,3'];
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CARD DATA
+// ═══════════════════════════════════════════════════════════════════════
+
+const cards = [
+  { type: 'title', title: 'VEH', label: 'LIN: 86-QW',   color: 'rgb(45,78,161)' },
+  { type: 'title', title: 'COM', label: 'PMT: 26-07',   color: 'rgb(168,95,155)' },
+  { type: 'title', title: 'HAL', label: '9000 COMPUTER', color: 'rgb(200,120,50)' },
+  { type: 'chart', title: 'LAT: PROD-01', label: 'LATENCY PERCENTILES',
+    color: 'rgb(28,52,100)', groups: [
+      { name: 'API-GATEWAY', series: [
+        { label: 'p99', values: [60,70,85,110,130,125,100,80,65,55] },
+        { label: 'p95', values: [30,35,42,55,60,58,50,40,32,28] },
+        { label: 'p50', values: [10,12,14,18,20,18,15,12,10, 8] },
+      ]},
+      { name: 'AUTH-SVC', series: [
+        { label: 'p99', values: [35,42,58,78,90,85,70,50,38,32] },
+        { label: 'p95', values: [15,18,25,35,40,38,30,22,16,14] },
+        { label: 'p50', values: [ 5, 6, 8,10,12,11, 9, 7, 5, 4] },
+      ]},
+      { name: 'WORKER', series: [
+        { label: 'p99', values: [80,95,120,160,190,180,150,110,90,75] },
+        { label: 'p95', values: [50,60,75,95,110,105,85,65,55,48] },
+        { label: 'p50', values: [20,25,30,40,45,42,35,28,22,18] },
+      ]},
+    ]
+  },
+  { type: 'chart', title: 'THR: NODE-02', label: 'THROUGHPUT',
+    color: 'rgb(22,58,85)', groups: [
+      { name: 'API-GATEWAY', series: [
+        { label: 'max', values: [1200,1150,1050,950,880,900,1000,1100,1180,1220] },
+        { label: 'avg', values: [950,900,820,750,700,720,780,860,920,980] },
+        { label: 'min', values: [600,550,480,420,380,400,450,520,580,620] },
+      ]},
+      { name: 'AUTH-SVC', series: [
+        { label: 'max', values: [1050,980,880,800,750,780,860,950,1020,1080] },
+        { label: 'avg', values: [800,750,680,620,580,600,650,720,780,820] },
+        { label: 'min', values: [450,400,350,300,280,300,340,400,440,470] },
+      ]},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+
+function el(tag, attrs) {
+  const e = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, String(v));
+  return e;
+}
+
+function findExtrema(values, scaleX, scaleY) {
+  let minIdx = 0, maxIdx = 0;
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] < values[minIdx]) minIdx = i;
+    if (values[i] > values[maxIdx]) maxIdx = i;
+  }
+  return {
+    min: { value: values[minIdx], x: scaleX(minIdx), y: scaleY(values[minIdx]) },
+    max: { value: values[maxIdx], x: scaleX(maxIdx), y: scaleY(values[maxIdx]) },
+  };
+}
+
+// Toggle all elements at once
+function popAll(elements, show) {
+  elements.forEach(el => { el.style.opacity = show ? '1' : '0'; });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  RENDERERS
+// ═══════════════════════════════════════════════════════════════════════
+
+function renderChart(data, onDone) {
+  svgEl.innerHTML = '';
+  svgEl.appendChild(el('rect', { x: 0, y: 0, width: 1000, height: 750, fill: data.color }));
+
+  const { x0, y0, w, h } = CHART;
+  const groups = data.groups;
+  const nGroups = groups.length;
+  const bandH = h / nGroups;
+
+  // Grid per band
+  for (let gi = 0; gi < nGroups; gi++) {
+    const bandTop = y0 + bandH * gi;
+    for (let row = 0; row <= 4; row++) {
+      const y = bandTop + (bandH / 4) * row;
+      svgEl.appendChild(el('line', {
+        x1: x0, y1: y, x2: x0 + w * 0.7, y2: y,
+        stroke: row === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+        'stroke-width': 0.5,
+      }));
+    }
+  }
+
+  svgEl.appendChild(el('line', {
+    x1: x0, y1: y0, x2: x0, y2: y0 + h,
+    stroke: 'rgba(255,255,255,0.4)', 'stroke-width': 1,
+  }));
+
+  // Collect elements for animation
+  const curveGroups = [];    // one <g> per group (all 3 curves + dots + labels)
+  const minLabels = [];
+  const maxLabels = [];
+
+  for (let gi = 0; gi < nGroups; gi++) {
+    const g = groups[gi];
+    const bandTop = y0 + bandH * gi;
+    const bandBot = bandTop + bandH;
+
+    let groupMax = 0;
+    for (const s of g.series)
+      for (const v of s.values)
+        if (v > groupMax) groupMax = v;
+    if (groupMax === 0) groupMax = 1;
+
+    const scaleY = (v) => bandBot - (v / groupMax) * bandH * 0.85;
+    const scaleX = (i) => x0 + (i / SEGMENTS) * w;
+
+    // Group name (static, outside the flicker group)
+    svgEl.appendChild(el('text', {
+      x: x0, y: bandTop + 14, fill: 'rgba(255,255,255,0.7)',
+      'font-family': LABEL_FONT, 'font-size': 11,
+    })).textContent = g.name;
+
+    // Create a single <g> for this group's curves — flickers as one unit
+    const grp = document.createElementNS(SVG_NS, 'g');
+    grp.style.opacity = '0';
+
+    for (let si = 0; si < g.series.length; si++) {
+      const s = g.series[si];
+
+      let d = '';
+      const pts = [];
+      for (let pi = 0; pi < s.values.length; pi++) {
+        const x = scaleX(pi);
+        const y = scaleY(s.values[pi]);
+        pts.push({ x, y });
+        d += (pi === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+      }
+
+      const pathAttrs = { d, fill: 'none', stroke: 'rgba(255,255,255,0.8)', 'stroke-width': STROKE_WIDTHS[si] };
+      if (DASH_PATTERNS[si]) pathAttrs['stroke-dasharray'] = DASH_PATTERNS[si];
+      grp.appendChild(el('path', pathAttrs));
+
+      const last = pts[pts.length - 1];
+      grp.appendChild(el('circle', { cx: last.x.toFixed(1), cy: last.y.toFixed(1), r: 2, fill: 'rgba(255,255,255,0.8)' }));
+      grp.appendChild(el('text', {
+        x: last.x + 6, y: last.y + 4, fill: 'rgba(255,255,255,0.6)',
+        'font-family': LABEL_FONT, 'font-size': 10,
+      })).textContent = s.label;
+
+      // Hidden min/max value labels (not in the group — they pop separately)
+      const ext = findExtrema(s.values, scaleX, scaleY);
+      [ext.min, ext.max].forEach((pt, isMax) => {
+        const lbl = el('text', {
+          x: pt.x, y: pt.y - 12, fill: 'rgba(255,255,255,0.85)',
+          'font-family': LABEL_FONT, 'font-size': 14,
+          'text-anchor': 'middle', opacity: 0,
+        });
+        lbl.textContent = pt.value;
+        svgEl.appendChild(lbl);
+        (isMax ? maxLabels : minLabels).push(lbl);
+      });
+    }
+
+    svgEl.appendChild(grp);
+    curveGroups.push(grp);
+
+    if (gi < nGroups - 1) {
+      svgEl.appendChild(el('line', {
+        x1: x0, y1: bandBot, x2: x0 + w, y2: bandBot,
+        stroke: 'rgba(255,255,255,0.15)', 'stroke-width': 0.5,
+      }));
+    }
+  }
+
+  // Header
+  const titleG = el('g', { transform: 'translate(500, 50) scale(0.9, 1.0)' });
+  const titleT = el('text', {
+    x: 0, y: 0, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.95)',
+    'font-family': TITLE_FONT, 'font-size': 28, 'font-weight': 'bold',
+    'letter-spacing': 12, 'text-rendering': 'optimizeLegibility',
+  });
+  titleT.textContent = data.title;
+  titleG.appendChild(titleT);
+  svgEl.appendChild(titleG);
+
+  const subG = el('g', { transform: 'translate(500, 720) scale(1.0, 0.4)' });
+  const subT = el('text', {
+    x: 0, y: 0, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.5)',
+    'font-family': LABEL_FONT, 'font-size': 28, 'letter-spacing': 2,
+    'text-rendering': 'optimizeLegibility',
+  });
+  subT.textContent = data.label;
+  subG.appendChild(subT);
+  svgEl.appendChild(subG);
+
+  // Start the animation pipeline
+  runAnimation(curveGroups, minLabels, maxLabels, onDone);
+}
+
+function renderTitle(data) {
+  svgEl.innerHTML = `
+    <rect x="0" y="0" width="1000" height="750" fill="${data.color}" />
+    <g transform="translate(500, 406) scale(0.9, 1.0)">
+      <text x="0" y="0" text-anchor="middle" fill="rgb(255,255,255)"
+            font-family="${TITLE_FONT}" font-size="90" font-weight="bold"
+            letter-spacing="44" text-rendering="optimizeLegibility">${data.title}</text>
+    </g>
+    <g transform="translate(231, 293) scale(1.0, 0.4)">
+      <text x="0" y="0" fill="rgb(255,255,255)"
+            font-family="${LABEL_FONT}" font-size="49" letter-spacing="-2"
+            text-rendering="optimizeLegibility">${data.label}</text>
+    </g>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ANIMATION PIPELINE
+// ═══════════════════════════════════════════════════════════════════════
+//
+//  1. pause 5s (grid + names visible)
+//  2. API flickers in
+//  3. pause 0.5s
+//  4. AUTH flickers in
+//  5. pause 0.5s
+//  6. WORKER flickers in
+//  7. pause 2s
+//  8. pop in ALL mins
+//  9. pop in ALL maxes
+// 10. pause 5s
+// 11. pop out ALL maxes
+// 12. pop out ALL mins
+// 13. WORKER flickers out
+// 14. pause 0.5s
+// 15. AUTH flickers out
+// 16. pause 0.5s
+// 17. API flickers out
+// ═══════════════════════════════════════════════════════════════════════
+
+function runAnimation(curveGroups, minLabels, maxLabels, onDone) {
+  function flickerOne(el, dir) { el.classList.add(dir === 'in' ? 'blink-in' : 'blink-out'); }
+  function flickerSeq(list, dir, gap, idx, cb) {
+    if (idx >= list.length) { if (cb) cb(); return; }
+    flickerOne(list[idx], dir);
+    setTimeout(() => flickerSeq(list, dir, gap, idx + 1, cb), 1000 + gap);
+  }
+
+  // Phase 1: wait 5s, then flicker in groups with 0.5s gaps
+  setTimeout(() => {
+    flickerSeq(curveGroups, 'in', 500, 0, () => {
+      // Phase 2: pause 2s, pop mins, pop maxes, pause 5s
+      setTimeout(() => {
+        popAll(minLabels, true);
+        popAll(maxLabels, true);
+        setTimeout(() => {
+          // Phase 3: pongback — pop out, then flicker out groups in reverse
+          popAll(maxLabels, false);
+          popAll(minLabels, false);
+          flickerSeq([...curveGroups].reverse(), 'out', 500, 0, () => {
+            if (onDone) onDone();
+          });
+        }, 5000);
+      }, 2000);
+    });
+  }, 5000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ORCHESTRATION
+// ═══════════════════════════════════════════════════════════════════════
+
+let idx = 0;
+const svgEl = document.getElementById('card');
+
+function showCard(i, onChartDone) {
+  const c = cards[i % cards.length];
+  document.body.style.background = c.color;
+  if (c.type === 'chart') renderChart(c, onChartDone);
+  else renderTitle(c);
+}
+
+function scheduleNext() {
+  const next = (idx + 1) % cards.length;
+  const nextCard = cards[next % cards.length];
+  if (nextCard.type === 'chart') {
+    transitionTo(next);
+  } else {
+    setTimeout(transitionTo, SHOW_MS, next);
+  }
+}
+
+function transitionTo(nextIdx) {
+  idx = nextIdx;
+  const c = cards[idx % cards.length];
+  if (c.type === 'chart') {
+    showCard(idx, scheduleNext);
+  } else {
+    showCard(idx);
+    scheduleNext();
+  }
+}
+
+showCard(0);
+setTimeout(transitionTo, SHOW_MS, 1);
+</script>
+</body>
+</html>

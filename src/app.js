@@ -27,7 +27,7 @@
     if (!cfg || !cfg.cards || !cfg.cards.length) return;
     if (!window.HAL.cards || !window.HAL.cards.title) { document.body.innerHTML += 'ERROR: title renderer missing'; return; }
 
-    var idx = 0, locked = false, manualNav = false, autoTimer = null, zoom = 1.0;
+    var idx = 0, locked = false, autoTimer = null, zoom = 1.0;
     var wrap = document.getElementById('wrap');
     var gen = 0;  // incremented on every showCard → invalidates stale callbacks
 
@@ -46,15 +46,11 @@
     function guard(fn, myGen) {
       return function() {
         if (myGen !== gen) return;
-        if (fn) fn.apply(this, arguments);
+        if (fn) fn();
       };
     }
 
-    // ── showCard: renders card at index i.  Increments gen so any
-    //     pending callback from a previous render is atomically stale.
-    //     Every navigation path (user arrows, auto-advance, locked
-    //     replay, space toggle) ultimately calls showCard, so gen
-    //     always advances.
+    // ── Show a card by index ─────────────────────────────────────────
     function showCard(i, onDone) {
       clearAuto();
       gen++;
@@ -66,7 +62,7 @@
         window.HAL.data.fetchCardData(c)
           .then(function(data) {
             if (myGen !== gen) return;  // stale: user navigated away
-            if (data) for (var k in data) c[k] = data[k];
+            if (data) for (var k in data) if (data[k] !== undefined && data[k] !== null && (typeof data[k] !== 'object' || Object.keys(data[k]).length > 0)) c[k] = data[k];
             try {
               var r = window.HAL.cards[c.type];
               var cb = guard(onDone, myGen);
@@ -82,32 +78,53 @@
       }
     }
 
-    function cardDone() {
-      manualNav = false;
-      locked ? showCard(idx, cardDone) : scheduleNext();
-    }
-
+    // ── Advance to the next card in sequence ─────────────────────────
     function scheduleNext() {
       clearAuto();
       transitionTo((idx + 1) % cfg.cards.length);
     }
 
+    // ── Navigate to a specific card ─────────────────────────────────
     function transitionTo(nextIdx) {
       idx = nextIdx;
       showCard(idx, cardDone);
     }
 
+    // ── Auto-advance callback ────────────────────────────────────────
+    var MIN_DISPLAY_MS = 2000;  // minimum time a card must be visible
+
+    function cardDone() {
+      if (locked) { showCard(idx, cardDone); return; }
+
+      // If a card's animation / data fetch completed in under MIN_DISPLAY_MS it
+      // had no meaningful content to show (e.g. a data source that was
+      // unreachable).  Hold for the remaining time so the user sees
+      // something instead of an instant flicker, then auto-advance.
+      var elapsed = Date.now() - window.__cardStart;
+      if (elapsed < MIN_DISPLAY_MS) {
+        var myGen = gen;
+        setTimeout(function() { if (myGen === gen) cardDone(); }, MIN_DISPLAY_MS - elapsed);
+        return;
+      }
+
+      scheduleNext();
+    }
+
+    // ── Keyboard controls ────────────────────────────────────────────
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
-        e.preventDefault(); manualNav = true;
+        e.preventDefault(); locked = false;
+        window.__cardStart = Date.now();
         transitionTo((idx - 1 + cfg.cards.length) % cfg.cards.length);
       }
       else if (e.key === 'ArrowRight') {
-        e.preventDefault(); manualNav = true;
+        e.preventDefault(); locked = false;
+        window.__cardStart = Date.now();
         transitionTo((idx + 1) % cfg.cards.length);
       }
       else if (e.key === ' ') {
-        e.preventDefault(); manualNav = false; locked = !locked;
+        e.preventDefault(); locked = !locked;
+        window.__cardStart = Date.now();
         locked ? showCard(idx, cardDone) : scheduleNext();
       }
       else if (e.key === '=' || e.key === '+') {
@@ -135,7 +152,8 @@
       var m = (window.location.search || '').match(/[?&]card=(\d+)/);
       if (m) startIdx = Math.min(Math.max(parseInt(m[1], 10), 0), cfg.cards.length - 1);
     } catch(e) {}
+    window.__cardStart = Date.now();
     showCard(startIdx);
-    autoTimer = setTimeout(function() { transitionTo((startIdx + 1) % cfg.cards.length); }, cfg.timing.titleCardDisplay * 1000);
+    autoTimer = setTimeout(function() { transitionTo((startIdx + 1) % cfg.cards.length); }, cfg.timing.initialPause || 5000);
   }
 })();
