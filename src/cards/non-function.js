@@ -19,7 +19,6 @@ window.HAL.cards['non-function'] = {
     var svgEl = window.HAL.svg.getContainer(data);
     var cfg = data.cfg || {};
     var e = window.HAL.svg.el;
-    var fg = window.HAL.svg.fg;
 
     // Background — use the card's color or dark navy
     var bg = data.color || 'rgb(14,21,48)';
@@ -52,8 +51,7 @@ window.HAL.cards['non-function'] = {
     }
 
     // Unique ID for this render (for keyframes + tooltip)
-    var uid = 'nf' + DF._uidCounter;
-    DF._uidCounter = (DF._uidCounter || 0) + 1;
+    var uid = 'nf' + (window.__nfUidCounter = (window.__nfUidCounter || 0) + 1);
 
     // Inject flicker keyframes
     var rate = cfg.flickerRate || 100;

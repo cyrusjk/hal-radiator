@@ -59,12 +59,14 @@ function normalize(data, df) {
   if (!data || typeof data !== 'object') {
     return buildFaultResult(df, 'Source returned invalid data', '?');
   }
-  return {
-    groups: data.groups || [],
-    error: null,
-    stale: data.stale || false,
-    faultCard: null,
-  };
+  // Start from source data, then overlay canonical fields
+  var out = {};
+  for (var k in data) if (data[k] != null) out[k] = data[k];
+  out.error = null;
+  out.stale = data.stale || false;
+  out.faultCard = null;
+  if (!out.groups) out.groups = [];
+  return out;
 }
 
 /**

@@ -126,12 +126,28 @@
         window.HAL.data.fetchCardData(c)
           .then(function(data) {
             if (myGen !== gen) return;  // stale: user navigated away
-            if (data) for (var k in data) if (data[k] !== undefined && data[k] !== null && (typeof data[k] !== 'object' || Object.keys(data[k]).length > 0)) c[k] = data[k];
-            // Fault routing: if the source indicated a fault card, use that instead
-            var cardType = (data && data.faultCard) ? data.faultCard : c.type;
+            // Merge data into card config — skip null/undefined only
+            if (data) for (var k in data) if (data[k] != null) c[k] = data[k];
+
+            // Fault handling
+            var cardType = c.type;
+            var df = c.dataFault || window.HAL.data.defaultDataFault || {};
+            var mode = df.mode || 'skip';
+
+            if (data && data.error && mode === 'skip') {
+              // Skip: advance immediately, no render
+              var sk = window.HAL.cards[cardType];
+              if (sk && sk._cleanup) sk._cleanup();
+              var cb = guard(onDone, myGen); cb && cb();
+              return;
+            }
+            if (data && data.error && mode === 'non-function') {
+              cardType = 'non-function';
+            }
+            // mode 'hide' falls through — renders card with error state
+
             try {
               var r = window.HAL.cards[cardType];
-              // Lifecycle: run _cleanup before next render
               if (r && r._cleanup) r._cleanup();
               var cb = guard(onDone, myGen);
               r && r.render ? r.render(c, cb) : cb && cb();
