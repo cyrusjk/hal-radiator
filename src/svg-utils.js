@@ -30,7 +30,7 @@ window.HAL.svg = {
   // Returns a new object; does not modify either input.
   mergeConfig: function(defaults, overrides) {
     var cfg = {};
-    for (var k in defaults) cfg[k] = defaults[k];
+    if (defaults) for (var k in defaults) cfg[k] = defaults[k];
     if (overrides) for (var k in overrides) cfg[k] = overrides[k];
     return cfg;
   },

@@ -100,9 +100,7 @@ window.HAL.cards['dock-stack'] = {
     this._cleanup();
 
     // ── Local config (don't mutate this.config) ──────────────────────
-    var cfg = {};
-    for (var k in this.config) cfg[k] = this.config[k];
-    if (data.cfg) for (var k in data.cfg) cfg[k] = data.cfg[k];
+    var cfg = window.HAL.svg.mergeConfig(this.config, data.cfg);
 
     // ── Background rect on the card SVG ─────────────────────────────
     var e = window.HAL.svg.el;

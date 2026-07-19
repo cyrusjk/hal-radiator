@@ -109,6 +109,8 @@ window.HAL.cards['composite'] = {
         if (zone.animation)  childData.animation = zone.animation;
         if (zone.color)      childData.color = zone.color;
         if (zone.chartType)  childData.type = zone.chartType;
+        // Propagate cfg: parent cfg as base, zone-level overrides on top
+        childData.cfg = window.HAL.svg.mergeConfig(data.cfg, zone.cfg);
 
         childData._container = zG;
         childData.w = (zw || 1000); childData.h = (zh || 750);
