@@ -47,6 +47,15 @@ fonts:
   RajdhaniLightLocal:
     format: truetype
     src: assets/fonts/Rajdhani-Light.ttf
+
+# ── Data fault handling (global default, overridable per card) ────────
+#   mode: skip          — advance to next card immediately
+#         hide          — show empty card for defaultDuration ms
+#         non-function  — show flickering "NON FUNCTION" card + tooltip
+#   defaultDuration: 5000   — how long to show the fault state before advancing
+dataFault:
+  mode: skip
+
 groups:
 - charts:
   - color: gde-blue

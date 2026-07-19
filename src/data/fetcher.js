@@ -1,39 +1,94 @@
 // ═══════════════════════════════════════════════════════════════════════
-//  Data Fetcher — Common API
-//  — Routes fetch requests to the appropriate source plugin
-//  — Fallback: returns inline demo data if no source resolves
+//  Data Fetcher — Source dispatch + error handling
+//  - Routes fetch to the appropriate source plugin
+//  - Returns { groups, error, stale, faultCard }
+//  - Fault behaviour is configurable per-card + global default
 // ═══════════════════════════════════════════════════════════════════════
 
 window.HAL = window.HAL || {};
 window.HAL.data = window.HAL.data || {};
 
-// Fetch data for a card. Returns a Promise resolving to:
-//   { groups: [ { name, series: [ { label, values } ] } ] }
-window.HAL.data.fetchCardData = function(card) {
+var DF = window.HAL.data;
+
+/**
+ * Fetch data for a card.
+ *
+ * @param {Object} card — Card config from the flattened radiator.yaml
+ * @returns {Promise<{
+ *   groups: Array<{name: string, series: Array<{label: string, values: number[]}>}>,
+ *   error: ?{message: string, source: string},
+ *   stale: boolean,
+ *   faultCard: ?string   // 'non-function' | null
+ * }>}
+ */
+DF.fetchCardData = function(card) {
+  var df = card.dataFault || DF.defaultDataFault || { mode: 'skip' };
   var ds = card.dataSource || { type: 'inline' };
-  var plugin = window.HAL.data.sources[ds.type];
+  var plugin = DF.sources[ds.type];
 
   if (!plugin) {
-    console.warn('Unknown data source type:', ds.type, '— falling back to inline');
-    plugin = window.HAL.data.sources.inline;
+    return buildFaultResult(df, 'Unknown data source type: "' + ds.type + '"', ds.type);
   }
 
-  var result = plugin.fetch(ds);
+  try {
+    var result = plugin.fetch(ds, card);
 
-  if (result === null) {
-    // No groups returned; try demo data
-    var inline = window.HAL.data.sources.inline;
-    var demo = inline.demo[card.title];
-    if (demo) return Promise.resolve(demo);
+    // Handle synchronous result
+    if (result && typeof result.then !== 'function') {
+      return Promise.resolve(normalize(result, df));
+    }
 
-    return Promise.resolve({ groups: [] });
+    // Handle async result
+    return result.then(function(data) {
+      return normalize(data, df);
+    }).catch(function(err) {
+      return buildFaultResult(df, err.message || String(err), ds.type);
+    });
+  } catch (err) {
+    return buildFaultResult(df, err.message || String(err), ds.type);
   }
-
-  // If the plugin returned a Promise (async fetch), wait for it
-  if (result && typeof result.then === 'function') {
-    return result;
-  }
-
-  // Synchronous result (inline static data)
-  return Promise.resolve(result);
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────
+
+/**
+ * Normalize a successful data packet.
+ * Ensures it has the canonical shape even if the source returns a bare object.
+ */
+function normalize(data, df) {
+  if (!data || typeof data !== 'object') {
+    return buildFaultResult(df, 'Source returned invalid data', '?');
+  }
+  return {
+    groups: data.groups || [],
+    error: null,
+    stale: data.stale || false,
+    faultCard: null,
+  };
+}
+
+/**
+ * Build a fault result based on the fault config.
+ *   df = { mode: 'skip' | 'hide' | 'non-function', defaultDuration, card }
+ */
+function buildFaultResult(df, message, sourceType) {
+  var mode = (df && df.mode) || 'skip';
+  var out = {
+    groups: [],
+    error: { message: message, source: sourceType },
+    stale: false,
+    faultCard: null,
+    _faultConfig: df || {},
+  };
+
+  if (mode === 'non-function') {
+    out.faultCard = 'non-function';
+    // Pass fault details through _faultConfig so the non-function card can
+    // render the message + tooltip. The original card's config is preserved.
+  }
+
+  return out;
+}
+
+// Default global fault config — overridden by radiator.yaml dataFault at boot
+DF.defaultDataFault = { mode: 'skip' };

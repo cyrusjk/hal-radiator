@@ -27,6 +27,28 @@
     if (!cfg || !cfg.cards || !cfg.cards.length) return;
     if (!window.HAL.cards || !window.HAL.cards.title) { document.body.innerHTML += 'ERROR: title renderer missing'; return; }
 
+    // ── Set global data fault default ──────────────────────────────
+    if (cfg.dataFault) {
+      window.HAL.data.defaultDataFault = cfg.dataFault;
+    }
+
+    // ── Merge per-card dataFault (card-level overrides global) ─────
+    for (var di = 0; di < cfg.cards.length; di++) {
+      var card = cfg.cards[di];
+      if (!card.dataFault && cfg.dataFault) {
+        card.dataFault = cfg.dataFault;
+      }
+      // Composite zones inherit too
+      if (card.type === 'composite' && card.zones) {
+        for (var zj = 0; zj < card.zones.length; zj++) {
+          var z = card.zones[zj];
+          if (!z.dataFault && cfg.dataFault) {
+            z.dataFault = cfg.dataFault;
+          }
+        }
+      }
+    }
+
     // ── Validate every card type has a registered renderer ─────────
     var missing = [];
     for (var i = 0; i < cfg.cards.length; i++) {
@@ -105,13 +127,15 @@
           .then(function(data) {
             if (myGen !== gen) return;  // stale: user navigated away
             if (data) for (var k in data) if (data[k] !== undefined && data[k] !== null && (typeof data[k] !== 'object' || Object.keys(data[k]).length > 0)) c[k] = data[k];
+            // Fault routing: if the source indicated a fault card, use that instead
+            var cardType = (data && data.faultCard) ? data.faultCard : c.type;
             try {
-              var r = window.HAL.cards[c.type];
+              var r = window.HAL.cards[cardType];
               // Lifecycle: run _cleanup before next render
               if (r && r._cleanup) r._cleanup();
               var cb = guard(onDone, myGen);
               r && r.render ? r.render(c, cb) : cb && cb();
-            } catch(e) { console.error('Card render error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); }
+            } catch(e) { console.error('Card render error [', cardType, ']:', e); var cb = guard(onDone, myGen); cb && cb(); }
           })
           .catch(function(e) { console.error('Card fetch error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); });
       } else {

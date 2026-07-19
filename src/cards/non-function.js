@@ -1,0 +1,124 @@
+// ═══════════════════════════════════════════════════════════════════════
+//  NON FUNCTION Card — Fault state display
+//  — Flickering "NON FUNCTION" text with a descriptive tooltip
+//  — Referenced from 2001: A Space Odyssey at ~23:50
+//  — Triggered by dataFault mode: 'non-function'
+// ═══════════════════════════════════════════════════════════════════════
+
+window.HAL = window.HAL || {};
+window.HAL.cards = window.HAL.cards || {};
+
+window.HAL.cards['non-function'] = {
+
+  config: {
+    duration: 5000,
+    flickerRate: 100,     // ms per flicker cycle
+  },
+
+  render: function(data, onDone) {
+    var svgEl = window.HAL.svg.getContainer(data);
+    var cfg = data.cfg || {};
+    var e = window.HAL.svg.el;
+    var fg = window.HAL.svg.fg;
+
+    // Background — use the card's color or dark navy
+    var bg = data.color || 'rgb(14,21,48)';
+    svgEl.appendChild(e('rect', {
+      x: 0, y: 0, width: 1000, height: 750, fill: bg,
+    }));
+
+    // "NON FUNCTION" text — centered, flickering
+    var titleFont = window.HAL_CONFIG.visual.fonts.title;
+    var textEl = e('text', {
+      x: 500, y: 400, 'text-anchor': 'middle', fill: 'rgb(255,200,50)',
+      'font-family': titleFont, 'font-size': 80, 'font-weight': 'bold',
+      'letter-spacing': 30,
+      opacity: 1,
+    });
+    textEl.textContent = 'NON FUNCTION';
+    svgEl.appendChild(textEl);
+
+    // Error message — smaller, below the main text
+    var err = data.error ? data.error.message : '';
+    if (err) {
+      var labelFont = window.HAL_CONFIG.visual.fonts.label;
+      var errEl = e('text', {
+        x: 500, y: 480, 'text-anchor': 'middle', fill: 'rgb(255,100,100)',
+        'font-family': labelFont, 'font-size': 22, 'letter-spacing': 2,
+        opacity: 0.8,
+      });
+      errEl.textContent = err;
+      svgEl.appendChild(errEl);
+    }
+
+    // Unique ID for this render (for keyframes + tooltip)
+    var uid = 'nf' + DF._uidCounter;
+    DF._uidCounter = (DF._uidCounter || 0) + 1;
+
+    // Inject flicker keyframes
+    var rate = cfg.flickerRate || 100;
+    var styleId = 'nf-style-' + uid;
+    var styleEl = document.getElementById(styleId);
+    if (!styleEl) {
+      styleEl = document.createElementNS(null, 'style');
+      styleEl.id = styleId;
+      styleEl.textContent =
+        '@keyframes nf-flicker-' + uid + ' {' +
+          '0%{opacity:1} 10%{opacity:0.2} 16%{opacity:1} 28%{opacity:0.3} ' +
+          '34%{opacity:1} 42%{opacity:0.1} 50%{opacity:1} 55%{opacity:0.4} ' +
+          '60%{opacity:1} 75%{opacity:0.2} 82%{opacity:1} 90%{opacity:0.5} ' +
+          '100%{opacity:1}' +
+        '}' +
+        '.nf-anim-' + uid + ' { animation: nf-flicker-' + uid + ' ' +
+          (Math.max(rate, 50)) + 'ms infinite; }';
+      document.head.appendChild(styleEl);
+    }
+    textEl.classList.add('nf-anim-' + uid);
+
+    // ── Tooltip (title attribute on the overlay) ───────────────
+    // Wrap the SVG in a tooltip-bearing group
+    var tooltipText = 'Source: ' + (data.error ? data.error.source : 'unknown');
+    if (err) tooltipText += ' — ' + err;
+
+    // Create a transparent overlay for the tooltip
+    var tipEl = e('rect', {
+      x: 0, y: 0, width: 1000, height: 750, fill: 'transparent',
+    });
+    tipEl.setAttributeNS(null, 'title', tooltipText);
+    svgEl.appendChild(tipEl);
+
+    // ── Cleanup ────────────────────────────────────────────────
+    var dur = cfg.duration || 5000;
+    var timer = setTimeout(function() {
+      var s = document.getElementById(styleId);
+      if (s) s.remove();
+      onDone();
+    }, dur);
+
+    // Store timer so _cleanup can cancel it
+    this._nfTimer = timer;
+    this._nfStyleId = styleId;
+    this._nfUid = uid;
+  },
+
+  // Cancel timer + remove injected style if card changes mid-fault
+  _cleanup: function() {
+    if (this._nfTimer) {
+      clearTimeout(this._nfTimer);
+      this._nfTimer = null;
+    }
+    if (this._nfStyleId) {
+      var s = document.getElementById(this._nfStyleId);
+      if (s) s.remove();
+      this._nfStyleId = null;
+    }
+    // Remove lingering anim classes from any SVG children
+    if (this._nfUid) {
+      var els = document.querySelectorAll('.nf-anim-' + this._nfUid);
+      for (var i = 0; i < els.length; i++) {
+        els[i].classList.remove('nf-anim-' + this._nfUid);
+      }
+      this._nfUid = null;
+    }
+  },
+};
