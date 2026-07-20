@@ -29,7 +29,7 @@ window.HAL.cards['curve-family-3d'] = {
         allSeries.push({ label: series[si].label, values: series[si].values || [] });
       }
     }
-    // Sort numerically so Z-order is 1 (back), 5, 15 (front) not 1, 15, 5
+    // Sort by numeric label so Z-order places smallest value at back, largest at front
     allSeries.sort(function(a, b) {
       var na = parseInt(String(a.label).replace(/[^0-9]/g, ''), 10) || 0;
       var nb = parseInt(String(b.label).replace(/[^0-9]/g, ''), 10) || 0;
@@ -368,20 +368,21 @@ window.HAL.cards['curve-family-3d'] = {
 
     // ── Series labels at start of each Z baseline ──
     for (var si = 0; si < nCurves; si++) {
-      var ns = 'http://www.w3.org/2000/svg';
       var p = project(0, 0, si);
       var sx = 500 + (p.sx - 500) * 0.68;
       var sy = 375 + (p.sy - 375) * 0.68;
       if (isNaN(sx) || isNaN(sy)) { sx = 10; sy = 80 + si * 25; }
-      var t = document.createElementNS(ns, 'text');
-      t.setAttribute('x', String(sx - 40));
-      t.setAttribute('y', String(sy + 4));
-      t.setAttribute('fill', '#ffffff');
-      t.setAttribute('font-size', '16');
-      t.setAttribute('font-family', 'monospace');
-      t.setAttribute('font-weight', 'bold');
+      var t = e('text', {
+        x: sx - 40, y: sy + 4,
+        fill: '#ffffff',
+        'font-size': '16',
+        'font-family': 'monospace',
+        'font-weight': 'bold',
+        'text-rendering': 'optimizeLegibility',
+      });
       t.textContent = String(allSeries[si].label || '--');
       svgEl.appendChild(t);
+      labelElements.push(t);
     }
 
     groupMap.header = header;

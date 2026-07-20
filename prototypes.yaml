@@ -34,9 +34,6 @@ cardPrototypes:
         groups:
         - bands
         order: sequential
-      - action: disappear
-        groups:
-        - labels
       - action: wait
         duration: 5000
       - action: disappear
@@ -44,6 +41,9 @@ cardPrototypes:
         groups:
         - bands
         order: sequential
+      - action: disappear
+        groups:
+        - labels
       - action: wait
         duration: 300
       - action: disappear
