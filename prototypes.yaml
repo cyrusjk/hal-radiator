@@ -34,6 +34,9 @@ cardPrototypes:
         groups:
         - bands
         order: sequential
+      - action: disappear
+        groups:
+        - labels
       - action: wait
         duration: 5000
       - action: disappear
@@ -47,7 +50,6 @@ cardPrototypes:
         groups:
         - radialLines
         - gridLines
-        - labels
         - header
         - footer
       - action: done
@@ -104,6 +106,8 @@ cardPrototypes:
       - action: flickerOut
         gap: 167
         groups:
+        - minValues
+        - maxValues
         - bands
         order: sequential
       - action: wait

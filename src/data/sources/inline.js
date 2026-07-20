@@ -14,7 +14,7 @@
 //              values: [60, 70, 85, 110]
 //
 //  Returns:
-//    { groups: [...] } or null (triggering empty-groups no-data state)
+//    { groups: [...] }  (empty groups = no-data state)
 
 window.HAL = window.HAL || {};
 window.HAL.data = window.HAL.data || {};
