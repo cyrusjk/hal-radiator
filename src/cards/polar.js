@@ -354,7 +354,7 @@ window.HAL.cards['polar'] = {
 
         sl.style.opacity = '0';
 
-        svgEl.appendChild(sl);
+
 
         scaleLabels.push(sl);
 
@@ -367,6 +367,7 @@ window.HAL.cards['polar'] = {
     // ── Spokes ────────────────────────────────────────────────────────
 
     var spokeElements = [];
+    var monthLabelElements = [];
 
 
 
@@ -436,9 +437,10 @@ window.HAL.cards['polar'] = {
 
         lbl.style.opacity = '0';
 
-        svgEl.appendChild(lbl);
+
 
         spokeElements.push(lbl);
+        monthLabelElements.push(lbl);
 
       }
 
@@ -932,6 +934,24 @@ window.HAL.cards['polar'] = {
     }
 
 
+
+    // ── Reorder DOM for correct Z-order ────────────────────────────────
+    // Desired: bg → rings → spokes → scaleLabels → monthLabels → data → legend → arcs
+    if (scaleLabels.length && polygonElements.length) {
+      for (var si = 0; si < scaleLabels.length; si++) {
+        svgEl.insertBefore(scaleLabels[si], polygonElements[0]);
+      }
+    }
+    if (monthLabelElements.length && polygonElements.length) {
+      for (var mi = 0; mi < monthLabelElements.length; mi++) {
+        svgEl.insertBefore(monthLabelElements[mi], polygonElements[0]);
+      }
+    }
+    if (legendElements.length && arcElements.length) {
+      for (var li = 0; li < legendElements.length; li++) {
+        svgEl.insertBefore(legendElements[li], arcElements[0]);
+      }
+    }
 
     // ── Group map ─────────────────────────────────────────────────────
 

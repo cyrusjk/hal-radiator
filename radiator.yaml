@@ -589,7 +589,7 @@ groups:
     ringWidth0: 0.3
     spokeColor: "rgba(255,255,255,0.06)"
     spokeWidth: 0.3
-    labelOffset: 26
+    labelOffset: 32
     labelFontSize: 9
     labelColor: "rgba(255,255,255,0.5)"
     scaleFontSize: 8
