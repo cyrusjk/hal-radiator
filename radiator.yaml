@@ -367,7 +367,7 @@ groups:
     prototype: orbital-default
     title: LUN
   - centerR: 10
-    color: plumb
+    color: plum
     dataSource:
       center: SOL
       bodies:
