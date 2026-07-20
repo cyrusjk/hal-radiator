@@ -461,56 +461,94 @@ cardPrototypes:
       - action: done
     chartType: orbital
   polar-default:
-    animation:
-      phases:
-      - action: appear
-        groups:
-        - header
-        - footer
-      - action: wait
-        duration: 800
-      - action: appear
-        gap: 100
-        groups:
-        - rings
-        order: sequential
-      - action: appear
-        groups:
-        - spokes
-        order: simultaneous
-      - action: wait
-        duration: 600
-      - action: appear
-        gap: 167
-        groups:
-        - dataPolygons
-        order: sequential
-      - action: wait
-        duration: 5000
-      - action: disappear
-        gap: 100
-        groups:
-        - dataPolygons
-        order: sequential
-      - action: wait
-        duration: 300
-      - action: disappear
-        groups:
-        - spokes
-        order: simultaneous
-      - action: disappear
-        gap: 100
-        groups:
-        - rings
-        order: sequential
-      - action: wait
-        duration: 300
-      - action: disappear
-        groups:
-        - header
-        - footer
-      - action: done
-    chartType: polar
+      animation:
+        phases:
+        - action: appear
+          groups:
+          - header
+          - footer
+        - action: wait
+          duration: 400
+        - action: appear
+          gap: 80
+          groups:
+          - rings
+          order: sequential
+        - action: appear
+          groups:
+          - spokes
+          order: simultaneous
+        - action: appear
+          groups:
+          - scaleLabels
+          order: simultaneous
+        - action: appear
+          groups:
+          - monthLabels
+          order: simultaneous
+        - action: wait
+          duration: 400
+        - action: appear
+          gap: 150
+          groups:
+          - dataPolygons
+          order: sequential
+        - action: wait
+          duration: 400
+        - action: appear
+          gap: 40
+          groups:
+          - legend
+          order: sequential
+        - action: wait
+          duration: 200
+        - action: appear
+          groups:
+          - arcs
+          order: simultaneous
+        - action: wait
+          duration: 6000
+        - action: disappear
+          gap: 40
+          groups:
+          - legend
+          order: sequential
+        - action: disappear
+          groups:
+          - arcs
+          order: simultaneous
+        - action: disappear
+          gap: 100
+          groups:
+          - dataPolygons
+          order: sequential
+        - action: wait
+          duration: 200
+        - action: disappear
+          groups:
+          - monthLabels
+          order: simultaneous
+        - action: disappear
+          groups:
+          - scaleLabels
+          order: simultaneous
+        - action: disappear
+          groups:
+          - spokes
+          order: simultaneous
+        - action: disappear
+          gap: 80
+          groups:
+          - rings
+          order: sequential
+        - action: wait
+          duration: 200
+        - action: disappear
+          groups:
+          - header
+          - footer
+        - action: done
+      chartType: polar
   streamgraph-default:
     animation:
       phases:

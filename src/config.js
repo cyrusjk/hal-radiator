@@ -2860,6 +2860,20 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
           "order": "simultaneous"
         },
         {
+          "action": "appear",
+          "groups": [
+            "scaleLabels"
+          ],
+          "order": "simultaneous"
+        },
+        {
+          "action": "appear",
+          "groups": [
+            "monthLabels"
+          ],
+          "order": "simultaneous"
+        },
+        {
           "action": "wait",
           "duration": 400
         },
@@ -2877,10 +2891,11 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         },
         {
           "action": "appear",
+          "gap": 40,
           "groups": [
-            "arcs"
+            "legend"
           ],
-          "order": "simultaneous"
+          "order": "sequential"
         },
         {
           "action": "wait",
@@ -2888,11 +2903,10 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         },
         {
           "action": "appear",
-          "gap": 40,
           "groups": [
-            "legend"
+            "arcs"
           ],
-          "order": "sequential"
+          "order": "simultaneous"
         },
         {
           "action": "wait",
@@ -2924,6 +2938,20 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         {
           "action": "wait",
           "duration": 200
+        },
+        {
+          "action": "disappear",
+          "groups": [
+            "monthLabels"
+          ],
+          "order": "simultaneous"
+        },
+        {
+          "action": "disappear",
+          "groups": [
+            "scaleLabels"
+          ],
+          "order": "simultaneous"
         },
         {
           "action": "disappear",
@@ -3015,6 +3043,20 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
           "order": "simultaneous"
         },
         {
+          "action": "appear",
+          "groups": [
+            "scaleLabels"
+          ],
+          "order": "simultaneous"
+        },
+        {
+          "action": "appear",
+          "groups": [
+            "monthLabels"
+          ],
+          "order": "simultaneous"
+        },
+        {
           "action": "wait",
           "duration": 400
         },
@@ -3032,10 +3074,11 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         },
         {
           "action": "appear",
+          "gap": 40,
           "groups": [
-            "arcs"
+            "legend"
           ],
-          "order": "simultaneous"
+          "order": "sequential"
         },
         {
           "action": "wait",
@@ -3043,11 +3086,10 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         },
         {
           "action": "appear",
-          "gap": 40,
           "groups": [
-            "legend"
+            "arcs"
           ],
-          "order": "sequential"
+          "order": "simultaneous"
         },
         {
           "action": "wait",
@@ -3079,6 +3121,20 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         {
           "action": "wait",
           "duration": 200
+        },
+        {
+          "action": "disappear",
+          "groups": [
+            "monthLabels"
+          ],
+          "order": "simultaneous"
+        },
+        {
+          "action": "disappear",
+          "groups": [
+            "scaleLabels"
+          ],
+          "order": "simultaneous"
         },
         {
           "action": "disappear",

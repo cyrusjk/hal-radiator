@@ -574,7 +574,10 @@ window.HAL.cards['polar'] = {
 
     }
 
-
+    // Set data polygons hidden initially -- revealed by animation
+    for (var pdi = 0; pdi < polygonElements.length; pdi++) {
+      polygonElements[pdi].style.opacity = '0';
+    }
 
     // ── Arcs (min/avg/mean/max bands) ─────────────────────────────────
 
@@ -944,6 +947,33 @@ window.HAL.cards['polar'] = {
 
       }
 
+      // Add arc legend entries below year entries
+      if (data.arcs && data.arcs.length) {
+        var arcStartRow = itemsPerCol;
+        for (var aai = 0; aai < data.arcs.length; aai++) {
+          var ac = data.arcs[aai];
+          var aCol = Math.floor((arcStartRow + aai) / itemsPerCol);
+          var aRow = (arcStartRow + aai) % itemsPerCol;
+          var alx = legendX + aCol * 140;
+          var aly = legendY + aRow * legendSpacing;
+          var aDot = e('rect', {
+            x: alx, y: aly - 3, width: 6, height: 6,
+            fill: ac.color || '#ffffff',
+            opacity: ac.alpha != null ? ac.alpha : 0.6,
+          });
+          svgEl.appendChild(aDot);
+          legendElements.push(aDot);
+          var aLt = e('text', {
+            x: alx + 10, y: aly + 3,
+            fill: fg('frame', 0.85), 'font-size': fs(legendFontSize),
+            'font-family': labelFont,
+          });
+          aLt.textContent = (ac.stat || '?').toUpperCase();
+          svgEl.appendChild(aLt);
+          legendElements.push(aLt);
+        }
+      }
+
     }
 
 
@@ -965,15 +995,19 @@ window.HAL.cards['polar'] = {
 
     groupMap.footer = footer;
 
-    groupMap.rings = ringElements.concat(scaleLabels);
+    groupMap.rings = ringElements;
+
+    groupMap.scaleLabels = scaleLabels;
 
     groupMap.spokes = spokeElements;
 
+    groupMap.monthLabels = monthLabelElements;
+
     groupMap.dataPolygons = polygonElements;
 
-    groupMap.arcs = arcElements;
-
     groupMap.legend = legendElements;
+
+    groupMap.arcs = arcElements;
 
 
 
@@ -989,17 +1023,21 @@ window.HAL.cards['polar'] = {
 
       { action: 'appear',     groups: ['spokes'], order: 'simultaneous' },
 
+      { action: 'appear',     groups: ['scaleLabels'], order: 'simultaneous' },
+
+      { action: 'appear',     groups: ['monthLabels'], order: 'simultaneous' },
+
       { action: 'wait',       duration: 400 },
 
       { action: 'appear',     groups: ['dataPolygons'], order: 'sequential', gap: 150 },
 
       { action: 'wait',       duration: 400 },
 
-      { action: 'appear',     groups: ['arcs'], order: 'simultaneous' },
+      { action: 'appear',     groups: ['legend'], order: 'sequential', gap: 40 },
 
       { action: 'wait',       duration: 200 },
 
-      { action: 'appear',     groups: ['legend'], order: 'sequential', gap: 40 },
+      { action: 'appear',     groups: ['arcs'], order: 'simultaneous' },
 
       { action: 'wait',       duration: 6000 },
 
@@ -1007,9 +1045,15 @@ window.HAL.cards['polar'] = {
 
       { action: 'disappear',  groups: ['arcs'], order: 'simultaneous' },
 
+      { action: 'disappear',  groups: ['legend'], order: 'sequential', gap: 40 },
+
       { action: 'disappear',  groups: ['dataPolygons'], order: 'sequential', gap: 100 },
 
       { action: 'wait',       duration: 200 },
+
+      { action: 'disappear',  groups: ['monthLabels'], order: 'simultaneous' },
+
+      { action: 'disappear',  groups: ['scaleLabels'], order: 'simultaneous' },
 
       { action: 'disappear',  groups: ['spokes'], order: 'simultaneous' },
 
