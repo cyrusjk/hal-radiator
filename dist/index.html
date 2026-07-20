@@ -6301,11 +6301,13 @@ window.HAL.cards['polar'] = {
 
 
 
+      var itemsPerCol = Math.ceil(series.length / legendCols);
+
       for (var si = 0; si < series.length; si++) {
 
-        var col = si % legendCols;
+        var col = Math.floor(si / itemsPerCol);
 
-        var row = Math.floor(si / legendCols);
+        var row = si % itemsPerCol;
 
         var lx = legendX + col * 140;
 
