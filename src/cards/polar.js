@@ -446,7 +446,9 @@ window.HAL.cards['polar'] = {
 
     }
 
-
+    // Batch-append scale labels and month labels in correct Z-order
+    for (var si = 0; si < scaleLabels.length; si++) svgEl.appendChild(scaleLabels[si]);
+    for (var mi = 0; mi < monthLabelElements.length; mi++) svgEl.appendChild(monthLabelElements[mi]);
 
     // ── Per-year color palette ────────────────────────────────────────
 
@@ -946,18 +948,7 @@ window.HAL.cards['polar'] = {
 
 
 
-    // ── Reorder DOM for correct Z-order ────────────────────────────────
-    // Desired: bg → rings → spokes → scaleLabels → monthLabels → data → legend → arcs
-    if (scaleLabels.length && polygonElements.length) {
-      for (var si = 0; si < scaleLabels.length; si++) {
-        svgEl.insertBefore(scaleLabels[si], polygonElements[0]);
-      }
-    }
-    if (monthLabelElements.length && polygonElements.length) {
-      for (var mi = 0; mi < monthLabelElements.length; mi++) {
-        svgEl.insertBefore(monthLabelElements[mi], polygonElements[0]);
-      }
-    }
+    // Move legend before arcs for correct Z-order
     if (legendElements.length && arcElements.length) {
       for (var li = 0; li < legendElements.length; li++) {
         svgEl.insertBefore(legendElements[li], arcElements[0]);
