@@ -354,6 +354,7 @@ groups:
       bodies:
       - name: luna
         boldArc: 60
+        lagrange: true
         markers:
         - angle: 305
           label: LUNA
@@ -361,21 +362,6 @@ groups:
         - angle: 125
           label: APOGEE
           style: dashed
-        - angle: 305
-          label: L1
-          r: 94
-        - angle: 305
-          label: L2
-          r: 118
-        - angle: 120
-          label: L3
-          r: 110
-        - angle: 5
-          label: L4
-          r: 110
-        - angle: 245
-          label: L5
-          r: 110
       type: orbital
     label: EARTH-MOON
     prototype: orbital-default

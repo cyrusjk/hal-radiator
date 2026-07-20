@@ -163,6 +163,53 @@ window.HAL.data.sources = window.HAL.data.sources || {};
     return Math.sqrt(a) * 50;
   }
 
+  // ── Lagrange point generator ────────────────────────────────────────
+  // Computes L1-L5 positions relative to a body's position.
+  // Uses the restricted 3-body approximation:
+  //   L1 — between primary and secondary, r × 0.849
+  //   L2 — beyond secondary,            r × 1.168
+  //   L3 — opposite side                r (≈ same distance)
+  //   L4 — 60° ahead in orbit           r (equilateral triangle)
+  //   L5 — 60° behind in orbit          r (equilateral triangle)
+  //
+  // cfg can be boolean true (all defaults) or an object:
+  //   { points: ['L4','L5'] }          — only specific points
+  //   { labels: {L4:'L4',L5:'L5'} }    — custom labels (default L1..L5)
+  function generateLagrange(r, bodyAngle, cfg) {
+    var points = [];
+    var want = { L1:true, L2:true, L3:true, L4:true, L5:true };
+    var labels = { L1:'L1', L2:'L2', L3:'L3', L4:'L4', L5:'L5' };
+
+    if (typeof cfg === 'object' && cfg !== null) {
+      if (cfg.points) {
+        want = { L1:false, L2:false, L3:false, L4:false, L5:false };
+        for (var pi = 0; pi < cfg.points.length; pi++) want[cfg.points[pi]] = true;
+      }
+      if (cfg.labels) {
+        for (var lk in cfg.labels) labels[lk] = cfg.labels[lk];
+      }
+    }
+
+    var defs = [
+      { key:'L1', angle: bodyAngle,            r: r * 0.849 },
+      { key:'L2', angle: bodyAngle,            r: r * 1.168 },
+      { key:'L3', angle: (bodyAngle + 180) % 360, r: r },
+      { key:'L4', angle: (bodyAngle + 60)  % 360, r: r },
+      { key:'L5', angle: (bodyAngle - 60 + 360) % 360, r: r },
+    ];
+
+    for (var di = 0; di < defs.length; di++) {
+      if (want[defs[di].key]) {
+        points.push({
+          label: labels[defs[di].key],
+          angle: defs[di].angle,
+          r: defs[di].r,
+        });
+      }
+    }
+    return points;
+  }
+
   // ── Fetch ──────────────────────────────────────────────────────────
   var plugin = {
     name: 'orbital',
@@ -205,14 +252,25 @@ window.HAL.data.sources = window.HAL.data.sources || {};
         if (val < 1) val = 1;
         if (val > 20) val = 20;
 
+        // Compute data-unit radius for this body
+        var bodyR = distanceToPixelR(el.a, el.isKm);
+
+        // Build markers: user-defined first, then auto Lagrange points
+        var markers = (body.markers || []).slice();
+
+        if (body.lagrange) {
+          var lgPoints = generateLagrange(bodyR, pos.bodyAngle, body.lagrange);
+          markers = markers.concat(lgPoints);
+        }
+
         result.series.push({
           label: (LABELS[bodyName] || bodyName.toUpperCase()),
-          r: distanceToPixelR(el.a, el.isKm),
+          r: bodyR,
           bodyAngle: pos.bodyAngle,
           eccentricity: el.e,
           omega: el.w,
           boldArc: body.boldArc || 45,
-          markers: body.markers || [],
+          markers: markers,
           value: body.value || val,
         });
       }
