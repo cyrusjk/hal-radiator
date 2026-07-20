@@ -600,7 +600,7 @@ window.HAL.cards['polar'] = {
 
       //   avg:  angle where value crosses yearly average (first crossing)
 
-      //   mean: angle where value crosses yearly mean (last crossing)
+      //   mean: angle where value crosses yearly median (first crossing)
 
       function findCrossings(values, target) {
 
@@ -718,6 +718,7 @@ window.HAL.cards['polar'] = {
 
         var avg = sum / valid.length;
 
+        // avg: first crossing of yearly average temp (spring rising edge)
         var crosses = findCrossings(sv, avg);
 
         if (crosses.length > 0) {
@@ -726,8 +727,16 @@ window.HAL.cards['polar'] = {
 
           avgAngles.push(crosses[0]);
 
-          meanAnglesAll.push(crosses[crosses.length - 1]);
+        }
 
+        // mean: first crossing of yearly median temp (spring rising edge)
+        var sorted = sv.filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});
+        var mid = Math.floor(sorted.length / 2);
+        var median = sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
+        var mCrosses = findCrossings(sv, median);
+        if (mCrosses.length > 0) {
+          mCrosses.sort(function(a,b){return a-b;});
+          meanAnglesAll.push(mCrosses[0]);
         }
 
       }

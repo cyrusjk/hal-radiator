@@ -3233,7 +3233,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "legend": true,
     "legendX": 20,
     "legendY": 690,
-    "legendCols": 4,
+    "legendCols": 2,
     "legendSpacing": 11,
     "legendFontSize": 8
   },
