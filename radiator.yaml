@@ -595,7 +595,7 @@ groups:
     scaleFontSize: 8
     scalePrecision: 1
     valMin: 13.5
-    valMax: 24.0
+    valMax: 25.5
     lineWidth: 1.0
     lineAlpha: 1.0
     baseAlpha: 0.30
@@ -667,9 +667,9 @@ groups:
       lineAlpha: 0.2
       connectors: true
     legend: true
-    legendX: 125
+    legendX: 20
     legendY: 690
-    legendCols: 2
+    legendCols: 4
     legendSpacing: 11
     legendFontSize: 8
     prototype: polar-default

@@ -3142,22 +3142,22 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "ringWidth0": 0.3,
     "spokeColor": "rgba(255,255,255,0.06)",
     "spokeWidth": 0.3,
-    "labelOffset": 26,
+    "labelOffset": 32,
     "labelFontSize": 9,
     "labelColor": "rgba(255,255,255,0.5)",
     "scaleFontSize": 8,
     "scalePrecision": 1,
     "valMin": 13.5,
-    "valMax": 24.0,
+    "valMax": 25.5,
     "lineWidth": 1.0,
     "lineAlpha": 1.0,
     "baseAlpha": 0.3,
     "alphaMax": 0.85,
     "titleSize": 14,
-    "titleX": 500,
+    "titleX": 20,
     "titleY": 25,
     "subSize": 9,
-    "subtitle": "ERA5-LAND 5-LOCATION PROXY \u00b7 WEEKLY \u00b7 2015-2026",
+    "subtitle": "PARIS ERA5-LAND \u00b7 WEEKLY \u00b7 2015-2026",
     "coolColor": {
       "r": 100,
       "g": 180,
@@ -3181,7 +3181,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         "tickWidth": 1.5,
         "tickAlpha": 0.6,
         "lineColor": "#ffffff",
-        "lineAlpha": 0.08,
+        "lineAlpha": 0.2,
         "connectors": true
       },
       {
@@ -3196,7 +3196,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         "tickWidth": 1.5,
         "tickAlpha": 0.6,
         "lineColor": "#ffffff",
-        "lineAlpha": 0.08,
+        "lineAlpha": 0.2,
         "connectors": true
       },
       {
@@ -3211,7 +3211,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         "tickWidth": 1.5,
         "tickAlpha": 0.5,
         "lineColor": "rgba(255,255,255,0.50)",
-        "lineAlpha": 0.12,
+        "lineAlpha": 0.2,
         "connectors": true
       },
       {
@@ -3226,14 +3226,14 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
         "tickWidth": 1.5,
         "tickAlpha": 0.6,
         "lineColor": "#ffffff",
-        "lineAlpha": 0.12,
+        "lineAlpha": 0.2,
         "connectors": true
       }
     ],
     "legend": true,
-    "legendX": 125,
+    "legendX": 20,
     "legendY": 690,
-    "legendCols": 2,
+    "legendCols": 4,
     "legendSpacing": 11,
     "legendFontSize": 8
   },
