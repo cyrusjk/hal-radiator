@@ -296,10 +296,9 @@ groups:
   - color: plum
     dataSource:
       center: JUPITER
-      series:
-      - bodyAngle: 45
+      bodies:
+      - name: io
         boldArc: 70
-        label: IO
         markers:
         - angle: 45
           label: IO
@@ -310,11 +309,8 @@ groups:
           style: dashed
         - angle: 300
           style: solid
-        r: 55
-        value: 8
-      - bodyAngle: 130
+      - name: europa
         boldArc: 60
-        label: EUR
         markers:
         - angle: 130
           label: EUR
@@ -325,11 +321,8 @@ groups:
         - angle: 220
           label: POS.1
           style: solid
-        r: 90
-        value: 12
-      - bodyAngle: 220
+      - name: ganymede
         boldArc: 50
-        label: GNY
         markers:
         - angle: 220
           label: GNY
@@ -340,11 +333,8 @@ groups:
         - angle: 140
           label: 1,070,522
           style: solid
-        r: 125
-        value: 15
-      - bodyAngle: 310
+      - name: callisto
         boldArc: 40
-        label: CALLISTO
         markers:
         - angle: 310
           label: CALLISTO
@@ -354,20 +344,16 @@ groups:
           style: dashed
         - angle: 200
           style: solid
-        r: 160
-        value: 10
-      type: inline
+      type: orbital
     label: ORBIT MAP
     prototype: orbital-default
     title: JOV
-  - color: dark-charcoal
+  - color: plum
     dataSource:
       center: EARTH
-      series:
-      - bodyAngle: 305
+      bodies:
+      - name: luna
         boldArc: 60
-        eccentricity: 0.054
-        label: LUNA
         markers:
         - angle: 305
           label: LUNA
@@ -390,79 +376,43 @@ groups:
         - angle: 245
           label: L5
           r: 110
-        omega: 270
-        r: 110
-        value: 6
-      type: inline
+      type: orbital
     label: EARTH-MOON
     prototype: orbital-default
     title: LUN
   - centerR: 10
-    color: near-black
+    color: plumb
     dataSource:
       center: SOL
-      series:
-      - bodyAngle: 60
+      bodies:
+      - name: mercury
         boldArc: 50
-        eccentricity: 0.205
-        label: MERCURY
-        omega: 30
-        r: 32
-        value: 3
-      - bodyAngle: 210
+      - name: venus
         boldArc: 55
-        label: VENUS
-        r: 43
-        value: 7
-      - bodyAngle: 320
+      - name: earth
         boldArc: 60
-        label: EARTH
-        r: 51
-        value: 8
-      - bodyAngle: 140
+      - name: mars
         boldArc: 50
-        eccentricity: 0.093
-        label: MARS
-        omega: 285
-        r: 63
-        value: 5
-      - bodyAngle: 55
+      - name: jupiter
         boldArc: 70
-        label: JUPITER
-        r: 116
-        value: 18
-      - bodyAngle: 270
+      - name: saturn
         boldArc: 65
-        label: SATURN
-        r: 158
-        value: 15
-      - bodyAngle: 15
+      - name: uranus
         boldArc: 60
-        label: URANUS
-        r: 224
-        value: 10
-      - bodyAngle: 170
+      - name: neptune
         boldArc: 55
-        label: NEPTUNE
-        r: 280
-        value: 9
-      type: inline
-    ephemeris: true
+      type: orbital
     label: SOLAR SYSTEM
     prototype: orbital-default
     title: SOL
   - color: plum
     dataSource:
       center: JUPITER
-      series:
-      - bodyAngle: 80
+      bodies:
+      - name: amalthea
         boldArc: 40
-        label: AMALTHEA
-        r: 30
-        value: 4
-      - bodyAngle: 45
+      - name: io
         boldArc: 70
-        label: IO
         markers:
         - angle: 45
           label: IO
@@ -473,74 +423,19 @@ groups:
           style: dashed
         - angle: 300
           style: solid
-        r: 55
-        value: 8
-      - bodyAngle: 130
+      - name: europa
         boldArc: 60
-        label: EUR
-        markers:
-        - angle: 130
-          label: EUR
-          style: solid
-        - angle: 50
-          label: COMP.DIST
-          style: dashed
-        - angle: 220
-          label: POS.1
-          style: solid
-        r: 90
-        value: 12
-      - bodyAngle: 220
+      - name: ganymede
         boldArc: 50
-        label: GNY
-        markers:
-        - angle: 220
-          label: GNY
-          style: solid
-        - angle: 300
-          label: ORB.RAD
-          style: dashed
-        - angle: 140
-          label: 1,070,522
-          style: solid
-        r: 125
-        value: 15
-      - bodyAngle: 310
+      - name: callisto
         boldArc: 40
-        label: CALLISTO
-        markers:
-        - angle: 310
-          label: CALLISTO
-          style: solid
-        - angle: 50
-          label: PARAM
-          style: dashed
-        - angle: 200
-          style: solid
-        r: 160
-        value: 10
-      - bodyAngle: 190
+      - name: himalia
         boldArc: 30
-        eccentricity: 0.16
-        label: HIMALIA
-        omega: 135
-        r: 200
-        value: 6
-      - bodyAngle: 75
+      - name: elara
         boldArc: 25
-        eccentricity: 0.22
-        label: ELARA
-        omega: 290
-        r: 230
-        value: 5
-      - bodyAngle: 340
+      - name: pasiphae
         boldArc: 20
-        eccentricity: 0.41
-        label: PASIPHAE
-        omega: 310
-        r: 275
-        value: 7
-      type: inline
+      type: orbital
     label: JOVIAN SYSTEM
     prototype: orbital-default
     title: JOV2

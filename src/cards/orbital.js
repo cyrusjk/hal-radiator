@@ -24,7 +24,7 @@ window.HAL.cards['orbital'] = {
     // ── Layout ────────────────────────────────────────────────────────
     var cx = 500, cy = 400;
     var maxR = 280;
-    var centerLabel = data.center || '';
+    var centerLabel = data.center || (data.dataSource && data.dataSource.center) || '';
 
     var maxRData = 0;
     for (var si = 0; si < series.length; si++) {
