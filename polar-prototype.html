@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { background: #0a0a0a; display: flex; justify-content: center; align-items: center;
+         min-height: 100vh; margin: 0; font-family: monospace; }
+  canvas { display: block; background: #0f1923; border-radius: 8px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="800" height="720"></canvas>
+<script>
+var cx = 400, cy = 380, maxR = 260, minR = 30;
+var c = document.getElementById('c');
+var ctx = c.getContext('2d');
+
+ctx.clearRect(0, 0, 800, 720);
+ctx.fillStyle = '#0f1923';
+ctx.fillRect(0, 0, 800, 720);
+
+// ── Grid rings ──────────────────────────────────────────────────
+for (var ri = 0; ri <= 4; ri++) {
+  var rr = minR + (maxR - minR) / 4 * ri;
+  ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 0.5; ctx.stroke();
+}
+
+// ── Radial lines + month labels ─────────────────────────────────
+var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+for (var mi = 0; mi < 12; mi++) {
+  var ang = mi * 30 - 90, rad = ang * Math.PI / 180;
+  ctx.beginPath();
+  ctx.moveTo(cx + minR * Math.cos(rad), cy + minR * Math.sin(rad));
+  ctx.lineTo(cx + maxR * Math.cos(rad), cy + maxR * Math.sin(rad));
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5; ctx.stroke();
+  var lx = cx + (maxR + 22) * Math.cos(rad), ly = cy + (maxR + 22) * Math.sin(rad);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '10px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(months[mi], lx, ly);
+}
+
+function polar(angleDeg, r) {
+  var rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+// ── ERA5-Land 5-location average surface temp (global proxy) ──
+// Europe, N America, S Asia, SE Australia, Equator Atlantic
+// Monthly means, 2015-2024
+var tempData = {
+  2015: [14.3,14.9,17.8,20.5,22.2,22.8,22.3,21.8,21.5,20.8,18.9,17.2],
+  2016: [15.7,17.3,19.5,21.4,22.3,23.0,22.6,22.4,22.4,20.2,18.1,16.0],
+  2017: [15.8,18.0,19.3,21.1,22.3,22.7,21.6,21.5,21.1,20.8,17.2,15.4],
+  2018: [15.2,16.5,18.8,20.7,22.7,23.3,22.6,22.1,21.8,20.1,16.9,15.9],
+  2019: [15.5,17.1,18.3,20.9,22.2,22.9,22.8,21.9,22.2,20.2,17.1,16.2],
+  2020: [16.3,16.8,18.7,20.6,22.0,21.6,22.5,21.8,21.7,19.6,17.9,15.1],
+  2021: [14.8,15.8,18.9,20.1,20.9,22.5,22.0,21.9,21.6,19.8,16.2,16.4],
+  2022: [14.0,16.0,18.9,20.9,23.1,23.1,22.9,22.5,21.3,20.1,16.9,15.2],
+  2023: [15.4,16.9,18.7,19.9,21.5,23.1,22.5,22.7,22.8,20.7,17.9,16.4],
+  2024: [14.6,17.7,19.5,21.1,22.5,22.9,22.1,22.5,21.0,20.4,18.8,16.1],
+  2025: [14.4,16.8,19.3,21.3,21.9,22.3,22.2,22.3,21.6,20.2,17.3,15.5],
+  2026: [14.7,17.5,20.1,21.6,22.6,23.8,23.5]
+};
+var allYears = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+var numYears = allYears.length;
+
+// Interpolate monthly data to N points per year (handles partial years)
+function interpolate(monthly, N) {
+  var out = [];
+  var nMonths = monthly.length;
+  for (var i = 0; i < N; i++) {
+    var pos = (i / N) * nMonths; // position in month-space [0, nMonths)
+    var m0 = Math.floor(pos);
+    var m1 = Math.min(m0 + 1, nMonths - 1);
+    var t = pos - m0;
+    var val = monthly[m0] + (monthly[m1] - monthly[m0]) * t;
+    out.push({ angle: (i / N) * 360, value: val });
+  }
+  return out;
+}
+
+var ptsPerYear = 52;
+var years = {};
+allYears.forEach(function(y) { years[y] = interpolate(tempData[y], ptsPerYear); });
+
+// Temperature range for radial mapping — compute from actual data
+var tempMin = Infinity, tempMax = -Infinity;
+allYears.forEach(function(y) {
+  var pts = years[y];
+  for (var pi = 0; pi < pts.length; pi++) {
+    if (pts[pi].value < tempMin) tempMin = pts[pi].value;
+    if (pts[pi].value > tempMax) tempMax = pts[pi].value;
+  }
+});
+// Add small padding so points don't clip at rings
+var tempPad = (tempMax - tempMin) * 0.05;
+tempMin -= tempPad;
+tempMax += tempPad;
+function valueToR(val) { return minR + ((val - tempMin) / (tempMax - tempMin)) * (maxR - minR - 15); }
+
+// ── Arc config — radial offsets (decorative: distance = min/avg/mean/max) ──
+var arcConfig = {
+  min:  { rOff: -10, width: 3, color: '#ffffff',  label: 'min',  lineColor: '#ffffff', lineAlpha: 0.10 },
+  avg:  { rOff: 0,   width: 3, color: '#ffffff',  label: 'avg',  lineColor: '#ffffff', lineAlpha: 0.10 },
+  mean: { rOff: 0,   width: 3, color: 'rgba(255,255,255,0.50)', label: 'mean', lineColor: 'rgba(255,255,255,0.50)', lineAlpha: 0.15 },
+  max:  { rOff: 10,  width: 3, color: '#ffffff',  label: 'max',  lineColor: '#ffffff', lineAlpha: 0.15 }
+};
+
+// ── Find angles for min, max, avg, mean for each day ────────────
+function findCrossings(pts, target) {
+  var angles = [];
+  for (var i = 1; i < pts.length; i++) {
+    var p0 = pts[i-1], p1 = pts[i];
+    if ((p0.value <= target && p1.value >= target) || (p0.value >= target && p1.value <= target)) {
+      var t = (target - p0.value) / (p1.value - p0.value);
+      angles.push(p0.angle + (p1.angle - p0.angle) * t);
+    }
+  }
+  return angles;
+}
+
+var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
+var minVals = [], maxVals = [], meanVals = [];
+for (var yi = 0; yi < numYears; yi++) {
+  var d = years[allYears[yi]];
+  var minV = Infinity, maxV = -Infinity, minA = 0, maxA = 0, sum = 0;
+  for (var i = 0; i < d.length; i++) {
+    if (d[i].value < minV) { minV = d[i].value; minA = d[i].angle; }
+    if (d[i].value > maxV) { maxV = d[i].value; maxA = d[i].angle; }
+    sum += d[i].value;
+  }
+  var mean = sum / d.length;
+  minAngles.push(minA);
+  maxAngles.push(maxA);
+  minVals.push(minV);
+  maxVals.push(maxV);
+  meanVals.push(mean);
+  var crosses = findCrossings(d, mean);
+  if (crosses.length > 0) {
+    crosses.sort(function(a,b){return a-b;});
+    avgAngles.push(crosses[0]);
+    meanAnglesAll.push(crosses[crosses.length - 1]);
+  }
+}
+
+// ── Cluster: find widest gap, cluster is the complement ─────────
+function clusterAngles(angles) {
+  if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
+  var s = angles.slice().sort(function(a,b){return a-b;});
+  // Deduplicate adjacent equal values for gap finding
+  var uniq = [s[0]];
+  for (var i = 1; i < s.length; i++) { if (s[i] !== s[i-1]) uniq.push(s[i]); }
+  // All same angle → tiny arc at that position
+  if (uniq.length === 1) {
+    return { start: uniq[0] - 1, end: uniq[0] + 1, span: 2, gap: 358 };
+  }
+  var maxGap = 0, gapIdx = 0;
+  for (var i = 0; i < uniq.length; i++) {
+    var next = uniq[(i + 1) % uniq.length];
+    var gap = (i === uniq.length - 1) ? (uniq[0] + 360 - uniq[i]) : (uniq[i+1] - uniq[i]);
+    if (gap > maxGap) { maxGap = gap; gapIdx = i; }
+  }
+  var gapStart = uniq[gapIdx];
+  var clusterStart = (gapStart + maxGap) % 360;
+  var clusterEnd = gapStart;
+  if (clusterEnd <= clusterStart) clusterEnd += 360;
+  return { start: clusterStart, end: clusterEnd, span: clusterEnd - clusterStart, gap: maxGap };
+}
+
+// ── Cluster all stats ────────────────────────────────────────────
+var clusters = {};
+clusters.min  = clusterAngles(minAngles);
+clusters.max  = clusterAngles(maxAngles);
+clusters.avg  = clusterAngles(avgAngles);
+clusters.mean = clusterAngles(meanAnglesAll);
+
+// ── Draw arc helper ─────────────────────────────────────────────
+function drawArc(cluster, rOff, width, color) {
+  if (cluster.span === 0) return;
+  var r = maxR + rOff;
+  var sRad = (cluster.start - 90) * Math.PI / 180;
+  var eRad = (cluster.end - 90) * Math.PI / 180;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, sRad, eRad);
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.stroke();
+}
+
+// ── Day marker ticks on each arc ────────────────────────────────
+function drawArcTicks(angles, rOff, color, tickLen) {
+  var r = maxR + rOff;
+  var half = tickLen / 2;
+  for (var ai = 0; ai < angles.length; ai++) {
+    var rad = (angles[ai] - 90) * Math.PI / 180;
+    var innerR = r - half, outerR = r + half;
+    ctx.beginPath();
+    ctx.moveTo(cx + innerR * Math.cos(rad), cy + innerR * Math.sin(rad));
+    ctx.lineTo(cx + outerR * Math.cos(rad), cy + outerR * Math.sin(rad));
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+}
+
+// ── Draw arcs + reference ring AFTER year paths animate in ──────
+setTimeout(function() {
+  var statAngles = {
+    min:  minAngles,
+    avg:  avgAngles,
+    mean: meanAnglesAll,
+    max:  maxAngles
+  };
+  Object.keys(arcConfig).forEach(function(key) {
+    var cfg = arcConfig[key];
+    var cl = clusters[key];
+    if (cl && cl.span > 0) {
+      drawArc(cl, cfg.rOff, cfg.width, cfg.color);
+    }
+    var angles = statAngles[key];
+    if (angles && angles.length > 0) {
+      drawArcTicks(angles, cfg.rOff, cfg.color, 6);
+    }
+  });
+  ctx.beginPath(); ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(201,168,76,0.15)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // ── Connector lines: trace point → arc tick for each year's stats ──
+  var statVals = {
+    min:  minVals,
+    avg:  meanVals,
+    mean: meanVals,
+    max:  maxVals
+  };
+  var statAnglesMap = {
+    min:  minAngles,
+    avg:  avgAngles,
+    mean: meanAnglesAll,
+    max:  maxAngles
+  };
+  Object.keys(arcConfig).forEach(function(key) {
+    var cfg = arcConfig[key];
+    var vals = statVals[key];
+    var angles = statAnglesMap[key];
+    var arcR = maxR + cfg.rOff;
+    ctx.strokeStyle = cfg.lineColor;
+    ctx.globalAlpha = cfg.lineAlpha;
+    ctx.lineWidth = 0.5;
+    for (var si = 0; si < angles.length; si++) {
+      var tp = polar(angles[si], valueToR(vals[si]));
+      var ap = polar(angles[si], arcR);
+      ctx.beginPath();
+      ctx.moveTo(tp.x, tp.y);
+      ctx.lineTo(ap.x, ap.y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  });
+}, 2800);
+
+// ── Individual year paths ────────────────────────────────────────
+var colors = [
+  '#3a5a8c','#3a6a9c','#3a7aac','#4a8abc','#5a9acc',
+  '#6aaadc','#7abae8','#8acaf0','#9adaf4','#ffffff',
+  '#ffccaa','#ffaa88'
+];
+
+for (var yi = 0; yi < numYears; yi++) {
+  (function(idx) {
+    setTimeout(function() {
+      var y = allYears[idx];
+      var pts = years[y];
+      ctx.beginPath();
+      for (var i = 0; i < pts.length; i++) {
+        var p = polar(pts[i].angle, valueToR(pts[i].value));
+        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = colors[idx];
+      ctx.globalAlpha = 0.35 + idx * 0.06;
+      ctx.lineWidth = 0.8; ctx.stroke();
+      ctx.globalAlpha = 1;
+    }, 200 + idx * 250);
+  })(yi);
+}
+
+// ── Center dot ──────────────────────────────────────────────────
+setTimeout(function() {
+  ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffffff'; ctx.fill();
+}, 200);
+
+// ── Labels ──────────────────────────────────────────────────────
+ctx.fillStyle = '#ffffff';
+ctx.font = 'bold 14px monospace';
+ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+ctx.fillText('GLOBAL TEMPERATURE', 25, 25);
+ctx.fillStyle = 'rgba(255,255,255,0.3)';
+ctx.font = '9px monospace';
+ctx.fillText('ERA5-LAND 5-LOCATION PROXY \u00B7 WEEKLY \u00B7 2015-2026', 25, 45);
+
+// Temperature scale labels
+var scaleLabels = ['14\u00b0C','16\u00b0C','18\u00b0C','20\u00b0C','22\u00b0C','24\u00b0C'];
+for (var si = 0; si < 6; si++) {
+  var val = 14 + si * 2;
+  var r = valueToR(val);
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '8px monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(scaleLabels[si], cx + r + 4, cy);
+}
+
+// Year labels — wrap into columns, max 6 rows per column
+var legendColWidth = 95;
+for (var li = 0; li < numYears; li++) {
+  (function(idx) {
+    setTimeout(function() {
+      var y = allYears[idx];
+      var col = Math.floor(idx / 6);
+      var row = idx % 6;
+      var lx = 25 + col * legendColWidth;
+      var ly = 630 + row * 11;
+      ctx.globalAlpha = 0.35 + idx * 0.06;
+      ctx.strokeStyle = colors[idx]; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+10, ly); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.font = '8px monospace'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(y), lx+17, ly);
+    }, 200+idx*250);
+  })(li);
+}
+</script>
+</body>
+</html>
