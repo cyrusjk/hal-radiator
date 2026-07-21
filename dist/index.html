@@ -3489,8 +3489,6 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "labelColor": "rgba(255,255,255,0.5)",
     "scaleFontSize": 8,
     "scalePrecision": 1,
-    "valMin": 13.5,
-    "valMax": 25.5,
     "lineWidth": 1.0,
     "lineAlpha": 1.0,
     "baseAlpha": 0.3,
@@ -5579,6 +5577,11 @@ window.HAL.cards['polar'] = {
 
     }
 
+    // Add 5% padding so data points don't sit directly on minR/maxR
+    var pad = (valMax - valMin) * 0.15 || 1.5;
+    valMin -= pad;
+    valMax += pad;
+
     var valRange = valMax - valMin || 1;
 
 
@@ -6005,11 +6008,16 @@ window.HAL.cards['polar'] = {
 
       if (pathD !== '') {
 
-        var firstR = valToR(sv[0]);
+        // Partial year (fewer spokes than full cycle): do NOT close back to first point
+        if (sv.length >= nSpokes) {
 
-        var firstP = polar(firstR, 0);
+          var firstR = valToR(sv[0]);
 
-        pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
+          var firstP = polar(firstR, 0);
+
+          pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
+
+        }
 
       }
 
@@ -6084,7 +6092,7 @@ window.HAL.cards['polar'] = {
 
             var t = (target - p0) / (p1 - p0);
 
-            angles.push((i - 1 + t) / values.length * 360);
+            angles.push((i - 1 + t) / nSpokes * 360);
 
           }
 
@@ -6160,7 +6168,7 @@ window.HAL.cards['polar'] = {
 
         for (var i = 0; i < valid.length; i++) {
 
-          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
+          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / nSpokes * 360; }
 
         }
 
@@ -6172,7 +6180,7 @@ window.HAL.cards['polar'] = {
 
         for (var i = 0; i < valid.length; i++) {
 
-          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / nSpokes * 360; }
 
         }
 
@@ -6536,9 +6544,7 @@ window.HAL.cards['polar'] = {
 
 
 
-};
-
-</script>
+};</script>
 <script>// ═══════════════════════════════════════════════════════════════════════
 //  Sunburst Chart Card
 //  — Concentric arc hierarchy: each ring is a depth level

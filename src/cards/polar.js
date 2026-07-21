@@ -116,6 +116,11 @@ window.HAL.cards['polar'] = {
 
     }
 
+    // Add 5% padding so data points don't sit directly on minR/maxR
+    var pad = (valMax - valMin) * 0.15 || 1.5;
+    valMin -= pad;
+    valMax += pad;
+
     var valRange = valMax - valMin || 1;
 
 
