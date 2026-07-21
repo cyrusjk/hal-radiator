@@ -931,11 +931,10 @@ window.HAL.cards['polar'] = {
             var angRad = angDeg * Math.PI / 180;
             var innerP = polar(r, angRad);
             var outerP = polar(arcR, angRad);
-            var yiColor = (typeof colors !== 'undefined' && colors[yi]) || ac.lineColor;
             var cl = e('line', {
               x1: innerP.x, y1: innerP.y, x2: outerP.x, y2: outerP.y,
-              stroke: yiColor, 'stroke-width': 1.0,
-              'stroke-opacity': 0.5,
+              stroke: ac.lineColor, 'stroke-width': 0.75,
+              'stroke-opacity': 0.4,
             });
             cl.style.opacity = '0';
             svgEl.appendChild(cl);
