@@ -547,8 +547,9 @@ window.HAL.cards['polar'] = {
 
       if (pathD !== '') {
 
-        // Partial year (fewer spokes than full cycle): do NOT close back to first point
-        if (sv.length >= nSpokes) {
+        // Partial year: do NOT close back to first point
+        var partial = series[si]._partial || sv.length < nSpokes;
+        if (!partial) {
 
           var firstR = valToR(sv[0]);
 
@@ -917,7 +918,7 @@ window.HAL.cards['polar'] = {
 
         var row = si % itemsPerCol;
 
-        var lx = legendX + col * 140;
+        var lx = legendX + col * 100;
 
         var ly = legendY + row * legendSpacing;
 
@@ -955,32 +956,6 @@ window.HAL.cards['polar'] = {
 
         legendElements.push(lt);
 
-      }
-
-      // Add arc legend entries below year entries
-      if (data.arcs && data.arcs.length) {
-        var arcStartRow = itemsPerCol;
-        for (var aai = 0; aai < data.arcs.length; aai++) {
-          var ac = data.arcs[aai];
-          var alx = legendX + 1 * 140 + 50;
-          var aRow = aai;
-          var aly = legendY + aRow * legendSpacing;
-          var aDot = e('rect', {
-            x: alx, y: aly - 3, width: 6, height: 6,
-            fill: ac.color || '#ffffff',
-            opacity: ac.alpha != null ? ac.alpha : 0.6,
-          });
-          svgEl.appendChild(aDot);
-          legendElements.push(aDot);
-          var aLt = e('text', {
-            x: alx + 10, y: aly + 3,
-            fill: fg('frame', 0.85), 'font-size': fs(legendFontSize),
-            'font-family': labelFont,
-          });
-          aLt.textContent = (ac.stat || '?').toUpperCase();
-          svgEl.appendChild(aLt);
-          legendElements.push(aLt);
-        }
       }
 
     }
