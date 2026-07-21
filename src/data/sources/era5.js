@@ -57,8 +57,9 @@ window.HAL.data.sources = window.HAL.data.sources || {};
           var series = years.map(function(y) {
             var monthly = data.yearlyTemps[y];
             // Partial year (fewer than 12 months): interpolate proportional points
-            var nOut = monthly.length < 12 ? Math.round(52 * monthly.length / 12) : 52;
-            return { label: y, values: interpolate(monthly, nOut), _partial: monthly.length < 12 };
+            var validCount = monthly.filter(function(v){return v!=null;}).length;
+            var nOut = validCount < 12 ? Math.round(52 * validCount / 12) : 52;
+            return { label: y, values: interpolate(monthly, nOut), _partial: validCount < 12 };
           });
 
           return {

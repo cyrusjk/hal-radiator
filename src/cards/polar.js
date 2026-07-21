@@ -229,7 +229,7 @@ window.HAL.cards['polar'] = {
 
     var header = e('text', {
 
-      x: data.titleX || 20, y: data.titleY || 25,
+      x: data.titleX || 15, y: data.titleY || 15,
 
       fill: fg('frame', 1.9), 'font-size': fs(headerSize),
 
@@ -253,7 +253,7 @@ window.HAL.cards['polar'] = {
 
       subtitle = e('text', {
 
-        x: data.titleX || 20, y: (data.titleY || 25) + 20,
+        x: data.titleX || 15, y: (data.titleY || 15) + 16,
 
         fill: fg('frame', 0.85), 'font-size': fs(subSize),
 
@@ -1014,11 +1014,9 @@ window.HAL.cards['polar'] = {
 
       { action: 'wait',       duration: 400 },
 
-      { action: 'appear',     groups: ['dataPolygons'], order: 'sequential', gap: 150 },
+      { action: 'appear',     groups: ['dataPolygons', 'legend'], order: 'sequential', gap: 150 },
 
       { action: 'wait',       duration: 400 },
-
-      { action: 'appear',     groups: ['legend'], order: 'sequential', gap: 40 },
 
       { action: 'wait',       duration: 200 },
 

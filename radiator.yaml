@@ -599,8 +599,8 @@ groups:
     baseAlpha: 0.30
     alphaMax: 0.85
     titleSize: 14
-    titleX: 20
-    titleY: 25
+    titleX: 15
+    titleY: 15
     subSize: 9
     subtitle: "PARIS ERA5-LAND · WEEKLY · 2015-2026"
     coolColor:
