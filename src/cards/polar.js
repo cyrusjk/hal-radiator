@@ -702,6 +702,8 @@ window.HAL.cards['polar'] = {
         }
 
         if (valid.length === 0) continue;
+        // Skip partial years — their stats don't represent a full cycle
+        if (series[si]._partial) continue;
 
         // MIN angle
 
