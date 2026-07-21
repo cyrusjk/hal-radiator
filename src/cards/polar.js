@@ -644,9 +644,9 @@ window.HAL.cards['polar'] = {
       }
 
 
-
+      // ── Arc stat computation helpers ────────────────────────────────
+    
       function clusterAngles(angles) {
-
         if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
 
         var s = angles.slice().sort(function(a,b){return a-b;});
@@ -708,31 +708,64 @@ window.HAL.cards['polar'] = {
         // Skip partial years — their stats don't represent a full cycle
         if (series[si]._partial) continue;
 
-        // MIN angle — use raw monthly data for accurate calendar positions
-        var rawVals = rawData[rawYears[si]] || [];
+        // MIN angle — center of coldest 4-week window using interpolated series
+        // This spreads adjacent years that share the same calendar minimum month
         var minV = Infinity, minA = 0;
-        for (var ri = 0; ri < rawVals.length; ri++) {
-          if (rawVals[ri] < minV) { minV = rawVals[ri]; minA = ri / 12 * 360; }
+        if (sv.length >= 52) {
+          var ww = Math.min(4, Math.floor(sv.length / 12));
+          var bestRoll = Infinity;
+          for (var wi = 0; wi < sv.length; wi++) {
+            var sum = 0, cnt = 0;
+            for (var wj = 0; wj < ww; wj++) {
+              var vi = (wi + wj) % sv.length;
+              if (sv[vi] != null) { sum += sv[vi]; cnt++; }
+            }
+            if (cnt === ww) {
+              var avg = sum / ww;
+              if (avg < bestRoll) { bestRoll = avg; minV = sv[wi]; minA = (wi + ww/2) / sv.length * 360; }
+            }
+          }
         }
         if (minV === Infinity) {
-          // Fallback to interpolated series
-          minV = Infinity; minA = 0;
-          for (var i = 0; i < valid.length; i++) {
-            if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
+          // Fallback: min point
+          for (var ri = 0; ri < (rawVals || []).length; ri++) {
+            if (rawVals[ri] < minV) { minV = rawVals[ri]; minA = ri / 12 * 360; }
+          }
+          if (minV === Infinity) {
+            for (var i = 0; i < valid.length; i++) {
+              if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
+            }
           }
         }
         minAngles.push(minA);
         minVals.push(minV);
 
-        // MAX angle — use raw monthly data for accurate calendar positions
+        // MAX angle — center of warmest 4-week window using interpolated series
         var maxV = -Infinity, maxA = 0;
-        for (var ri = 0; ri < rawVals.length; ri++) {
-          if (rawVals[ri] > maxV) { maxV = rawVals[ri]; maxA = ri / 12 * 360; }
+        if (sv.length >= 52) {
+          var ww = Math.min(4, Math.floor(sv.length / 12));
+          var bestRoll = -Infinity;
+          for (var wi = 0; wi < sv.length; wi++) {
+            var sum = 0, cnt = 0;
+            for (var wj = 0; wj < ww; wj++) {
+              var vi = (wi + wj) % sv.length;
+              if (sv[vi] != null) { sum += sv[vi]; cnt++; }
+            }
+            if (cnt === ww) {
+              var avg = sum / ww;
+              if (avg > bestRoll) { bestRoll = avg; maxV = sv[wi]; maxA = (wi + ww/2) / sv.length * 360; }
+            }
+          }
         }
         if (maxV === -Infinity) {
-          maxV = -Infinity; maxA = 0;
-          for (var i = 0; i < valid.length; i++) {
-            if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+          // Fallback: max point
+          for (var ri = 0; ri < (rawVals || []).length; ri++) {
+            if (rawVals[ri] > maxV) { maxV = rawVals[ri]; maxA = ri / 12 * 360; }
+          }
+          if (maxV === -Infinity) {
+            for (var i = 0; i < valid.length; i++) {
+              if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+            }
           }
         }
         maxAngles.push(maxA);
@@ -885,28 +918,24 @@ window.HAL.cards['polar'] = {
           for (var yi = 0; yi < yearAngles.length && yi < series.length; yi++) {
             var angDeg = yearAngles[yi];
             var sv = series[yi].values || [];
-            // For min/max use raw monthly values; for avg/mean interpolate 52-point series
+            // Interpolate value at stat angle from the 52-point series
+            // This ensures connector starts ON the year trace
             var v;
-            if (statKey === 'min') {
-              v = minVals[yi];
-            } else if (statKey === 'max') {
-              v = maxVals[yi];
-            } else {
-              var pos = (angDeg / 360) * sv.length;
-              var idx = Math.floor(pos);
-              var frac = pos - idx;
-              var nextIdx = (idx + 1) % sv.length;
-              if (sv[idx] == null || sv[nextIdx] == null) continue;
-              v = sv[idx] + (sv[nextIdx] - sv[idx]) * frac;
-            }
+            var pos = (angDeg / 360) * sv.length;
+            var idx = Math.floor(pos);
+            var frac = pos - idx;
+            var nextIdx = (idx + 1) % sv.length;
+            if (sv[idx] == null || sv[nextIdx] == null) continue;
+            v = sv[idx] + (sv[nextIdx] - sv[idx]) * frac;
             var r = valToR(v);
             var angRad = angDeg * Math.PI / 180;
             var innerP = polar(r, angRad);
             var outerP = polar(arcR, angRad);
+            var yiColor = (typeof colors !== 'undefined' && colors[yi]) || ac.lineColor;
             var cl = e('line', {
               x1: innerP.x, y1: innerP.y, x2: outerP.x, y2: outerP.y,
-              stroke: ac.lineColor, 'stroke-width': 0.5,
-              'stroke-opacity': lineA,
+              stroke: yiColor, 'stroke-width': 1.0,
+              'stroke-opacity': 0.5,
             });
             cl.style.opacity = '0';
             svgEl.appendChild(cl);
