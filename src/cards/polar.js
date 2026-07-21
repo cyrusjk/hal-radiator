@@ -626,7 +626,7 @@ window.HAL.cards['polar'] = {
 
             var t = (target - p0) / (p1 - p0);
 
-            angles.push((i - 1 + t) / values.length * 360);
+            angles.push((i - 1 + t) / nSpokes * 360);
 
           }
 
@@ -702,7 +702,7 @@ window.HAL.cards['polar'] = {
 
         for (var i = 0; i < valid.length; i++) {
 
-          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
+          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / nSpokes * 360; }
 
         }
 
@@ -714,7 +714,7 @@ window.HAL.cards['polar'] = {
 
         for (var i = 0; i < valid.length; i++) {
 
-          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / nSpokes * 360; }
 
         }
 
