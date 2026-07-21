@@ -877,10 +877,15 @@ window.HAL.cards['polar'] = {
 
           for (var yi = 0; yi < yearAngles.length && yi < series.length; yi++) {
             var angDeg = yearAngles[yi];
-            var spokeIdx = Math.round(angDeg / 360 * nSpokes) % nSpokes;
             var sv = series[yi].values || [];
-            if (spokeIdx >= sv.length || sv[spokeIdx] == null) continue;
-            var r = valToR(sv[spokeIdx]);
+            // Interpolate value at exact stat angle, not nearest discrete spoke
+            var pos = (angDeg / 360) * sv.length;
+            var idx = Math.floor(pos);
+            var frac = pos - idx;
+            var nextIdx = (idx + 1) % sv.length;
+            if (sv[idx] == null || sv[nextIdx] == null) continue;
+            var v = sv[idx] + (sv[nextIdx] - sv[idx]) * frac;
+            var r = valToR(v);
             var angRad = angDeg * Math.PI / 180;
             var innerP = polar(r, angRad);
             var outerP = polar(arcR, angRad);
