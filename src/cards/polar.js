@@ -542,11 +542,16 @@ window.HAL.cards['polar'] = {
 
       if (pathD !== '') {
 
-        var firstR = valToR(sv[0]);
+        // Partial year (fewer spokes than full cycle): do NOT close back to first point
+        if (sv.length >= nSpokes) {
 
-        var firstP = polar(firstR, 0);
+          var firstR = valToR(sv[0]);
 
-        pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
+          var firstP = polar(firstR, 0);
+
+          pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
+
+        }
 
       }
 
@@ -1074,4 +1079,3 @@ window.HAL.cards['polar'] = {
 
 
 };
-

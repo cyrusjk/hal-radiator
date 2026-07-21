@@ -55,7 +55,10 @@ window.HAL.data.sources = window.HAL.data.sources || {};
             return out;
           }
           var series = years.map(function(y) {
-            return { label: y, values: interpolate(data.yearlyTemps[y], 52) };
+            var monthly = data.yearlyTemps[y];
+            // Partial year (fewer than 12 months): interpolate proportional points
+            var nOut = monthly.length < 12 ? Math.round(52 * monthly.length / 12) : 52;
+            return { label: y, values: interpolate(monthly, nOut), _partial: monthly.length < 12 };
           });
 
           return {
