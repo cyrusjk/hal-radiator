@@ -646,7 +646,8 @@ window.HAL.cards['polar'] = {
 
       // ── Arc stat computation helpers ────────────────────────────────
     
-      function clusterAngles(angles) {
+      function clusterAngles(angles, pad) {
+        if (pad == null) pad = 3; // buffer in degrees so arc covers outermost ticks
         if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
 
         var s = angles.slice().sort(function(a,b){return a-b;});
@@ -681,7 +682,7 @@ window.HAL.cards['polar'] = {
 
         if (clusterEnd <= clusterStart) clusterEnd += 360;
 
-        return { start: clusterStart, end: clusterEnd, span: clusterEnd - clusterStart, gap: maxGap };
+        return { start: (clusterStart - pad + 360) % 360, end: clusterEnd + pad, span: clusterEnd - clusterStart, gap: maxGap };
 
       }
 
