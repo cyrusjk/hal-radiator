@@ -39,16 +39,14 @@ window.HAL.data.sources = window.HAL.data.sources || {};
             };
           }
           var years = Object.keys(data.yearlyTemps || {}).sort();
-          // Interpolate monthly data (12 values) to N=52 weekly points, matching prototype
-          function interpolate(monthly, N) {
-            var out = [];
-            var nMonths = monthly.length;
+          function interpolate(vals, N) {
+            var out = [], nMonths = vals.length;
             for (var i = 0; i < N; i++) {
               var pos = (i / N) * nMonths;
               var m0 = Math.floor(pos);
               var m1 = Math.min(m0 + 1, nMonths - 1);
               var t = pos - m0;
-              var a = monthly[m0], b = monthly[m1];
+              var a = vals[m0], b = vals[m1];
               if (a == null || b == null) { out.push(null); continue; }
               out.push(a + (b - a) * t);
             }
@@ -56,10 +54,11 @@ window.HAL.data.sources = window.HAL.data.sources || {};
           }
           var series = years.map(function(y) {
             var monthly = data.yearlyTemps[y];
-            // Partial year (fewer than 12 months): interpolate proportional points
-            var validCount = monthly.filter(function(v){return v!=null;}).length;
+            // Strip trailing nulls so interpolate spans only real data
+            var valid = monthly.filter(function(v){return v!=null;});
+            var validCount = valid.length;
             var nOut = validCount < 12 ? Math.round(52 * validCount / 12) : 52;
-            return { label: y, values: interpolate(monthly, nOut), _partial: validCount < 12 };
+            return { label: y, values: interpolate(valid, nOut), _partial: validCount < 12 };
           });
 
           return {
