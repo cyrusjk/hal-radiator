@@ -1,3 +1,35 @@
+# Polar Card — SVG A Arc Drawing Fix
+## 2026-07-21
+
+### Problem
+Arc paths used iterated line segments with `endAngle + 0.01` rad pad in the loop condition, causing a 0.57° overshoot past the outermost tick. A subsequent 3° pad made this worse (3.57° overshoot).
+
+### Fix
+Replaced iterative `L`-segment arc drawing with SVG `A` (elliptical arc) commands:
+- Single `A` for normal arcs (start < end)
+- Two `A` segments for wrapped arcs crossing 0° (start > end)
+- Arc starts/stops at exact cluster boundary angles — no pad, no overshoot
+
+### Files Changed
+
+**`src/cards/polar.js`** — arc drawing (lines 834–876)
+```js
+// Before: iterative L with overshoot
+for (var a = startAngle; a <= endAngle + 0.01; a += 0.02) { ... }
+
+// After: SVG A for exact endpoints
+function arcPath(s, e) {
+  return 'M' + p.x + ',' + p.y +
+    ' A' + arcR + ',' + arcR + ' 0 ' + large + ',1 ' + q.x + ',' + q.y;
+}
+```
+
+**`docs/polar-card-guide.md`** — new: full polar card system documentation.
+
+**`DATA_CONTRACT.md`** — added ERA5 source extension (`yearlyTemps` field).
+
+---
+
 # HAL Title Card Generator — RB-3D Composite Card Fix
 ## 2026-07-10
 

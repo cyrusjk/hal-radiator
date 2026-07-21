@@ -57,6 +57,20 @@ window.HAL.data.sources[name] = {
 
 Any `.js` file dropped into `src/data/sources/` is auto-injected into the page. No registration beyond setting `window.HAL.data.sources[name]` is needed.
 
+### ERA5 Source — Polar Chart Extension
+
+The `era5` source plugin returns an **augmented** DataPacket with a `yearlyTemps` field consumed by the polar chart:
+
+```ts
+interface Era5Packet extends DataPacket {
+  yearlyTemps: {
+    [year: string]: number[];   // keyed by year "2015"–"2026", 12 monthly values
+  };
+}
+```
+
+`groups` is also populated (one group per year of 52 weekly-interpolated values) for the polar chart's year-trace renderer. The `yearlyTemps` object drives the min/max/avg/mean arc computations.
+
 ## Fault Handling
 
 Configured via the `dataFault` key — globally in radiator.yaml root, or per card.
