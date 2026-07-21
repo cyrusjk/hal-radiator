@@ -323,7 +323,8 @@ window.HAL.cards['polar'] = {
 
       }
 
-      var ringColor = data.ringColor || fg('frame', 0.08 + ri * 0.03);
+      var isOuter = ri === nRings;
+      var ringColor = isOuter ? (data.outerRingColor || 'rgba(255,255,255,0.35)') : (data.ringColor || fg('frame', 0.08 + ri * 0.03));
 
       var ringWidth = ri === 0 ? (data.ringWidth0 || 0.3) : (data.ringWidth || 0.5);
 
@@ -349,7 +350,7 @@ window.HAL.cards['polar'] = {
 
           x: lblP.x + 4, y: lblP.y + 3,
 
-          fill: fg('frame', 0.5), 'font-size': fs(data.scaleFontSize || 8),
+          fill: fg('frame', 0.7), 'font-size': fs(data.scaleFontSize || 8),
 
           'font-family': labelFont,
 
@@ -430,7 +431,7 @@ window.HAL.cards['polar'] = {
 
           x: lp.x, y: lp.y + 3,
 
-          fill: data.labelColor || fg('frame', 0.6),
+          fill: data.labelColor || fg('frame', 0.7),
 
           'font-size': fs(data.labelFontSize || 9),
 

@@ -3479,14 +3479,14 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "maxR": 340,
     "minR": 40,
     "rings": 6,
-    "ringColor": "rgba(255,255,255,0.08)",
+    "ringColor": "rgba(255,255,255,0.15)",
     "ringWidth": 0.5,
     "ringWidth0": 0.3,
-    "spokeColor": "rgba(255,255,255,0.06)",
+    "spokeColor": "rgba(255,255,255,0.12)",
     "spokeWidth": 0.3,
     "labelOffset": 32,
     "labelFontSize": 9,
-    "labelColor": "rgba(255,255,255,0.5)",
+    "labelColor": "rgba(255,255,255,0.7)",
     "scaleFontSize": 8,
     "scalePrecision": 1,
     "lineWidth": 1.0,
@@ -5784,7 +5784,8 @@ window.HAL.cards['polar'] = {
 
       }
 
-      var ringColor = data.ringColor || fg('frame', 0.08 + ri * 0.03);
+      var isOuter = ri === nRings;
+      var ringColor = isOuter ? (data.outerRingColor || 'rgba(255,255,255,0.35)') : (data.ringColor || fg('frame', 0.08 + ri * 0.03));
 
       var ringWidth = ri === 0 ? (data.ringWidth0 || 0.3) : (data.ringWidth || 0.5);
 
@@ -5810,7 +5811,7 @@ window.HAL.cards['polar'] = {
 
           x: lblP.x + 4, y: lblP.y + 3,
 
-          fill: fg('frame', 0.5), 'font-size': fs(data.scaleFontSize || 8),
+          fill: fg('frame', 0.7), 'font-size': fs(data.scaleFontSize || 8),
 
           'font-family': labelFont,
 
@@ -5891,7 +5892,7 @@ window.HAL.cards['polar'] = {
 
           x: lp.x, y: lp.y + 3,
 
-          fill: data.labelColor || fg('frame', 0.6),
+          fill: data.labelColor || fg('frame', 0.7),
 
           'font-size': fs(data.labelFontSize || 9),
 

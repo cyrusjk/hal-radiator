@@ -584,14 +584,14 @@ groups:
     maxR: 340
     minR: 40
     rings: 6
-    ringColor: "rgba(255,255,255,0.08)"
+    ringColor: "rgba(255,255,255,0.15)"
     ringWidth: 0.5
     ringWidth0: 0.3
-    spokeColor: "rgba(255,255,255,0.06)"
+    spokeColor: "rgba(255,255,255,0.12)"
     spokeWidth: 0.3
     labelOffset: 32
     labelFontSize: 9
-    labelColor: "rgba(255,255,255,0.5)"
+    labelColor: "rgba(255,255,255,0.7)"
     scaleFontSize: 8
     scalePrecision: 1
     lineWidth: 1.0
