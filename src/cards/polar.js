@@ -845,8 +845,12 @@ window.HAL.cards['polar'] = {
           else if (statKey === 'avg') yearAngles = avgAngles;
           else if (statKey === 'mean') yearAngles = meanAnglesAll;
 
+          var seenSpokes = {};
           for (var yi = 0; yi < yearAngles.length; yi++) {
             var angDeg = yearAngles[yi];
+            var spokeId = Math.round(angDeg / 360 * nSpokes);
+            if (seenSpokes[spokeId]) continue;
+            seenSpokes[spokeId] = true;
             var angRad = angDeg * Math.PI / 180;
             var inner = polar(arcR - tickLen, angRad);
             var outer = polar(arcR + tickLen, angRad);
