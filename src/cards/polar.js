@@ -831,18 +831,22 @@ window.HAL.cards['polar'] = {
         var startAngle = startAngleDeg * Math.PI / 180;
         var endAngle = endAngleDeg * Math.PI / 180;
 
-        // Draw arc path
+        // Draw arc path — SVG A (elliptical arc) for exact start/end
+        function arcPt(a) { return polar(arcR, a); }
+        function arcPath(s, e) {
+          var p = arcPt(s);
+          var q = arcPt(e);
+          var span = e - s;
+          // Normalize span to 0-2PI for large-arc flag
+          var large = (span % (Math.PI * 2)) > Math.PI ? 1 : 0;
+          return 'M' + p.x.toFixed(1) + ',' + p.y.toFixed(1) +
+            ' A' + arcR.toFixed(1) + ',' + arcR.toFixed(1) + ' 0 ' +
+            large + ',1 ' + q.x.toFixed(1) + ',' + q.y.toFixed(1);
+        }
         if (startAngleDeg > endAngleDeg) {
-          // Wrap across 0: draw two arcs
-          var d1 = '', d2 = '';
-          for (var a = startAngle; a <= Math.PI * 2 + 0.01; a += 0.02) {
-            var p = polar(arcR, a);
-            d1 += (d1 === '' ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-          }
-          for (var a = 0; a <= endAngle + 0.01; a += 0.02) {
-            var p = polar(arcR, a);
-            d2 += (d2 === '' ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-          }
+          // Wrap across 0: two arcs
+          var d1 = arcPath(startAngle, Math.PI * 2);
+          var d2 = arcPath(0, endAngle);
           var arc = e('path', {
             d: d1, fill: 'none', stroke: arcColor,
             'stroke-width': arcW,
@@ -861,11 +865,7 @@ window.HAL.cards['polar'] = {
           svgEl.appendChild(arc2);
           arcElements.push(arc2);
         } else {
-          var d = '';
-          for (var a = startAngle; a <= endAngle + 0.01; a += 0.02) {
-            var p = polar(arcR, a);
-            d += (d === '' ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-          }
+          var d = arcPath(startAngle, endAngle);
           var arc = e('path', {
             d: d, fill: 'none', stroke: arcColor,
             'stroke-width': arcW,
