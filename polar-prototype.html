@@ -122,14 +122,17 @@ function findCrossings(pts, target) {
 var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
 var minVals = [], maxVals = [], meanVals = [];
 for (var yi = 0; yi < numYears; yi++) {
+  var raw = tempData[allYears[yi]];
   var d = years[allYears[yi]];
   var minV = Infinity, maxV = -Infinity, minA = 0, maxA = 0, sum = 0;
-  for (var i = 0; i < d.length; i++) {
+  // For partial years, use raw monthly data for mean, not interpolated plateau
+  var nMean = Math.min(d.length, Math.round(d.length * raw.length / 12));
+  for (var i = 0; i < nMean; i++) {
     if (d[i].value < minV) { minV = d[i].value; minA = d[i].angle; }
     if (d[i].value > maxV) { maxV = d[i].value; maxA = d[i].angle; }
     sum += d[i].value;
   }
-  var mean = sum / d.length;
+  var mean = sum / nMean;
   minAngles.push(minA);
   maxAngles.push(maxA);
   minVals.push(minV);
@@ -265,13 +268,16 @@ for (var yi = 0; yi < numYears; yi++) {
   (function(idx) {
     setTimeout(function() {
       var y = allYears[idx];
+      var raw = tempData[y];
       var pts = years[y];
+      // For partial years (fewer than 12 months), draw only real-data segment
+      var nDraw = (raw.length < 12) ? Math.round(pts.length * raw.length / 12) : pts.length;
       ctx.beginPath();
-      for (var i = 0; i < pts.length; i++) {
+      for (var i = 0; i < nDraw; i++) {
         var p = polar(pts[i].angle, valueToR(pts[i].value));
         if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
       }
-      ctx.closePath();
+      if (nDraw === pts.length) ctx.closePath();
       ctx.strokeStyle = colors[idx];
       ctx.globalAlpha = 0.35 + idx * 0.06;
       ctx.lineWidth = 0.8; ctx.stroke();
