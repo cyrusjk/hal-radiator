@@ -688,6 +688,9 @@ window.HAL.cards['polar'] = {
 
 
       var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
+      var minVals = [], maxVals = [], avgVals = [], meanVals = [];
+      var rawData = data.yearlyTemps || {};
+      var rawYears = Object.keys(rawData).sort();
 
       for (var si = 0; si < series.length; si++) {
 
@@ -705,29 +708,35 @@ window.HAL.cards['polar'] = {
         // Skip partial years — their stats don't represent a full cycle
         if (series[si]._partial) continue;
 
-        // MIN angle
-
+        // MIN angle — use raw monthly data for accurate calendar positions
+        var rawVals = rawData[rawYears[si]] || [];
         var minV = Infinity, minA = 0;
-
-        for (var i = 0; i < valid.length; i++) {
-
-          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
-
+        for (var ri = 0; ri < rawVals.length; ri++) {
+          if (rawVals[ri] < minV) { minV = rawVals[ri]; minA = ri / 12 * 360; }
         }
-
+        if (minV === Infinity) {
+          // Fallback to interpolated series
+          minV = Infinity; minA = 0;
+          for (var i = 0; i < valid.length; i++) {
+            if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
+          }
+        }
         minAngles.push(minA);
+        minVals.push(minV);
 
-        // MAX angle
-
+        // MAX angle — use raw monthly data for accurate calendar positions
         var maxV = -Infinity, maxA = 0;
-
-        for (var i = 0; i < valid.length; i++) {
-
-          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
-
+        for (var ri = 0; ri < rawVals.length; ri++) {
+          if (rawVals[ri] > maxV) { maxV = rawVals[ri]; maxA = ri / 12 * 360; }
         }
-
+        if (maxV === -Infinity) {
+          maxV = -Infinity; maxA = 0;
+          for (var i = 0; i < valid.length; i++) {
+            if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+          }
+        }
         maxAngles.push(maxA);
+        maxVals.push(maxV);
 
         // AVG + MEAN crossings
 
@@ -745,6 +754,7 @@ window.HAL.cards['polar'] = {
           crosses.sort(function(a,b){return a-b;});
 
           avgAngles.push(crosses[0]);
+          avgVals.push(avg);
 
         }
 
@@ -756,6 +766,7 @@ window.HAL.cards['polar'] = {
         if (mCrosses.length > 0) {
           mCrosses.sort(function(a,b){return a-b;});
           meanAnglesAll.push(mCrosses[0]);
+          meanVals.push(median);
         }
 
       }
@@ -878,13 +889,20 @@ window.HAL.cards['polar'] = {
           for (var yi = 0; yi < yearAngles.length && yi < series.length; yi++) {
             var angDeg = yearAngles[yi];
             var sv = series[yi].values || [];
-            // Interpolate value at exact stat angle, not nearest discrete spoke
-            var pos = (angDeg / 360) * sv.length;
-            var idx = Math.floor(pos);
-            var frac = pos - idx;
-            var nextIdx = (idx + 1) % sv.length;
-            if (sv[idx] == null || sv[nextIdx] == null) continue;
-            var v = sv[idx] + (sv[nextIdx] - sv[idx]) * frac;
+            // For min/max use raw monthly values; for avg/mean interpolate 52-point series
+            var v;
+            if (statKey === 'min') {
+              v = minVals[yi];
+            } else if (statKey === 'max') {
+              v = maxVals[yi];
+            } else {
+              var pos = (angDeg / 360) * sv.length;
+              var idx = Math.floor(pos);
+              var frac = pos - idx;
+              var nextIdx = (idx + 1) % sv.length;
+              if (sv[idx] == null || sv[nextIdx] == null) continue;
+              v = sv[idx] + (sv[nextIdx] - sv[idx]) * frac;
+            }
             var r = valToR(v);
             var angRad = angDeg * Math.PI / 180;
             var innerP = polar(r, angRad);
