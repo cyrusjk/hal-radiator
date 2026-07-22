@@ -91,6 +91,11 @@ for group in groups:
             "animation": chart.get("animation"),
             "dataSource": chart.get("dataSource", {"type": "inline"}),
         }
+        # Pass through extra card-specific fields (labels, cx, cy, maxR, w, h, etc.)
+        skip = {"chartType", "type", "title", "label", "color", "animation", "dataSource", "prototype"}
+        for k, v in chart.items():
+            if k not in skip and v is not None:
+                card[k] = v
         cards.append(card)
 
 # ── 3. Generate src/config.js ─────────────────────────────────────────

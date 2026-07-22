@@ -17,3 +17,17 @@ Thumbs.db
 assets/fonts/Folio-Std-Light.ttf
 assets/fonts/Folio-Std-Extra-Bold.ttf
 assets/fonts/Folio-Std-Bold-Condensed.ttf
+
+# Build artifacts
+__pycache__/
+*.pyc
+dist/assets/fonts/*.ttf
+dist/assets/fonts/*.zip
+dist/assets/fonts/*.htm
+dist/assets/fonts/*.txt
+dist/assets/fonts/quick_tips.html
+
+# Scratch / test files
+_check_*.py
+_check_cfg.py
+era5_cache.json
