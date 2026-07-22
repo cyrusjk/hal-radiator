@@ -670,6 +670,10 @@ groups:
     legendCols: 2
     legendSpacing: 11
     legendFontSize: 8
+    markers:
+      min: false
+      max: false
+      mean: false
     prototype: polar-default
     title: GLOBAL TEMPERATURE
     w: 800
@@ -887,7 +891,7 @@ groups:
 timing:
   flickerDuration: 200
   groupGap: 167
-  initialPause: 5000
+  initialPause: 10000
   titleCardDisplay: 8
   valueHold: 5000
 visual:

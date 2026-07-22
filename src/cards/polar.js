@@ -82,6 +82,8 @@ window.HAL.cards['polar'] = {
     var mOpts = data.markers || {};
     var showDataMin  = mOpts.min !== false;
     var showDataMax  = mOpts.max !== false;
+    var showDataAvg  = mOpts.avg !== false;
+    var showDataMean = mOpts.mean !== false;
     var showArcs     = mOpts.arcs !== false;
     var showConnectors = mOpts.connectors !== false;
 
@@ -616,202 +618,165 @@ window.HAL.cards['polar'] = {
 
     var arcElements = [];
 
+    // ── Stat helpers (hoisted — needed by markers and arcs) ─────────────
 
+    function findCrossings(values, target) {
+      var angles = [];
+      for (var i = 1; i < values.length; i++) {
+        var p0 = values[i-1], p1 = values[i];
+        if (p0 != null && p1 != null &&
+            ((p0 <= target && p1 >= target) || (p0 >= target && p1 <= target))) {
+          var t = (target - p0) / (p1 - p0);
+          angles.push((i - 1 + t) / values.length * 360);
+        }
+      }
+      return angles;
+    }
+
+    function clusterAngles(angles) {
+      if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
+      var s = angles.slice().sort(function(a,b){return a-b;});
+      var uniq = [s[0]];
+      for (var i = 1; i < s.length; i++) { if (s[i] !== s[i-1]) uniq.push(s[i]); }
+      if (uniq.length === 1) {
+        return { start: uniq[0] - 1, end: uniq[0] + 1, span: 2, gap: 358 };
+      }
+      var maxGap = 0, gapIdx = 0;
+      for (var i = 0; i < uniq.length; i++) {
+        var next = uniq[(i + 1) % uniq.length];
+        var gap = (i === uniq.length - 1) ? (uniq[0] + 360 - uniq[i]) : (uniq[i+1] - uniq[i]);
+        if (gap > maxGap) { maxGap = gap; gapIdx = i; }
+      }
+      var gapStart = uniq[gapIdx];
+      var clusterStart = (gapStart + maxGap) % 360;
+      var clusterEnd = gapStart;
+      if (clusterEnd <= clusterStart) clusterEnd += 360;
+      return { start: clusterStart, end: clusterEnd, span: clusterEnd - clusterStart, gap: maxGap };
+    }
+
+    // ── Arc stat angles per year ───────────────────────────────────────
+
+    var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
+    var minVals = [], maxVals = [], avgVals = [], meanVals = [];
+    var rawData = data.yearlyTemps || {};
+    var rawYears = Object.keys(rawData).sort();
+
+    for (var si = 0; si < series.length; si++) {
+      var sv = series[si].values || [];
+      var valid = [];
+      for (var vi = 0; vi < sv.length; vi++) {
+        if (sv[vi] != null) valid.push({ idx: vi, v: sv[vi] });
+      }
+      if (valid.length === 0) continue;
+      // MIN angle — position of actual minimum daily value
+      var minV = Infinity, minA = 0;
+      var minRawIdx = -1;
+      for (var i = 0; i < valid.length; i++) {
+        if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; minRawIdx = valid[i].idx; }
+      }
+      if (minV === Infinity) minA = 0;
+      minAngles.push(minA);
+      minVals.push(minV);
+
+      // MAX angle — position of actual maximum daily value
+      var maxV = -Infinity, maxA = 0;
+      var maxRawIdx = -1;
+      for (var i = 0; i < valid.length; i++) {
+        if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+      }
+      if (maxV === -Infinity) maxA = 0;
+      maxAngles.push(maxA);
+      maxVals.push(maxV);
+
+      // AVG crossing
+      var sum = 0;
+      for (var i = 0; i < valid.length; i++) sum += valid[i].v;
+      var avg = sum / valid.length;
+      var crosses = findCrossings(sv, avg);
+      if (crosses.length > 0) {
+        crosses.sort(function(a,b){return a-b;});
+        avgAngles.push(crosses[0]);
+        avgVals.push(avg);
+      }
+
+      // MEAN crossing
+      var sorted = sv.filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});
+      var mid = Math.floor(sorted.length / 2);
+      var median = sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
+      var mCrosses = findCrossings(sv, median);
+      if (mCrosses.length > 0) {
+        mCrosses.sort(function(a,b){return a-b;});
+        meanAnglesAll.push(mCrosses[0]);
+        meanVals.push(median);
+      }
+    }
+
+    // ── Min/Max/Avg/Mean markers on year traces ──
+    for (var mi = 0; mi < series.length; mi++) {
+      var sv = series[mi].values || [];
+      if (sv.length < 2) continue;
+      var minIdx = -1, minVal = Infinity;
+      var maxIdx = -1, maxVal = -Infinity;
+      for (var vi = 0; vi < sv.length; vi++) {
+        if (sv[vi] == null) continue;
+        if (showDataMin && sv[vi] < minVal) { minVal = sv[vi]; minIdx = vi; }
+        if (showDataMax && sv[vi] > maxVal) { maxVal = sv[vi]; maxIdx = vi; }
+      }
+      if (showDataMin && minIdx >= 0) {
+        var minAng = (minIdx / sv.length) * 360;
+        var minAngRad = minAng * Math.PI / 180;
+        var minP = polar(valToR(minVal), minAngRad);
+        var dotM = e('circle', {
+          cx: minP.x, cy: minP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotM.style.opacity = '0';
+        svgEl.appendChild(dotM);
+        polygonElements.push(dotM);
+      }
+      if (showDataMax && maxIdx >= 0) {
+        var maxAng = (maxIdx / sv.length) * 360;
+        var maxAngRad = maxAng * Math.PI / 180;
+        var maxP = polar(valToR(maxVal), maxAngRad);
+        var dotX = e('circle', {
+          cx: maxP.x, cy: maxP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotX.style.opacity = '0';
+        svgEl.appendChild(dotX);
+        polygonElements.push(dotX);
+      }
+      // AVG marker — first spring crossing of yearly average temp
+      if (showDataAvg && mi < avgAngles.length) {
+        var avgAng = avgAngles[mi];
+        var avgAngRad = avgAng * Math.PI / 180;
+        var avgP = polar(valToR(avgVals[mi] || 0), avgAngRad);
+        var dotA = e('circle', {
+          cx: avgP.x, cy: avgP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotA.style.opacity = '0';
+        svgEl.appendChild(dotA);
+        polygonElements.push(dotA);
+      }
+      // MEAN marker — first spring crossing of yearly median temp
+      if (showDataMean && mi < meanAnglesAll.length) {
+        var meanAng = meanAnglesAll[mi];
+        var meanAngRad = meanAng * Math.PI / 180;
+        var meanP = polar(valToR(meanVals[mi] || 0), meanAngRad);
+        var dotN = e('circle', {
+          cx: meanP.x, cy: meanP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotN.style.opacity = '0';
+        svgEl.appendChild(dotN);
+        polygonElements.push(dotN);
+      }
+    }
+
+    // ── Arc bands ─────────────────────────────────────────────────────
 
     if (data.arcs && showArcs) {
-
-      // Per-cycle stat angle: for each year find WHERE (which angle) each
-
-      // stat occurs. Cluster by widest-gap → one arc per stat.
-
-      //   min:  angle of minimum temp per year
-
-      //   max:  angle of maximum temp per year
-
-      //   avg:  angle where value crosses yearly average (first crossing)
-
-      //   mean: angle where value crosses yearly median (first crossing)
-
-      function findCrossings(values, target) {
-
-        var angles = [];
-
-        for (var i = 1; i < values.length; i++) {
-
-          var p0 = values[i-1], p1 = values[i];
-
-          if (p0 != null && p1 != null &&
-
-              ((p0 <= target && p1 >= target) || (p0 >= target && p1 <= target))) {
-
-            var t = (target - p0) / (p1 - p0);
-
-            angles.push((i - 1 + t) / values.length * 360);
-
-          }
-
-        }
-
-        return angles;
-
-      }
-
-
-      // ── Arc stat computation helpers ────────────────────────────────
-    
-      function clusterAngles(angles) {
-        if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
-
-        var s = angles.slice().sort(function(a,b){return a-b;});
-
-        var uniq = [s[0]];
-
-        for (var i = 1; i < s.length; i++) { if (s[i] !== s[i-1]) uniq.push(s[i]); }
-
-        if (uniq.length === 1) {
-
-          return { start: uniq[0] - 1, end: uniq[0] + 1, span: 2, gap: 358 };
-
-        }
-
-        var maxGap = 0, gapIdx = 0;
-
-        for (var i = 0; i < uniq.length; i++) {
-
-          var next = uniq[(i + 1) % uniq.length];
-
-          var gap = (i === uniq.length - 1) ? (uniq[0] + 360 - uniq[i]) : (uniq[i+1] - uniq[i]);
-
-          if (gap > maxGap) { maxGap = gap; gapIdx = i; }
-
-        }
-
-        var gapStart = uniq[gapIdx];
-
-        var clusterStart = (gapStart + maxGap) % 360;
-
-        var clusterEnd = gapStart;
-
-        if (clusterEnd <= clusterStart) clusterEnd += 360;
-
-        return { start: clusterStart, end: clusterEnd, span: clusterEnd - clusterStart, gap: maxGap };
-
-      }
-
-
-
-      var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
-      var minVals = [], maxVals = [], avgVals = [], meanVals = [];
-      var rawData = data.yearlyTemps || {};
-      var rawYears = Object.keys(rawData).sort();
-
-      for (var si = 0; si < series.length; si++) {
-
-        var sv = series[si].values || [];
-
-        var valid = [];
-
-        for (var vi = 0; vi < sv.length; vi++) {
-
-          if (sv[vi] != null) valid.push({ idx: vi, v: sv[vi] });
-
-        }
-
-        if (valid.length === 0) continue;
-        // MIN angle — position of actual minimum daily value
-        var minV = Infinity, minA = 0;
-        var minRawIdx = -1;
-        for (var i = 0; i < valid.length; i++) {
-          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; minRawIdx = valid[i].idx; }
-        }
-        if (minV === Infinity) minA = 0;
-        minAngles.push(minA);
-        minVals.push(minV);
-
-        // MAX angle — position of actual maximum daily value
-        var maxV = -Infinity, maxA = 0;
-        var maxRawIdx = -1;
-        for (var i = 0; i < valid.length; i++) {
-          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
-        }
-        if (maxV === -Infinity) maxA = 0;
-        maxAngles.push(maxA);
-        maxVals.push(maxV);
-
-        // AVG + MEAN crossings
-
-        var sum = 0;
-
-        for (var i = 0; i < valid.length; i++) sum += valid[i].v;
-
-        var avg = sum / valid.length;
-
-        // avg: first crossing of yearly average temp (spring rising edge)
-        var crosses = findCrossings(sv, avg);
-
-        if (crosses.length > 0) {
-
-          crosses.sort(function(a,b){return a-b;});
-
-          avgAngles.push(crosses[0]);
-          avgVals.push(avg);
-
-        }
-
-        // mean: first crossing of yearly median temp (spring rising edge)
-        var sorted = sv.filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});
-        var mid = Math.floor(sorted.length / 2);
-        var median = sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
-        var mCrosses = findCrossings(sv, median);
-        if (mCrosses.length > 0) {
-          mCrosses.sort(function(a,b){return a-b;});
-          meanAnglesAll.push(mCrosses[0]);
-          meanVals.push(median);
-        }
-
-      }
-
-      // ── Min/Max markers on year traces ──
-      for (var mi = 0; mi < series.length; mi++) {
-        var sv = series[mi].values || [];
-        if (sv.length < 2) continue;
-        // Find actual min value position
-        var minIdx = -1, minVal = Infinity;
-        // Find actual max value position
-        var maxIdx = -1, maxVal = -Infinity;
-        for (var vi = 0; vi < sv.length; vi++) {
-          if (sv[vi] == null) continue;
-          if (showDataMin && sv[vi] < minVal) { minVal = sv[vi]; minIdx = vi; }
-          if (showDataMax && sv[vi] > maxVal) { maxVal = sv[vi]; maxIdx = vi; }
-        }
-        if (showDataMin && minIdx >= 0) {
-          var minAng = (minIdx / sv.length) * 360;
-          var minAngRad = minAng * Math.PI / 180;
-          var minP = polar(valToR(minVal), minAngRad);
-          var dotM = e('circle', {
-            cx: minP.x, cy: minP.y, r: 3,
-            fill: '#ffffff', stroke: 'none',
-          });
-          dotM.style.opacity = '0';
-          svgEl.appendChild(dotM);
-          polygonElements.push(dotM);
-        }
-        if (showDataMax && maxIdx >= 0) {
-          var maxAng = (maxIdx / sv.length) * 360;
-          var maxAngRad = maxAng * Math.PI / 180;
-          var maxP = polar(valToR(maxVal), maxAngRad);
-          var dotX = e('circle', {
-            cx: maxP.x, cy: maxP.y, r: 3,
-            fill: '#ffffff', stroke: 'none',
-          });
-          dotX.style.opacity = '0';
-          svgEl.appendChild(dotX);
-          polygonElements.push(dotX);
-        }
-      }
-
-
-
       var clusters = {};
 
       clusters.min  = clusterAngles(minAngles);
