@@ -438,6 +438,7 @@ window.HAL.cards['polar'] = {
       } else {
 
         lblText = spokeLabels[si] || '';
+        labelIdx = si;
 
       }
 
@@ -549,27 +550,46 @@ window.HAL.cards['polar'] = {
 
       var sAlpha = baseAlpha + si * alphaStep;
 
-      // Series average for radial smoothing
-      var sAvg = null;
+      // Apply smoothing: moving-window average
+      // smooth=0: raw data, smooth=1: yearly average (circle)
+      // window size = smooth * totalPoints, centered on each point
+      var smoothedValues = sv.slice();
       if (smoothFactor > 0) {
-        var sum = 0, cnt = 0;
-        for (var tvi = 0; tvi < sv.length; tvi++) {
-          if (sv[tvi] != null) { sum += sv[tvi]; cnt++; }
+        var windowSize = Math.round(smoothFactor * sv.length);
+        if (windowSize > 0) {
+          // Window spans entire dataset: use overall average (perfect circle)
+          if (windowSize >= sv.length) {
+            var sum = 0, cnt = 0;
+            for (var tvi = 0; tvi < sv.length; tvi++) {
+              if (sv[tvi] != null) { sum += sv[tvi]; cnt++; }
+            }
+            var overallAvg = cnt > 0 ? sum / cnt : 0;
+            for (var tvi = 0; tvi < sv.length; tvi++) {
+              if (sv[tvi] != null) smoothedValues[tvi] = overallAvg;
+            }
+          } else {
+            var halfWin = Math.floor(windowSize / 2);
+            for (var tvi = 0; tvi < sv.length; tvi++) {
+              var sum = 0, cnt = 0;
+              for (var wi = tvi - halfWin; wi <= tvi + halfWin; wi++) {
+                if (wi >= 0 && wi < sv.length && sv[wi] != null) {
+                  sum += sv[wi];
+                  cnt++;
+                }
+              }
+              if (cnt > 0) smoothedValues[tvi] = sum / cnt;
+            }
+          }
         }
-        if (cnt > 0) sAvg = sum / cnt;
       }
 
-      for (var vi = 0; vi < sv.length; vi++) {
+      for (var vi = 0; vi < smoothedValues.length; vi++) {
 
-        if (sv[vi] == null) continue;
+        if (smoothedValues[vi] == null) continue;
 
-        var r = valToR(sv[vi]);
-        if (sAvg != null) {
-          var avgR = valToR(sAvg);
-          r = r * (1 - smoothFactor) + avgR * smoothFactor;
-        }
+        var r = valToR(smoothedValues[vi]);
 
-        var angle = (vi / sv.length) * 2 * Math.PI;
+        var angle = (vi / smoothedValues.length) * 2 * Math.PI;
 
         var p = polar(r, angle);
 
@@ -583,11 +603,7 @@ window.HAL.cards['polar'] = {
         var partial = series[si]._partial;
         if (!partial) {
 
-          var firstR = valToR(sv[0]);
-          if (sAvg != null) {
-            var avgR = valToR(sAvg);
-            firstR = firstR * (1 - smoothFactor) + avgR * smoothFactor;
-          }
+          var firstR = valToR(smoothedValues[0]);
           var firstP = polar(firstR, 0);
 
           pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
