@@ -8,7 +8,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   timing: {
   "flickerDuration": 200,
   "groupGap": 167,
-  "initialPause": 5000,
+  "initialPause": 10000,
   "titleCardDisplay": 8,
   "valueHold": 5000
 },
@@ -3208,10 +3208,10 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "baseAlpha": 0.3,
     "alphaMax": 0.85,
     "titleSize": 14,
-    "titleX": 20,
-    "titleY": 25,
+    "titleX": 15,
+    "titleY": 15,
     "subSize": 9,
-    "subtitle": "PARIS ERA5-LAND \u00b7 WEEKLY \u00b7 2015-2026",
+    "subtitle": "PARIS ERA5-LAND \u00b7 DAILY \u00b7 2015-2026",
     "coolColor": {
       "r": 100,
       "g": 180,
@@ -3289,7 +3289,13 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "legendY": 690,
     "legendCols": 2,
     "legendSpacing": 11,
-    "legendFontSize": 8
+    "legendFontSize": 8,
+    "markers": {
+      "min": false,
+      "max": false,
+      "mean": false
+    },
+    "smooth": 0.3
   },
   {
     "type": "title",

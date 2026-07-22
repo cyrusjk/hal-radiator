@@ -294,7 +294,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
   timing: {
   "flickerDuration": 200,
   "groupGap": 167,
-  "initialPause": 5000,
+  "initialPause": 10000,
   "titleCardDisplay": 8,
   "valueHold": 5000
 },
@@ -3497,7 +3497,7 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "titleX": 15,
     "titleY": 15,
     "subSize": 9,
-    "subtitle": "PARIS ERA5-LAND \u00b7 WEEKLY \u00b7 2015-2026",
+    "subtitle": "PARIS ERA5-LAND \u00b7 DAILY \u00b7 2015-2026",
     "coolColor": {
       "r": 100,
       "g": 180,
@@ -3575,7 +3575,13 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "legendY": 690,
     "legendCols": 2,
     "legendSpacing": 11,
-    "legendFontSize": 8
+    "legendFontSize": 8,
+    "markers": {
+      "min": false,
+      "max": false,
+      "mean": false
+    },
+    "smooth": 0.3
   },
   {
     "type": "title",
@@ -5535,9 +5541,22 @@ window.HAL.cards['polar'] = {
 
 
 
-    var nSpokes = (series[0].values || []).length;
+    var nSpokes = data.spokes || 12;
 
     if (nSpokes < 2) { if (onDone) onDone(); return; }
+
+    // ── Marker / stat visibility ─────────────────────────────────────────
+    var mOpts = data.markers || {};
+    var showDataMin  = mOpts.min !== false;
+    var showDataMax  = mOpts.max !== false;
+    var showDataAvg  = mOpts.avg !== false;
+    var showDataMean = mOpts.mean !== false;
+    var showArcs     = mOpts.arcs !== false;
+    var showConnectors = mOpts.connectors !== false;
+
+    var smoothFactor = data.smooth || 0;
+    if (smoothFactor < 0) smoothFactor = 0;
+    if (smoothFactor > 1) smoothFactor = 1;
 
     var angleStep = (2 * Math.PI) / nSpokes;
 
@@ -5594,21 +5613,27 @@ window.HAL.cards['polar'] = {
 
 
 
-    // ── Spoke stats (across all series) ───────────────────────────────
+    // ── Spoke stats (monthly means across all years) ────────────────
 
-    // For each spoke (month), compute min/avg/mean/max across all years
-
+    // For each spoke (month), average the daily values in that month's range
+    // across all years
     var spokeStats = [];
 
     for (var vi = 0; vi < nSpokes; vi++) {
 
       var vals = [];
+      var startIdx = Math.floor(vi * series[0].values.length / nSpokes);
+      var endIdx = Math.floor((vi + 1) * series[0].values.length / nSpokes);
+      if (endIdx <= startIdx) endIdx = startIdx + 1;
 
       for (var si = 0; si < series.length; si++) {
 
         var sv = series[si].values || [];
-
-        if (vi < sv.length && sv[vi] != null) vals.push(sv[vi]);
+        var monthSum = 0, monthCnt = 0;
+        for (var di = startIdx; di < endIdx && di < sv.length; di++) {
+          if (sv[di] != null) { monthSum += sv[di]; monthCnt++; }
+        }
+        if (monthCnt > 0) vals.push(monthSum / monthCnt);
 
       }
 
@@ -5690,7 +5715,7 @@ window.HAL.cards['polar'] = {
 
     var header = e('text', {
 
-      x: data.titleX || 20, y: data.titleY || 25,
+      x: data.titleX || 15, y: data.titleY || 15,
 
       fill: fg('frame', 1.9), 'font-size': fs(headerSize),
 
@@ -5714,7 +5739,7 @@ window.HAL.cards['polar'] = {
 
       subtitle = e('text', {
 
-        x: data.titleX || 20, y: (data.titleY || 25) + 20,
+        x: data.titleX || 15, y: (data.titleY || 15) + 16,
 
         fill: fg('frame', 0.85), 'font-size': fs(subSize),
 
@@ -5880,6 +5905,7 @@ window.HAL.cards['polar'] = {
       } else {
 
         lblText = spokeLabels[si] || '';
+        labelIdx = si;
 
       }
 
@@ -5991,15 +6017,47 @@ window.HAL.cards['polar'] = {
 
       var sAlpha = baseAlpha + si * alphaStep;
 
+      // Apply smoothing: moving-window average
+      // smooth=0: raw data, smooth=1: yearly average (circle)
+      // window size = smooth * totalPoints, centered on each point
+      var smoothedValues = sv.slice();
+      if (smoothFactor > 0) {
+        var windowSize = Math.round(smoothFactor * sv.length);
+        if (windowSize > 0) {
+          // Window spans entire dataset: use overall average (perfect circle)
+          if (windowSize >= sv.length) {
+            var sum = 0, cnt = 0;
+            for (var tvi = 0; tvi < sv.length; tvi++) {
+              if (sv[tvi] != null) { sum += sv[tvi]; cnt++; }
+            }
+            var overallAvg = cnt > 0 ? sum / cnt : 0;
+            for (var tvi = 0; tvi < sv.length; tvi++) {
+              if (sv[tvi] != null) smoothedValues[tvi] = overallAvg;
+            }
+          } else {
+            var halfWin = Math.floor(windowSize / 2);
+            for (var tvi = 0; tvi < sv.length; tvi++) {
+              if (sv[tvi] == null) continue;
+              var sum = 0, cnt = 0;
+              for (var wi = tvi - halfWin; wi <= tvi + halfWin; wi++) {
+                if (wi >= 0 && wi < sv.length && sv[wi] != null) {
+                  sum += sv[wi];
+                  cnt++;
+                }
+              }
+              if (cnt > 0) smoothedValues[tvi] = sum / cnt;
+            }
+          }
+        }
+      }
 
+      for (var vi = 0; vi < smoothedValues.length; vi++) {
 
-      for (var vi = 0; vi < sv.length && vi < nSpokes; vi++) {
+        if (smoothedValues[vi] == null) continue;
 
-        if (sv[vi] == null) continue;
+        var r = valToR(smoothedValues[vi]);
 
-        var r = valToR(sv[vi]);
-
-        var angle = vi * angleStep;
+        var angle = (vi / smoothedValues.length) * 2 * Math.PI;
 
         var p = polar(r, angle);
 
@@ -6010,11 +6068,10 @@ window.HAL.cards['polar'] = {
       if (pathD !== '') {
 
         // Partial year: do NOT close back to first point
-        var partial = series[si]._partial || sv.length < nSpokes;
+        var partial = series[si]._partial;
         if (!partial) {
 
-          var firstR = valToR(sv[0]);
-
+          var firstR = valToR(smoothedValues[0]);
           var firstP = polar(firstR, 0);
 
           pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
@@ -6064,163 +6121,177 @@ window.HAL.cards['polar'] = {
 
     var arcElements = [];
 
+    // ── Stat helpers (hoisted — needed by markers and arcs) ─────────────
 
-
-    if (data.arcs) {
-
-      // Per-cycle stat angle: for each year find WHERE (which angle) each
-
-      // stat occurs. Cluster by widest-gap → one arc per stat.
-
-      //   min:  angle of minimum temp per year
-
-      //   max:  angle of maximum temp per year
-
-      //   avg:  angle where value crosses yearly average (first crossing)
-
-      //   mean: angle where value crosses yearly median (first crossing)
-
-      function findCrossings(values, target) {
-
-        var angles = [];
-
-        for (var i = 1; i < values.length; i++) {
-
-          var p0 = values[i-1], p1 = values[i];
-
-          if (p0 != null && p1 != null &&
-
-              ((p0 <= target && p1 >= target) || (p0 >= target && p1 <= target))) {
-
-            var t = (target - p0) / (p1 - p0);
-
-            angles.push((i - 1 + t) / values.length * 360);
-
+    function findSpringCrossing(values, target) {
+      // Find first rising crossing where temp stays above target
+      // for MIN_CROSS days (filters winter warm spells)
+      var MIN_CROSS = 14;
+      var i = 0;
+      while (i < values.length - 1) {
+        var p0 = values[i], p1 = values[i + 1];
+        if (p0 != null && p1 != null && p0 <= target && p1 >= target) {
+          // Rising edge candidate — check it sticks
+          var above = 0;
+          for (var j = i + 1; j < values.length && above < MIN_CROSS; j++) {
+            if (values[j] != null && values[j] >= target) above++;
+            else if (values[j] != null) break;  // dropped below — false start
           }
-
+          if (above >= MIN_CROSS) {
+            var t = (target - p0) / (p1 - p0);
+            return (i + t) / values.length * 360;
+          }
+          // False start — skip ahead past this spike
+          i = j;
+          continue;
         }
+        i++;
+      }
+      return null;
+    }
 
-        return angles;
+    function clusterAngles(angles) {
+      if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
+      var s = angles.slice().sort(function(a,b){return a-b;});
+      var uniq = [s[0]];
+      for (var i = 1; i < s.length; i++) { if (s[i] !== s[i-1]) uniq.push(s[i]); }
+      if (uniq.length === 1) {
+        return { start: uniq[0] - 1, end: uniq[0] + 1, span: 2, gap: 358 };
+      }
+      var maxGap = 0, gapIdx = 0;
+      for (var i = 0; i < uniq.length; i++) {
+        var next = uniq[(i + 1) % uniq.length];
+        var gap = (i === uniq.length - 1) ? (uniq[0] + 360 - uniq[i]) : (uniq[i+1] - uniq[i]);
+        if (gap > maxGap) { maxGap = gap; gapIdx = i; }
+      }
+      var gapStart = uniq[gapIdx];
+      var clusterStart = (gapStart + maxGap) % 360;
+      var clusterEnd = gapStart;
+      if (clusterEnd <= clusterStart) clusterEnd += 360;
+      return { start: clusterStart, end: clusterEnd, span: clusterEnd - clusterStart, gap: maxGap };
+    }
 
+    // ── Arc stat angles per year ───────────────────────────────────────
+
+    var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
+    var minVals = [], maxVals = [], avgVals = [], meanVals = [];
+    var rawData = data.yearlyTemps || {};
+    var rawYears = Object.keys(rawData).sort();
+
+    for (var si = 0; si < series.length; si++) {
+      var sv = series[si].values || [];
+      var valid = [];
+      for (var vi = 0; vi < sv.length; vi++) {
+        if (sv[vi] != null) valid.push({ idx: vi, v: sv[vi] });
+      }
+      if (valid.length === 0) continue;
+      // MIN angle — position of actual minimum daily value
+      var minV = Infinity, minA = 0;
+      var minRawIdx = -1;
+      for (var i = 0; i < valid.length; i++) {
+        if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; minRawIdx = valid[i].idx; }
+      }
+      if (minV === Infinity) minA = 0;
+      minAngles.push(minA);
+      minVals.push(minV);
+
+      // MAX angle — position of actual maximum daily value
+      var maxV = -Infinity, maxA = 0;
+      var maxRawIdx = -1;
+      for (var i = 0; i < valid.length; i++) {
+        if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
+      }
+      if (maxV === -Infinity) maxA = 0;
+      maxAngles.push(maxA);
+      maxVals.push(maxV);
+
+      // AVG crossing
+      var sum = 0;
+      for (var i = 0; i < valid.length; i++) sum += valid[i].v;
+      var avg = sum / valid.length;
+      var avgCross = findSpringCrossing(sv, avg);
+      if (avgCross != null) {
+        avgAngles.push(avgCross);
+        avgVals.push(avg);
       }
 
-
-
-      function clusterAngles(angles) {
-
-        if (angles.length === 0) return { start: 0, end: 0, span: 0, gap: 0 };
-
-        var s = angles.slice().sort(function(a,b){return a-b;});
-
-        var uniq = [s[0]];
-
-        for (var i = 1; i < s.length; i++) { if (s[i] !== s[i-1]) uniq.push(s[i]); }
-
-        if (uniq.length === 1) {
-
-          return { start: uniq[0] - 1, end: uniq[0] + 1, span: 2, gap: 358 };
-
-        }
-
-        var maxGap = 0, gapIdx = 0;
-
-        for (var i = 0; i < uniq.length; i++) {
-
-          var next = uniq[(i + 1) % uniq.length];
-
-          var gap = (i === uniq.length - 1) ? (uniq[0] + 360 - uniq[i]) : (uniq[i+1] - uniq[i]);
-
-          if (gap > maxGap) { maxGap = gap; gapIdx = i; }
-
-        }
-
-        var gapStart = uniq[gapIdx];
-
-        var clusterStart = (gapStart + maxGap) % 360;
-
-        var clusterEnd = gapStart;
-
-        if (clusterEnd <= clusterStart) clusterEnd += 360;
-
-        return { start: clusterStart, end: clusterEnd, span: clusterEnd - clusterStart, gap: maxGap };
-
+      // MEAN crossing
+      var sorted = sv.filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});
+      var mid = Math.floor(sorted.length / 2);
+      var median = sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
+      var meanCross = findSpringCrossing(sv, median);
+      if (meanCross != null) {
+        meanAnglesAll.push(meanCross);
+        meanVals.push(median);
       }
+    }
 
-
-
-      var minAngles = [], maxAngles = [], avgAngles = [], meanAnglesAll = [];
-
-      for (var si = 0; si < series.length; si++) {
-
-        var sv = series[si].values || [];
-
-        var valid = [];
-
-        for (var vi = 0; vi < sv.length; vi++) {
-
-          if (sv[vi] != null) valid.push({ idx: vi, v: sv[vi] });
-
-        }
-
-        if (valid.length === 0) continue;
-
-        // MIN angle
-
-        var minV = Infinity, minA = 0;
-
-        for (var i = 0; i < valid.length; i++) {
-
-          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
-
-        }
-
-        minAngles.push(minA);
-
-        // MAX angle
-
-        var maxV = -Infinity, maxA = 0;
-
-        for (var i = 0; i < valid.length; i++) {
-
-          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
-
-        }
-
-        maxAngles.push(maxA);
-
-        // AVG + MEAN crossings
-
-        var sum = 0;
-
-        for (var i = 0; i < valid.length; i++) sum += valid[i].v;
-
-        var avg = sum / valid.length;
-
-        // avg: first crossing of yearly average temp (spring rising edge)
-        var crosses = findCrossings(sv, avg);
-
-        if (crosses.length > 0) {
-
-          crosses.sort(function(a,b){return a-b;});
-
-          avgAngles.push(crosses[0]);
-
-        }
-
-        // mean: first crossing of yearly median temp (spring rising edge)
-        var sorted = sv.filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});
-        var mid = Math.floor(sorted.length / 2);
-        var median = sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
-        var mCrosses = findCrossings(sv, median);
-        if (mCrosses.length > 0) {
-          mCrosses.sort(function(a,b){return a-b;});
-          meanAnglesAll.push(mCrosses[0]);
-        }
-
+    // ── Min/Max/Avg/Mean markers on year traces ──
+    for (var mi = 0; mi < series.length; mi++) {
+      var sv = series[mi].values || [];
+      if (sv.length < 2) continue;
+      var minIdx = -1, minVal = Infinity;
+      var maxIdx = -1, maxVal = -Infinity;
+      for (var vi = 0; vi < sv.length; vi++) {
+        if (sv[vi] == null) continue;
+        if (showDataMin && sv[vi] < minVal) { minVal = sv[vi]; minIdx = vi; }
+        if (showDataMax && sv[vi] > maxVal) { maxVal = sv[vi]; maxIdx = vi; }
       }
+      if (showDataMin && minIdx >= 0) {
+        var minAng = (minIdx / sv.length) * 360;
+        var minAngRad = minAng * Math.PI / 180;
+        var minP = polar(valToR(minVal), minAngRad);
+        var dotM = e('circle', {
+          cx: minP.x, cy: minP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotM.style.opacity = '0';
+        svgEl.appendChild(dotM);
+        polygonElements.push(dotM);
+      }
+      if (showDataMax && maxIdx >= 0) {
+        var maxAng = (maxIdx / sv.length) * 360;
+        var maxAngRad = maxAng * Math.PI / 180;
+        var maxP = polar(valToR(maxVal), maxAngRad);
+        var dotX = e('circle', {
+          cx: maxP.x, cy: maxP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotX.style.opacity = '0';
+        svgEl.appendChild(dotX);
+        polygonElements.push(dotX);
+      }
+      // AVG marker — first spring crossing of yearly average temp
+      if (showDataAvg && mi < avgAngles.length) {
+        var avgAng = avgAngles[mi];
+        var avgAngRad = avgAng * Math.PI / 180;
+        var avgP = polar(valToR(avgVals[mi] || 0), avgAngRad);
+        var dotA = e('circle', {
+          cx: avgP.x, cy: avgP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotA.style.opacity = '0';
+        svgEl.appendChild(dotA);
+        polygonElements.push(dotA);
+      }
+      // MEAN marker — first spring crossing of yearly median temp
+      if (showDataMean && mi < meanAnglesAll.length) {
+        var meanAng = meanAnglesAll[mi];
+        var meanAngRad = meanAng * Math.PI / 180;
+        var meanP = polar(valToR(meanVals[mi] || 0), meanAngRad);
+        var dotN = e('circle', {
+          cx: meanP.x, cy: meanP.y, r: 3,
+          fill: '#ffffff', stroke: 'none',
+        });
+        dotN.style.opacity = '0';
+        svgEl.appendChild(dotN);
+        polygonElements.push(dotN);
+      }
+    }
 
+    // ── Arc bands ─────────────────────────────────────────────────────
 
-
+    if (data.arcs && showArcs) {
       var clusters = {};
 
       clusters.min  = clusterAngles(minAngles);
@@ -6246,18 +6317,22 @@ window.HAL.cards['polar'] = {
         var startAngle = startAngleDeg * Math.PI / 180;
         var endAngle = endAngleDeg * Math.PI / 180;
 
-        // Draw arc path
+        // Draw arc path — SVG A (elliptical arc) for exact start/end
+        function arcPt(a) { return polar(arcR, a); }
+        function arcPath(s, e) {
+          var p = arcPt(s);
+          var q = arcPt(e);
+          var span = e - s;
+          // Normalize span to 0-2PI for large-arc flag
+          var large = (span % (Math.PI * 2)) > Math.PI ? 1 : 0;
+          return 'M' + p.x.toFixed(1) + ',' + p.y.toFixed(1) +
+            ' A' + arcR.toFixed(1) + ',' + arcR.toFixed(1) + ' 0 ' +
+            large + ',1 ' + q.x.toFixed(1) + ',' + q.y.toFixed(1);
+        }
         if (startAngleDeg > endAngleDeg) {
-          // Wrap across 0: draw two arcs
-          var d1 = '', d2 = '';
-          for (var a = startAngle; a <= Math.PI * 2 + 0.01; a += 0.02) {
-            var p = polar(arcR, a);
-            d1 += (d1 === '' ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-          }
-          for (var a = 0; a <= endAngle + 0.01; a += 0.02) {
-            var p = polar(arcR, a);
-            d2 += (d2 === '' ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-          }
+          // Wrap across 0: two arcs
+          var d1 = arcPath(startAngle, Math.PI * 2);
+          var d2 = arcPath(0, endAngle);
           var arc = e('path', {
             d: d1, fill: 'none', stroke: arcColor,
             'stroke-width': arcW,
@@ -6276,11 +6351,7 @@ window.HAL.cards['polar'] = {
           svgEl.appendChild(arc2);
           arcElements.push(arc2);
         } else {
-          var d = '';
-          for (var a = startAngle; a <= endAngle + 0.01; a += 0.02) {
-            var p = polar(arcR, a);
-            d += (d === '' ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-          }
+          var d = arcPath(startAngle, endAngle);
           var arc = e('path', {
             d: d, fill: 'none', stroke: arcColor,
             'stroke-width': arcW,
@@ -6322,7 +6393,7 @@ window.HAL.cards['polar'] = {
         }
 
         // ── Connector lines: from each year's data point at stat angle to arc ──
-        if (ac.connectors !== false && ac.lineColor) {
+        if (showConnectors && ac.connectors !== false && ac.lineColor) {
           var lineA = ac.lineAlpha != null ? ac.lineAlpha : 0.15;
           var yearAngles = [];
           if (statKey === 'min') yearAngles = minAngles;
@@ -6332,17 +6403,24 @@ window.HAL.cards['polar'] = {
 
           for (var yi = 0; yi < yearAngles.length && yi < series.length; yi++) {
             var angDeg = yearAngles[yi];
-            var spokeIdx = Math.round(angDeg / 360 * nSpokes) % nSpokes;
             var sv = series[yi].values || [];
-            if (spokeIdx >= sv.length || sv[spokeIdx] == null) continue;
-            var r = valToR(sv[spokeIdx]);
+            // Interpolate value at stat angle from the 52-point series
+            // This ensures connector starts ON the year trace
+            var v;
+            var pos = (angDeg / 360) * sv.length;
+            var idx = Math.floor(pos);
+            var frac = pos - idx;
+            var nextIdx = (idx + 1) % sv.length;
+            if (sv[idx] == null || sv[nextIdx] == null) continue;
+            v = sv[idx] + (sv[nextIdx] - sv[idx]) * frac;
+            var r = valToR(v);
             var angRad = angDeg * Math.PI / 180;
             var innerP = polar(r, angRad);
             var outerP = polar(arcR, angRad);
             var cl = e('line', {
               x1: innerP.x, y1: innerP.y, x2: outerP.x, y2: outerP.y,
-              stroke: ac.lineColor, 'stroke-width': 0.5,
-              'stroke-opacity': lineA,
+              stroke: ac.lineColor, 'stroke-width': 0.75,
+              'stroke-opacity': 0.4,
             });
             cl.style.opacity = '0';
             svgEl.appendChild(cl);
@@ -6475,11 +6553,9 @@ window.HAL.cards['polar'] = {
 
       { action: 'wait',       duration: 400 },
 
-      { action: 'appear',     groups: ['dataPolygons'], order: 'sequential', gap: 150 },
+      { action: 'appear',     groups: ['dataPolygons', 'legend'], order: 'sequential', gap: 150 },
 
       { action: 'wait',       duration: 400 },
-
-      { action: 'appear',     groups: ['legend'], order: 'sequential', gap: 40 },
 
       { action: 'wait',       duration: 200 },
 

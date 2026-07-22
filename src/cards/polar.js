@@ -570,6 +570,7 @@ window.HAL.cards['polar'] = {
           } else {
             var halfWin = Math.floor(windowSize / 2);
             for (var tvi = 0; tvi < sv.length; tvi++) {
+              if (sv[tvi] == null) continue;
               var sum = 0, cnt = 0;
               for (var wi = tvi - halfWin; wi <= tvi + halfWin; wi++) {
                 if (wi >= 0 && wi < sv.length && sv[wi] != null) {
