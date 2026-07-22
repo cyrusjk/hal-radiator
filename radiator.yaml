@@ -674,6 +674,7 @@ groups:
       min: false
       max: false
       mean: false
+    smooth: 0.3
     prototype: polar-default
     title: GLOBAL TEMPERATURE
     w: 800

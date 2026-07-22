@@ -87,6 +87,10 @@ window.HAL.cards['polar'] = {
     var showArcs     = mOpts.arcs !== false;
     var showConnectors = mOpts.connectors !== false;
 
+    var smoothFactor = data.smooth || 0;
+    if (smoothFactor < 0) smoothFactor = 0;
+    if (smoothFactor > 1) smoothFactor = 1;
+
     var angleStep = (2 * Math.PI) / nSpokes;
 
 
@@ -545,13 +549,25 @@ window.HAL.cards['polar'] = {
 
       var sAlpha = baseAlpha + si * alphaStep;
 
-
+      // Series average for radial smoothing
+      var sAvg = null;
+      if (smoothFactor > 0) {
+        var sum = 0, cnt = 0;
+        for (var tvi = 0; tvi < sv.length; tvi++) {
+          if (sv[tvi] != null) { sum += sv[tvi]; cnt++; }
+        }
+        if (cnt > 0) sAvg = sum / cnt;
+      }
 
       for (var vi = 0; vi < sv.length; vi++) {
 
         if (sv[vi] == null) continue;
 
         var r = valToR(sv[vi]);
+        if (sAvg != null) {
+          var avgR = valToR(sAvg);
+          r = r * (1 - smoothFactor) + avgR * smoothFactor;
+        }
 
         var angle = (vi / sv.length) * 2 * Math.PI;
 
@@ -568,7 +584,10 @@ window.HAL.cards['polar'] = {
         if (!partial) {
 
           var firstR = valToR(sv[0]);
-
+          if (sAvg != null) {
+            var avgR = valToR(sAvg);
+            firstR = firstR * (1 - smoothFactor) + avgR * smoothFactor;
+          }
           var firstP = polar(firstR, 0);
 
           pathD += 'L' + firstP.x.toFixed(1) + ',' + firstP.y.toFixed(1) + 'Z';
