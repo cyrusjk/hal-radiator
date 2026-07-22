@@ -711,9 +711,6 @@ window.HAL.cards['polar'] = {
         }
 
         if (valid.length === 0) continue;
-        // Skip partial years — their stats don't represent a full cycle
-        if (series[si]._partial) continue;
-
         // MIN angle — position of actual minimum daily value
         var minV = Infinity, minA = 0;
         var minRawIdx = -1;
@@ -769,7 +766,6 @@ window.HAL.cards['polar'] = {
 
       // ── Min/Max markers on year traces ──
       for (var mi = 0; mi < series.length; mi++) {
-        if (series[mi]._partial) continue;
         var sv = series[mi].values || [];
         if (sv.length < 2) continue;
         // Find actual min value position
