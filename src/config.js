@@ -3293,9 +3293,10 @@ window.HAL_CONFIG = window.HAL_CONFIG || {
     "markers": {
       "min": false,
       "max": false,
+      "avg": false,
       "mean": false
     },
-    "smooth": 0.3
+    "smooth": 0.02
   },
   {
     "type": "title",
