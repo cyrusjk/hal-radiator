@@ -74,7 +74,7 @@ window.HAL.cards['polar'] = {
 
 
 
-    var nSpokes = (series[0].values || []).length;
+    var nSpokes = data.spokes || 12;
 
     if (nSpokes < 2) { if (onDone) onDone(); return; }
 
@@ -133,21 +133,27 @@ window.HAL.cards['polar'] = {
 
 
 
-    // ── Spoke stats (across all series) ───────────────────────────────
+    // ── Spoke stats (monthly means across all years) ────────────────
 
-    // For each spoke (month), compute min/avg/mean/max across all years
-
+    // For each spoke (month), average the daily values in that month's range
+    // across all years
     var spokeStats = [];
 
     for (var vi = 0; vi < nSpokes; vi++) {
 
       var vals = [];
+      var startIdx = Math.floor(vi * series[0].values.length / nSpokes);
+      var endIdx = Math.floor((vi + 1) * series[0].values.length / nSpokes);
+      if (endIdx <= startIdx) endIdx = startIdx + 1;
 
       for (var si = 0; si < series.length; si++) {
 
         var sv = series[si].values || [];
-
-        if (vi < sv.length && sv[vi] != null) vals.push(sv[vi]);
+        var monthSum = 0, monthCnt = 0;
+        for (var di = startIdx; di < endIdx && di < sv.length; di++) {
+          if (sv[di] != null) { monthSum += sv[di]; monthCnt++; }
+        }
+        if (monthCnt > 0) vals.push(monthSum / monthCnt);
 
       }
 
@@ -532,13 +538,13 @@ window.HAL.cards['polar'] = {
 
 
 
-      for (var vi = 0; vi < sv.length && vi < nSpokes; vi++) {
+      for (var vi = 0; vi < sv.length; vi++) {
 
         if (sv[vi] == null) continue;
 
         var r = valToR(sv[vi]);
 
-        var angle = vi * angleStep;
+        var angle = (vi / sv.length) * 2 * Math.PI;
 
         var p = polar(r, angle);
 
@@ -549,7 +555,7 @@ window.HAL.cards['polar'] = {
       if (pathD !== '') {
 
         // Partial year: do NOT close back to first point
-        var partial = series[si]._partial || sv.length < nSpokes;
+        var partial = series[si]._partial;
         if (!partial) {
 
           var firstR = valToR(sv[0]);
@@ -708,66 +714,23 @@ window.HAL.cards['polar'] = {
         // Skip partial years — their stats don't represent a full cycle
         if (series[si]._partial) continue;
 
-        // MIN angle — center of coldest 4-week window using interpolated series
-        // This spreads adjacent years that share the same calendar minimum month
+        // MIN angle — position of actual minimum daily value
         var minV = Infinity, minA = 0;
-        if (sv.length >= 52) {
-          var ww = Math.min(4, Math.floor(sv.length / 12));
-          var bestRoll = Infinity;
-          for (var wi = 0; wi < sv.length; wi++) {
-            var sum = 0, cnt = 0;
-            for (var wj = 0; wj < ww; wj++) {
-              var vi = (wi + wj) % sv.length;
-              if (sv[vi] != null) { sum += sv[vi]; cnt++; }
-            }
-            if (cnt === ww) {
-              var avg = sum / ww;
-              if (avg < bestRoll) { bestRoll = avg; minV = sv[wi]; minA = (wi + ww/2) / sv.length * 360; }
-            }
-          }
+        var minRawIdx = -1;
+        for (var i = 0; i < valid.length; i++) {
+          if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; minRawIdx = valid[i].idx; }
         }
-        if (minV === Infinity) {
-          // Fallback: min point
-          for (var ri = 0; ri < (rawVals || []).length; ri++) {
-            if (rawVals[ri] < minV) { minV = rawVals[ri]; minA = ri / 12 * 360; }
-          }
-          if (minV === Infinity) {
-            for (var i = 0; i < valid.length; i++) {
-              if (valid[i].v < minV) { minV = valid[i].v; minA = valid[i].idx / sv.length * 360; }
-            }
-          }
-        }
+        if (minV === Infinity) minA = 0;
         minAngles.push(minA);
         minVals.push(minV);
 
-        // MAX angle — center of warmest 4-week window using interpolated series
+        // MAX angle — position of actual maximum daily value
         var maxV = -Infinity, maxA = 0;
-        if (sv.length >= 52) {
-          var ww = Math.min(4, Math.floor(sv.length / 12));
-          var bestRoll = -Infinity;
-          for (var wi = 0; wi < sv.length; wi++) {
-            var sum = 0, cnt = 0;
-            for (var wj = 0; wj < ww; wj++) {
-              var vi = (wi + wj) % sv.length;
-              if (sv[vi] != null) { sum += sv[vi]; cnt++; }
-            }
-            if (cnt === ww) {
-              var avg = sum / ww;
-              if (avg > bestRoll) { bestRoll = avg; maxV = sv[wi]; maxA = (wi + ww/2) / sv.length * 360; }
-            }
-          }
+        var maxRawIdx = -1;
+        for (var i = 0; i < valid.length; i++) {
+          if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
         }
-        if (maxV === -Infinity) {
-          // Fallback: max point
-          for (var ri = 0; ri < (rawVals || []).length; ri++) {
-            if (rawVals[ri] > maxV) { maxV = rawVals[ri]; maxA = ri / 12 * 360; }
-          }
-          if (maxV === -Infinity) {
-            for (var i = 0; i < valid.length; i++) {
-              if (valid[i].v > maxV) { maxV = valid[i].v; maxA = valid[i].idx / sv.length * 360; }
-            }
-          }
-        }
+        if (maxV === -Infinity) maxA = 0;
         maxAngles.push(maxA);
         maxVals.push(maxV);
 

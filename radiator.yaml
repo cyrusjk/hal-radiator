@@ -602,7 +602,7 @@ groups:
     titleX: 15
     titleY: 15
     subSize: 9
-    subtitle: "PARIS ERA5-LAND · WEEKLY · 2015-2026"
+    subtitle: "PARIS ERA5-LAND · DAILY · 2015-2026"
     coolColor:
       r: 100
       g: 180

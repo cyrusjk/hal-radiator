@@ -58,36 +58,44 @@ def _preload_era5():
 
     import datetime as _dt
 
-    def monthly_means(daily):
-        if not daily or not daily.get('time'): return {}
+    def store_daily(daily):
+        """Store raw daily temps per year + compute monthly means."""
+        if not daily or not daily.get('time'): return
         times = daily['time']
         temps = daily.get('temperature_2m_mean', [])
-        months = {}
+        years = {}
         for i in range(len(times)):
             dt = _dt.datetime.strptime(times[i], '%Y-%m-%d')
-            key = f'{dt.year}-{dt.month:02d}'
+            if dt.year not in years:
+                years[dt.year] = {'daily': [], 'monthly': {}}
             v = temps[i]
-            if v is None: continue
-            months.setdefault(key, []).append(v)
-        return {k: sum(v)/len(v) for k, v in months.items()}
+            # Store daily value (null days skipped)
+            if v is not None:
+                years[dt.year]['daily'].append(v)
+            else:
+                years[dt.year]['daily'].append(None)
+            # Also collect for monthly mean
+            mk = f'{dt.year}-{dt.month:02d}'
+            years[dt.year]['monthly'].setdefault(mk, []).append(v)
+        # Convert monthly buckets to means
+        result = {}
+        for y, d in years.items():
+            monthly_arr = [None] * 12
+            for mk, vals in d['monthly'].items():
+                m = int(mk.split('-')[1])
+                valid = [v for v in vals if v is not None]
+                monthly_arr[m-1] = sum(valid)/len(valid) if valid else None
+            result[y] = {
+                'daily': d['daily'],
+                'monthly': monthly_arr
+            }
+        return result
 
-    monthly_avgs = [monthly_means(d.get('daily', {})) for d in results if d]
-    all_keys = set()
-    for ld in monthly_avgs:
-        for k in ld: all_keys.add(k)
-    avg_result = {}
-    for k in sorted(all_keys):
-        vals = [ld[k] for ld in monthly_avgs if k in ld]
-        avg_result[k] = sum(vals) / len(vals) if vals else None
-    years = {}
-    for k in sorted(avg_result.keys()):
-        parts = k.split('-')
-        y, m = int(parts[0]), int(parts[1])
-        years.setdefault(y, [None]*12)[m-1] = avg_result[k]
+    years_data = store_daily(results[0].get('daily', {}))
     ERA5_FALLBACK.clear()
-    for y in sorted(years):
-        ERA5_FALLBACK[y] = years[y]
-    print(f'ERA5 preload: {len(years)} years ({sum(1 for v in years.values() if any(x is not None for x in v))} with data), weekly resolution', file=sys.stderr)
+    for y in sorted(years_data):
+        ERA5_FALLBACK[y] = years_data[y]
+    print(f'ERA5 preload: {len(years_data)} years (daily resolution)', file=sys.stderr)
 
 _preload_era5()
 PROTOTYPES_PATH = os.path.join(ROOT, 'prototypes.yaml')

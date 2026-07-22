@@ -39,26 +39,18 @@ window.HAL.data.sources = window.HAL.data.sources || {};
             };
           }
           var years = Object.keys(data.yearlyTemps || {}).sort();
-          function interpolate(vals, N) {
-            var out = [], nMonths = vals.length;
-            for (var i = 0; i < N; i++) {
-              var pos = (i / N) * nMonths;
-              var m0 = Math.floor(pos);
-              var m1 = Math.min(m0 + 1, nMonths - 1);
-              var t = pos - m0;
-              var a = vals[m0], b = vals[m1];
-              if (a == null || b == null) { out.push(null); continue; }
-              out.push(a + (b - a) * t);
-            }
-            return out;
-          }
           var series = years.map(function(y) {
-            var monthly = data.yearlyTemps[y];
-            // Strip trailing nulls so interpolate spans only real data
-            var valid = monthly.filter(function(v){return v!=null;});
-            var validCount = valid.length;
-            var nOut = validCount < 12 ? Math.round(52 * validCount / 12) : 52;
-            return { label: y, values: interpolate(valid, nOut), _partial: validCount < 12 };
+            var yd = data.yearlyTemps[y];
+            // yd is { daily: [temps], monthly: [12 means] }
+            var dailyVals = (yd && yd.daily) || [];
+            var monthlyVals = (yd && yd.monthly) || [];
+            var validDaily = dailyVals.filter(function(v){return v!=null;});
+            return {
+              label: y,
+              values: dailyVals,
+              _monthlyValues: monthlyVals,
+              _partial: validDaily.length < 300
+            };
           });
 
           return {
