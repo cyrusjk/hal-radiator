@@ -5623,8 +5623,9 @@ window.HAL.cards['polar'] = {
     for (var vi = 0; vi < nSpokes; vi++) {
 
       var vals = [];
-      var startIdx = Math.floor(vi * series[0].values.length / nSpokes);
-      var endIdx = Math.floor((vi + 1) * series[0].values.length / nSpokes);
+      var svLen = series[0].values ? series[0].values.length : 0;
+      var startIdx = svLen > 0 ? Math.floor(vi * svLen / nSpokes) : 0;
+      var endIdx = svLen > 0 ? Math.floor((vi + 1) * svLen / nSpokes) : 0;
       if (endIdx <= startIdx) endIdx = startIdx + 1;
 
       for (var si = 0; si < series.length; si++) {
@@ -6070,6 +6071,14 @@ window.HAL.cards['polar'] = {
 
         // Partial year: do NOT close back to first point
         var partial = series[si]._partial;
+        // Internal fallback: if last 10%+ of values are null, treat as partial
+        if (!partial && smoothedValues.length > 10) {
+          var nullTail = 0, threshold = Math.max(10, Math.floor(smoothedValues.length * 0.1));
+          for (var ni = smoothedValues.length - 1; ni >= Math.max(0, smoothedValues.length - threshold); ni--) {
+            if (smoothedValues[ni] == null) nullTail++;
+          }
+          partial = nullTail >= threshold;
+        }
         if (!partial) {
 
           var firstR = valToR(smoothedValues[0]);
