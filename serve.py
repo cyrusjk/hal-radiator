@@ -78,15 +78,21 @@ def _preload_era5():
             mk = f'{dt.year}-{dt.month:02d}'
             years[dt.year]['monthly'].setdefault(mk, []).append(v)
         # Convert monthly buckets to means
+        import calendar
         result = {}
         for y, d in years.items():
+            # Pad daily array to full year length (365/366) with None for missing dates
+            year_len = 366 if calendar.isleap(y) else 365
+            daily_padded = list(d['daily'])
+            while len(daily_padded) < year_len:
+                daily_padded.append(None)
             monthly_arr = [None] * 12
             for mk, vals in d['monthly'].items():
                 m = int(mk.split('-')[1])
                 valid = [v for v in vals if v is not None]
                 monthly_arr[m-1] = sum(valid)/len(valid) if valid else None
             result[y] = {
-                'daily': d['daily'],
+                'daily': daily_padded,
                 'monthly': monthly_arr
             }
         return result
