@@ -78,6 +78,13 @@ window.HAL.cards['polar'] = {
 
     if (nSpokes < 2) { if (onDone) onDone(); return; }
 
+    // ── Marker / stat visibility ─────────────────────────────────────────
+    var mOpts = data.markers || {};
+    var showDataMin  = mOpts.min !== false;
+    var showDataMax  = mOpts.max !== false;
+    var showArcs     = mOpts.arcs !== false;
+    var showConnectors = mOpts.connectors !== false;
+
     var angleStep = (2 * Math.PI) / nSpokes;
 
 
@@ -611,7 +618,7 @@ window.HAL.cards['polar'] = {
 
 
 
-    if (data.arcs) {
+    if (data.arcs && showArcs) {
 
       // Per-cycle stat angle: for each year find WHERE (which angle) each
 
@@ -774,10 +781,10 @@ window.HAL.cards['polar'] = {
         var maxIdx = -1, maxVal = -Infinity;
         for (var vi = 0; vi < sv.length; vi++) {
           if (sv[vi] == null) continue;
-          if (sv[vi] < minVal) { minVal = sv[vi]; minIdx = vi; }
-          if (sv[vi] > maxVal) { maxVal = sv[vi]; maxIdx = vi; }
+          if (showDataMin && sv[vi] < minVal) { minVal = sv[vi]; minIdx = vi; }
+          if (showDataMax && sv[vi] > maxVal) { maxVal = sv[vi]; maxIdx = vi; }
         }
-        if (minIdx >= 0) {
+        if (showDataMin && minIdx >= 0) {
           var minAng = (minIdx / sv.length) * 360;
           var minAngRad = minAng * Math.PI / 180;
           var minP = polar(valToR(minVal), minAngRad);
@@ -789,7 +796,7 @@ window.HAL.cards['polar'] = {
           svgEl.appendChild(dotM);
           polygonElements.push(dotM);
         }
-        if (maxIdx >= 0) {
+        if (showDataMax && maxIdx >= 0) {
           var maxAng = (maxIdx / sv.length) * 360;
           var maxAngRad = maxAng * Math.PI / 180;
           var maxP = polar(valToR(maxVal), maxAngRad);
@@ -906,7 +913,7 @@ window.HAL.cards['polar'] = {
         }
 
         // ── Connector lines: from each year's data point at stat angle to arc ──
-        if (ac.connectors !== false && ac.lineColor) {
+        if (showConnectors && ac.connectors !== false && ac.lineColor) {
           var lineA = ac.lineAlpha != null ? ac.lineAlpha : 0.15;
           var yearAngles = [];
           if (statKey === 'min') yearAngles = minAngles;
