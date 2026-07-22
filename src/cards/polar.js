@@ -804,6 +804,47 @@ window.HAL.cards['polar'] = {
 
       }
 
+      // ── Min/Max markers on year traces ──
+      for (var mi = 0; mi < Math.min(minAngles.length, series.length); mi++) {
+        if (series[mi]._partial) continue;
+        var sv = series[mi].values || [];
+        if (sv.length < 2) continue;
+        var minPos = (minAngles[mi] / 360) * sv.length;
+        var minIdx = Math.floor(minPos);
+        var minFrac = minPos - minIdx;
+        var minNext = (minIdx + 1) % sv.length;
+        if (sv[minIdx] != null && sv[minNext] != null) {
+          var minVInterp = sv[minIdx] + (sv[minNext] - sv[minIdx]) * minFrac;
+          var minR2 = valToR(minVInterp);
+          var minAngRad = minAngles[mi] * Math.PI / 180;
+          var minP = polar(minR2, minAngRad);
+          var dotM = e('circle', {
+            cx: minP.x, cy: minP.y, r: 3,
+            fill: '#ffffff', stroke: 'none',
+          });
+          dotM.style.opacity = '0';
+          svgEl.appendChild(dotM);
+          polygonElements.push(dotM);
+        }
+        var maxPos = (maxAngles[mi] / 360) * sv.length;
+        var maxIdx = Math.floor(maxPos);
+        var maxFrac = maxPos - maxIdx;
+        var maxNext = (maxIdx + 1) % sv.length;
+        if (sv[maxIdx] != null && sv[maxNext] != null) {
+          var maxVInterp = sv[maxIdx] + (sv[maxNext] - sv[maxIdx]) * maxFrac;
+          var maxR2 = valToR(maxVInterp);
+          var maxAngRad = maxAngles[mi] * Math.PI / 180;
+          var maxP = polar(maxR2, maxAngRad);
+          var dotX = e('circle', {
+            cx: maxP.x, cy: maxP.y, r: 3,
+            fill: '#ffffff', stroke: 'none',
+          });
+          dotX.style.opacity = '0';
+          svgEl.appendChild(dotX);
+          polygonElements.push(dotX);
+        }
+      }
+
 
 
       var clusters = {};
