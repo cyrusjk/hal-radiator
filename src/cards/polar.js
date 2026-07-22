@@ -620,17 +620,31 @@ window.HAL.cards['polar'] = {
 
     // ── Stat helpers (hoisted — needed by markers and arcs) ─────────────
 
-    function findCrossings(values, target) {
-      var angles = [];
-      for (var i = 1; i < values.length; i++) {
-        var p0 = values[i-1], p1 = values[i];
-        if (p0 != null && p1 != null &&
-            ((p0 <= target && p1 >= target) || (p0 >= target && p1 <= target))) {
-          var t = (target - p0) / (p1 - p0);
-          angles.push((i - 1 + t) / values.length * 360);
+    function findSpringCrossing(values, target) {
+      // Find first rising crossing where temp stays above target
+      // for MIN_CROSS days (filters winter warm spells)
+      var MIN_CROSS = 14;
+      var i = 0;
+      while (i < values.length - 1) {
+        var p0 = values[i], p1 = values[i + 1];
+        if (p0 != null && p1 != null && p0 <= target && p1 >= target) {
+          // Rising edge candidate — check it sticks
+          var above = 0;
+          for (var j = i + 1; j < values.length && above < MIN_CROSS; j++) {
+            if (values[j] != null && values[j] >= target) above++;
+            else if (values[j] != null) break;  // dropped below — false start
+          }
+          if (above >= MIN_CROSS) {
+            var t = (target - p0) / (p1 - p0);
+            return (i + t) / values.length * 360;
+          }
+          // False start — skip ahead past this spike
+          i = j;
+          continue;
         }
+        i++;
       }
-      return angles;
+      return null;
     }
 
     function clusterAngles(angles) {
@@ -692,10 +706,9 @@ window.HAL.cards['polar'] = {
       var sum = 0;
       for (var i = 0; i < valid.length; i++) sum += valid[i].v;
       var avg = sum / valid.length;
-      var crosses = findCrossings(sv, avg);
-      if (crosses.length > 0) {
-        crosses.sort(function(a,b){return a-b;});
-        avgAngles.push(crosses[0]);
+      var avgCross = findSpringCrossing(sv, avg);
+      if (avgCross != null) {
+        avgAngles.push(avgCross);
         avgVals.push(avg);
       }
 
@@ -703,10 +716,9 @@ window.HAL.cards['polar'] = {
       var sorted = sv.filter(function(v){return v!=null;}).sort(function(a,b){return a-b;});
       var mid = Math.floor(sorted.length / 2);
       var median = sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
-      var mCrosses = findCrossings(sv, median);
-      if (mCrosses.length > 0) {
-        mCrosses.sort(function(a,b){return a-b;});
-        meanAnglesAll.push(mCrosses[0]);
+      var meanCross = findSpringCrossing(sv, median);
+      if (meanCross != null) {
+        meanAnglesAll.push(meanCross);
         meanVals.push(median);
       }
     }
