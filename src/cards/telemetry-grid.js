@@ -39,6 +39,7 @@ window.HAL.cards['telemetry-grid'] = {
     var header = e('text', {
       x: hPad, y: 45, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -48,6 +49,7 @@ window.HAL.cards['telemetry-grid'] = {
     var footer = e('text', {
       x: hPad, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -68,6 +70,7 @@ window.HAL.cards['telemetry-grid'] = {
       var ch = e('text', {
         x: cx, y: vPad - 8, fill: fg('frame', 1.25), 'font-size': fs(11),
         'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       ch.textContent = cols[ci].label;
       svgEl.appendChild(ch);
@@ -101,6 +104,7 @@ window.HAL.cards['telemetry-grid'] = {
       var rl = e('text', {
         x: hPad, y: rowY + 14, fill: fg('frame', 1.5), 'font-size': fs(14),
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       rl.textContent = rows[ri].label;
       rowG.appendChild(rl);
@@ -113,6 +117,7 @@ window.HAL.cards['telemetry-grid'] = {
         var cell = e('text', {
           x: cx, y: rowY + 14, fill: fg('frame', 1.9), 'font-size': fs(15),
           'font-family': dataFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
+          filter: 'url(#txtGlow)',
         });
         cell.textContent = val;
         rowG.appendChild(cell);

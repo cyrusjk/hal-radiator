@@ -42,6 +42,7 @@ window.HAL.cards['wireframe'] = {
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -51,6 +52,7 @@ window.HAL.cards['wireframe'] = {
     var footer = e('text', {
       x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -136,6 +138,7 @@ window.HAL.cards['wireframe'] = {
       var line = e('line', {
         x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
         stroke: fg('data', 0.38), 'stroke-width': 0.8,
+        filter: 'url(#gfxGlow)',
       });
       connG.appendChild(line);
       connElements.push(line);
@@ -157,12 +160,14 @@ window.HAL.cards['wireframe'] = {
       var size = 5;
       grp.appendChild(e('circle', {
         cx: p.x, cy: p.y, r: size, fill: fg('data', 0.88),
+        filter: 'url(#gfxGlow)',
       }));
 
       // Glow ring
       grp.appendChild(e('circle', {
         cx: p.x, cy: p.y, r: size + 3, fill: 'none',
         stroke: fg('data', 0.32), 'stroke-width': 1,
+        filter: 'url(#gfxGlow)',
       }));
 
       // Label
@@ -170,6 +175,7 @@ window.HAL.cards['wireframe'] = {
         x: p.x + 10, y: p.y + 3,
         fill: fg('frame', 1.5), 'font-size': fs(10),
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       lbl.textContent = obj.label || '';
       grp.appendChild(lbl);

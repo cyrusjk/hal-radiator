@@ -37,6 +37,7 @@ window.HAL.cards['sunburst'] = {
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -46,6 +47,7 @@ window.HAL.cards['sunburst'] = {
     var footer = e('text', {
       x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -127,7 +129,7 @@ window.HAL.cards['sunburst'] = {
       var innerR = 0;
       var outerR = ringH - ringPadding;
       l0.push({
-        el: e('path', { d: arcPath(innerR, outerR, a0, a1), fill: fg('frame', 0.8 - gi * 0.1), stroke: fg('frame', 0.05), 'stroke-width': 0.5 }),
+        el: e('path', { d: arcPath(innerR, outerR, a0, a1), fill: fg('frame', 0.8 - gi * 0.1), stroke: fg('frame', 0.05), 'stroke-width': 0.5, filter: 'url(#gfxGlow)' }),
         name: hierarchy[gi].name, value: hierarchy[gi]._value,
         startAngle: a0, endAngle: a1,
       });
@@ -165,7 +167,7 @@ window.HAL.cards['sunburst'] = {
           var frac2 = items[ii].value / itemTotal;
           var a2 = aPos + frac2 * aRange;
           cur.push({
-            el: e('path', { d: arcPath(innerR, outerR, aPos, a2), fill: fg('frame', 0.5 - level * 0.05), stroke: fg('frame', 0.05), 'stroke-width': 0.3 }),
+            el: e('path', { d: arcPath(innerR, outerR, aPos, a2), fill: fg('frame', 0.5 - level * 0.05), stroke: fg('frame', 0.05), 'stroke-width': 0.3, filter: 'url(#gfxGlow)' }),
             name: items[ii].name, value: items[ii].value,
             startAngle: aPos, endAngle: a2,
           });
@@ -184,7 +186,7 @@ window.HAL.cards['sunburst'] = {
         var seg = ringGroups[0][pi];
         var ir = ringH * 0.4;
         inner.push({
-          el: e('path', { d: arcPath(0, ir, seg.startAngle, seg.endAngle), fill: fg('frame', 0.9), stroke: 'none' }),
+          el: e('path', { d: arcPath(0, ir, seg.startAngle, seg.endAngle), fill: fg('frame', 0.9), stroke: 'none', filter: 'url(#gfxGlow)' }),
           name: '', value: 0,
           startAngle: seg.startAngle, endAngle: seg.endAngle,
         });
@@ -211,6 +213,7 @@ window.HAL.cards['sunburst'] = {
           var label = e('text', {
             x: lx, y: ly + 3, fill: fg('frame', 1.5), 'font-size': fs(9),
             'font-family': labelFont, 'text-anchor': 'middle', 'text-rendering': 'optimizeLegibility',
+            filter: 'url(#txtGlow)',
           });
           label.textContent = seg.name;
           ringG.appendChild(label);

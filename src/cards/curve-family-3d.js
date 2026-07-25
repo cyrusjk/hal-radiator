@@ -48,12 +48,12 @@ window.HAL.cards['curve-family-3d'] = {
     svgEl.appendChild(e('rect', { x: 0, y: 0, width: data.w || 1000, height: data.h || 750, fill: data.color }));
 
     // Header / footer
-    var header = e('text', { x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility' });
+    var header = e('text', { x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility', filter: 'url(#txtGlow)' });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
     svgEl.appendChild(header);
 
-    var footer = e('text', { x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility' });
+    var footer = e('text', { x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility', filter: 'url(#txtGlow)' });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
     svgEl.appendChild(footer);
@@ -171,6 +171,7 @@ window.HAL.cards['curve-family-3d'] = {
         'font-size': fs(7),
         'font-family': labelFont, 'text-anchor': 'middle',
         'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
         textContent: vi,
       });
       labelsG.appendChild(tsLabel);
@@ -185,6 +186,7 @@ window.HAL.cards['curve-family-3d'] = {
       'font-size': fs(8),
       'font-family': labelFont, 'text-anchor': 'middle',
       'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
       textContent: 'STEP',
     });
     labelsG.appendChild(xLabel);
@@ -198,6 +200,7 @@ window.HAL.cards['curve-family-3d'] = {
       'font-size': fs(8),
       'font-family': labelFont, 'text-anchor': 'end',
       'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
       textContent: 'LOAD',
     });
     labelsG.appendChild(yLabel);
@@ -223,6 +226,7 @@ window.HAL.cards['curve-family-3d'] = {
         'font-size': fs(8),
         'font-family': labelFont, 'text-anchor': 'end',
         'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
         textContent: lv.toFixed(1),
       });
       labelsG.appendChild(tickLabel);
@@ -263,6 +267,7 @@ window.HAL.cards['curve-family-3d'] = {
           cx: pts[pi].sx, cy: pts[pi].sy,
           r: isFront ? 3.5 : 2.0 - si * 0.3,
           fill: fg('data', 1.0 - si * 0.2),
+          filter: 'url(#gfxGlow)',
         }));
       }
 
@@ -276,6 +281,7 @@ window.HAL.cards['curve-family-3d'] = {
         fill: 'none',
         stroke: fg('data', 1.0 - si * 0.28),
         'stroke-width': 4.0 - si * 0.9,
+        filter: 'url(#gfxGlow)',
       }));
 
       // Endpoint + label
@@ -284,6 +290,7 @@ window.HAL.cards['curve-family-3d'] = {
         cx: last.sx, cy: last.sy,
         r: isFront ? 5 : 3 - si * 0.5,
         fill: fg('data', 1.0 - si * 0.15),
+        filter: 'url(#gfxGlow)',
       }));
       grp.appendChild(e('text', {
         x: last.sx + 8, y: last.sy + 4,
@@ -291,6 +298,7 @@ window.HAL.cards['curve-family-3d'] = {
         'font-size': fs(isFront ? 12 : 9 - si),
         'font-family': labelFont,
         'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
         textContent: last.val.toFixed(2),
       }));
 
@@ -312,6 +320,7 @@ window.HAL.cards['curve-family-3d'] = {
           fill: fg('data', 1.0 - si * 0.15),
           'font-size': fs(isFront ? 15 : 12),
           'font-family': labelFont,
+          filter: 'url(#txtGlow)',
         });
         ht.textContent = 'H ' + hp.val.toFixed(1);
         grp.appendChild(ht);
@@ -325,6 +334,7 @@ window.HAL.cards['curve-family-3d'] = {
           fill: fg('data', 1.0 - si * 0.15),
           'font-size': fs(isFront ? 15 : 12),
           'font-family': labelFont,
+          filter: 'url(#txtGlow)',
         });
         lt.textContent = 'L ' + lp.val.toFixed(1);
         grp.appendChild(lt);
@@ -347,6 +357,7 @@ window.HAL.cards['curve-family-3d'] = {
             ].join(' '),
             fill: fg('data', 0.06 + si * 0.03),
             stroke: fg('frame', 0.04), 'stroke-width': 0.3,
+            filter: 'url(#gfxGlow)',
           }));
           // Triangle B
           if (vi - 1 < nextSv.length && vi < nextSv.length) {
@@ -358,6 +369,7 @@ window.HAL.cards['curve-family-3d'] = {
               ].join(' '),
               fill: fg('data', 0.06 + si * 0.03),
               stroke: fg('frame', 0.04), 'stroke-width': 0.3,
+              filter: 'url(#gfxGlow)',
             }));
           }
         }
@@ -378,7 +390,9 @@ window.HAL.cards['curve-family-3d'] = {
         'font-size': '16',
         'font-family': 'monospace',
         'font-weight': 'bold',
+        filter: 'url(#txtGlow)',
         'text-rendering': 'optimizeLegibility',
+        textContent: 'S' + (si + 1) + ': ' + allSeries[si].label,
       });
       t.textContent = String(allSeries[si].label || '--');
       svgEl.appendChild(t);

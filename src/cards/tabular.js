@@ -40,6 +40,7 @@ window.HAL.cards.tabular = {
     var header = e('text', {
       x: hPad, y: 45, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -49,6 +50,7 @@ window.HAL.cards.tabular = {
     var footer = e('text', {
       x: hPad, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -80,6 +82,7 @@ window.HAL.cards.tabular = {
       var label = e('text', {
         x: labelX, y: rowY + 4, fill: fg('frame', 1.5), 'font-size': fs(18),
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       label.textContent = rows[i].label;
       rowG.appendChild(label);
@@ -89,6 +92,7 @@ window.HAL.cards.tabular = {
       var val = e('text', {
         x: valueX, y: rowY + 4, fill: fg('data', 1.1), 'font-size': fs(20),
         'font-family': dataFont, 'text-anchor': 'end', 'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       val.textContent = valStr;
       rowG.appendChild(val);

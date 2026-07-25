@@ -46,6 +46,7 @@ window.HAL.cards['curve-family-stacked'] = {
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -55,6 +56,7 @@ window.HAL.cards['curve-family-stacked'] = {
     var footer = e('text', {
       x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -98,6 +100,7 @@ window.HAL.cards['curve-family-stacked'] = {
           fill: fg('frame', 1.0), 'font-size': fs(10),
           'font-family': labelFont, 'text-anchor': 'end',
           'text-rendering': 'optimizeLegibility',
+          filter: 'url(#txtGlow)',
           textContent: series[si].label,
         }));
 
@@ -106,6 +109,7 @@ window.HAL.cards['curve-family-stacked'] = {
           x: x0 + cw + 10, y: top + 14,
           fill: fg('data', 0.7), 'font-size': fs(9),
           'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+          filter: 'url(#txtGlow)',
           textContent: maxVal.toFixed(1),
         }));
 
@@ -127,6 +131,7 @@ window.HAL.cards['curve-family-stacked'] = {
           fill: 'none',
           stroke: fg('data', 0.8),
           'stroke-width': 1.5,
+          filter: 'url(#gfxGlow)',
         }));
 
         paneGroups.push(paneG);

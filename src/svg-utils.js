@@ -82,7 +82,84 @@ window.HAL.svg = {
     if (data && data._container) return data._container;
     var id = fallback || 'card';
     var el = document.getElementById(id);
-    if (el) el.innerHTML = '';
+    if (el) {
+      el.innerHTML = '';
+      this.addGlowFilter(el);
+    }
     return el;
+  },
+
+  // ── Text glow filter ────────────────────────────────────────────────
+  // Adds a subtle HAL 9000-style glow to text: feGaussianBlur (1.5px)
+  // blended at ~60% opacity under the sharp original via feMerge.
+  // Idempotent — won't duplicate the filter if already present.
+  addGlowFilter: function(svgEl) {
+    if (svgEl.querySelector('#txtGlow')) return;
+    var defs = svgEl.querySelector('defs');
+    if (!defs) {
+      defs = document.createElementNS(this.ns, 'defs');
+      svgEl.insertBefore(defs, svgEl.firstChild);
+    }
+    var filter = document.createElementNS(this.ns, 'filter');
+    filter.id = 'txtGlow';
+    filter.setAttribute('x', '-20%');
+    filter.setAttribute('y', '-20%');
+    filter.setAttribute('width', '140%');
+    filter.setAttribute('height', '140%');
+
+    var blur = document.createElementNS(this.ns, 'feGaussianBlur');
+    blur.setAttribute('stdDeviation', '1.5');
+    blur.setAttribute('result', 'blur');
+    filter.appendChild(blur);
+
+    var cm = document.createElementNS(this.ns, 'feColorMatrix');
+    cm.setAttribute('type', 'matrix');
+    cm.setAttribute('values', '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0');
+    cm.setAttribute('result', 'glow');
+    filter.appendChild(cm);
+
+    var merge = document.createElementNS(this.ns, 'feMerge');
+    var mergeGlow = document.createElementNS(this.ns, 'feMergeNode');
+    mergeGlow.setAttribute('in', 'glow');
+    merge.appendChild(mergeGlow);
+    var mergeSrc = document.createElementNS(this.ns, 'feMergeNode');
+    mergeSrc.setAttribute('in', 'SourceGraphic');
+    merge.appendChild(mergeSrc);
+    filter.appendChild(merge);
+
+    defs.appendChild(filter);
+
+    // Graphic glow — subtler version for chart elements
+    var gfxFilter = document.createElementNS(this.ns, 'filter');
+    gfxFilter.id = 'gfxGlow';
+    gfxFilter.setAttribute('x', '-20%');
+    gfxFilter.setAttribute('y', '-20%');
+    gfxFilter.setAttribute('width', '140%');
+    gfxFilter.setAttribute('height', '140%');
+
+    var gfxBlur = document.createElementNS(this.ns, 'feGaussianBlur');
+    gfxBlur.setAttribute('stdDeviation', '0.8');
+    gfxBlur.setAttribute('result', 'blur');
+    gfxFilter.appendChild(gfxBlur);
+
+    var gfxCm = document.createElementNS(this.ns, 'feColorMatrix');
+    gfxCm.setAttribute('type', 'matrix');
+    gfxCm.setAttribute('values', '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.35 0');
+    gfxCm.setAttribute('result', 'glow');
+    gfxFilter.appendChild(gfxCm);
+
+    var gfxMerge = document.createElementNS(this.ns, 'feMerge');
+    var gfxMergeGlow = document.createElementNS(this.ns, 'feMergeNode');
+    gfxMergeGlow.setAttribute('in', 'glow');
+    gfxMerge.appendChild(gfxMergeGlow);
+    var gfxMergeSrc = document.createElementNS(this.ns, 'feMergeNode');
+    gfxMergeSrc.setAttribute('in', 'SourceGraphic');
+    gfxMerge.appendChild(gfxMergeSrc);
+    gfxFilter.appendChild(gfxMerge);
+
+    defs.appendChild(gfxFilter);
+
+    // No CSS rules — each card renderer adds explicit filter attributes
+    // to its text and data elements as needed.
   },
 };

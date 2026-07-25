@@ -39,6 +39,7 @@ window.HAL.cards['edge-bundling'] = {
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -48,6 +49,7 @@ window.HAL.cards['edge-bundling'] = {
     var footer = e('text', {
       x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -117,6 +119,7 @@ window.HAL.cards['edge-bundling'] = {
       nodeG.appendChild(e('circle', {
         cx: pos.x, cy: pos.y, r: dotR,
         fill: fg('frame', 1.0), stroke: fg('frame', 0.3), 'stroke-width': 1,
+        filter: 'url(#gfxGlow)',
       }));
       // Label
       var label = e('text', {
@@ -126,6 +129,7 @@ window.HAL.cards['edge-bundling'] = {
         'font-family': labelFont,
         'text-anchor': Math.cos(angle) > 0 ? 'start' : 'end',
         'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       label.textContent = leaves[li];
       nodeG.appendChild(label);
@@ -183,6 +187,7 @@ window.HAL.cards['edge-bundling'] = {
         fill: 'none',
         stroke: fg('data', op),
         'stroke-width': 1.0 + (1 - bundleFrac) * 0.5,
+        filter: 'url(#gfxGlow)',
       });
       connG.appendChild(line);
       connectionElements.push(line);

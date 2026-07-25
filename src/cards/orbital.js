@@ -130,6 +130,7 @@ window.HAL.cards['orbital'] = {
     var centerR = data.centerR || (series.length > 6 ? 10 : 14);
     var centerDot = e('circle', {
       cx: cx, cy: cy, r: centerR, fill: '#ffffff', stroke: 'none',
+      filter: 'url(#gfxGlow)',
     });
     centerDot.style.opacity = '0';
     gCenter.appendChild(centerDot);
@@ -140,6 +141,7 @@ window.HAL.cards['orbital'] = {
         'font-size': fs(8), 'font-family': labelFont,
         'text-anchor': 'middle', 'dominant-baseline': 'central',
         'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       cl.textContent = centerLabel;
       cl.style.opacity = '0';
@@ -213,6 +215,7 @@ window.HAL.cards['orbital'] = {
       var boldArc = e('path', {
         d: arcPath(rScaled, boldRng.s, boldRng.e, 20, ecc, omega),
         fill: 'none', stroke: fg('frame', 1.5), 'stroke-width': 2.2,
+        filter: 'url(#gfxGlow)',
       });
       boldArc.style.opacity = '0';
       // Append bold to the per-orbit line group so they appear together
@@ -225,6 +228,7 @@ window.HAL.cards['orbital'] = {
       var dot = e('circle', {
         cx: bp.x, cy: bp.y, r: bodyR,
         fill: '#ffffff', stroke: 'none',
+        filter: 'url(#gfxGlow)',
       });
       dot.style.opacity = '0';
       gMoon.appendChild(dot);
@@ -258,6 +262,7 @@ window.HAL.cards['orbital'] = {
           var md = e('circle', {
             cx: mp.x, cy: mp.y, r: 2.5,
             fill: fg('frame', 0.7), stroke: 'none',
+            filter: 'url(#gfxGlow)',
           });
           md.style.opacity = '0';
           gMarkers.appendChild(md);
@@ -270,6 +275,7 @@ window.HAL.cards['orbital'] = {
             cx: mp.x, cy: mp.y, r: glowCfg.r || 17,
             fill: 'url(#glowGrad)',
             stroke: 'none',
+            filter: 'url(#gfxGlow)',
           });
           gh.style.opacity = '0';
           gGlow.appendChild(gh);

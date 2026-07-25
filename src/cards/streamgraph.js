@@ -39,6 +39,7 @@ window.HAL.cards['streamgraph'] = {
     var header = e('text', {
       x: 20, y: 25, fill: fg('frame', 1.9), 'font-size': fs(14),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     header.textContent = (data.title || '') + '  ' + (data.label || '');
     header.style.opacity = '0';
@@ -48,6 +49,7 @@ window.HAL.cards['streamgraph'] = {
     var footer = e('text', {
       x: 15, y: 740, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+      filter: 'url(#txtGlow)',
     });
     footer.textContent = data.label || '';
     footer.style.opacity = '0';
@@ -141,6 +143,7 @@ window.HAL.cards['streamgraph'] = {
         fill: fg('data', opacity),
         stroke: fg('data', strokeOp),
         'stroke-width': 0.5,
+        filter: 'url(#gfxGlow)',
       }));
 
       // End label
@@ -148,6 +151,7 @@ window.HAL.cards['streamgraph'] = {
       var label = e('text', {
         x: lastPt.x + 8, y: lastPt.y + 3, fill: fg('data', 1.0),
         'font-size': fs(10), 'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
+        filter: 'url(#txtGlow)',
       });
       label.textContent = layer.label;
       ribbonG.appendChild(label);

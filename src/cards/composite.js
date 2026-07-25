@@ -148,6 +148,7 @@ window.HAL.cards['composite'] = {
           fill: fg('frame', 1.0),
           'font-size': fs(zone.fontSize || 14),
           'font-family': labelFont,
+          filter: 'url(#txtGlow)',
           'text-rendering': 'optimizeLegibility',
         });
         labelEl.textContent = zone.text || '';
@@ -282,6 +283,7 @@ function renderChip(container, zone) {
         'font-size': fs(lfont),
         'font-family': lface,
         'dominant-baseline': 'central',
+        filter: 'url(#txtGlow)',
       });
       if (ln.anchor) t.setAttribute('text-anchor', ln.anchor);
       t.textContent = ln.text !== undefined ? String(ln.text) : '';
@@ -298,6 +300,7 @@ function renderChip(container, zone) {
     fill: textColor,
     'font-size': fs(defaultFontSize),
     'font-family': fontFace,
+    filter: 'url(#txtGlow)',
     'dominant-baseline': 'central',
     'text-rendering': 'optimizeLegibility',
   });

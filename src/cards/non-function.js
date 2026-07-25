@@ -49,6 +49,7 @@ window.HAL.cards['non-function'] = {
       'font-family': titleFont, 'font-size': 80, 'font-weight': 'bold',
       'letter-spacing': 30,
       opacity: 1,
+      filter: 'url(#txtGlow)',
     });
     textEl.textContent = 'NON FUNCTION';
     textEl.classList.add('nf-anim');
@@ -62,6 +63,7 @@ window.HAL.cards['non-function'] = {
         x: 500, y: 480, 'text-anchor': 'middle', fill: 'rgb(255,100,100)',
         'font-family': labelFont, 'font-size': 22, 'letter-spacing': 2,
         opacity: 0.8,
+        filter: 'url(#txtGlow)',
       });
       errEl.textContent = err;
       svgEl.appendChild(errEl);

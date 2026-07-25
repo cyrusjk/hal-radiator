@@ -223,6 +223,7 @@ window.HAL.cards['polar'] = {
 
   render: function(data, onDone) {
     var svgEl = window.HAL.svg.getContainer(data);
+    window.HAL.svg.addGlowFilter(svgEl);
     var vis = window.HAL_CONFIG.visual || {};
     var vc = vis.chart || {};
     var labelFont = (vis.fonts || {}).label || 'monospace';
@@ -295,6 +296,7 @@ window.HAL.cards['polar'] = {
 
     // ── Header / Footer ────────────────────────────────────────────
     var header = e('text', {
+      filter: 'url(#txtGlow)',
       x: data.titleX || 15, y: data.titleY || 15,
       fill: fg('frame', 1.9), 'font-size': fs(data.titleSize || 14),
       'font-family': (vis.fonts || {}).title || labelFont,
@@ -307,7 +309,8 @@ window.HAL.cards['polar'] = {
     var subtitle = null;
     if (data.subtitle) {
       subtitle = e('text', {
-        x: data.titleX || 15, y: (data.titleY || 15) + 16,
+        filter: 'url(#txtGlow)',
+        x: (data.titleX || 20) + (data.titleSize || 14) * 5.5, y: data.titleY || 25,
         fill: fg('frame', 0.85), 'font-size': fs(data.subSize || 9),
         'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
       });
@@ -317,6 +320,7 @@ window.HAL.cards['polar'] = {
     }
 
     var footer = e('text', {
+      filter: 'url(#txtGlow)',
       x: 20, y: 735, fill: fg('frame', 0.85), 'font-size': fs(10),
       'font-family': labelFont, 'text-rendering': 'optimizeLegibility',
     });
@@ -344,6 +348,7 @@ window.HAL.cards['polar'] = {
         var ringVal = valMin + (ri / nRings) * valRange;
         var lblP = polarPt(cx, cy, ringR, 0);
         var sl = e('text', {
+          filter: 'url(#txtGlow)',
           x: lblP.x + 4, y: lblP.y + 3,
           fill: fg('frame', 0.7), 'font-size': fs(data.scaleFontSize || 8),
           'font-family': labelFont,
@@ -384,6 +389,7 @@ window.HAL.cards['polar'] = {
       if (lblText && labelIdx !== prevLabelIdx) {
         prevLabelIdx = labelIdx;
         var lbl = e('text', {
+          filter: 'url(#txtGlow)',
           x: lp.x, y: lp.y + 3,
           fill: data.labelColor || fg('frame', 0.7),
           'font-size': fs(data.labelFontSize || 9),
@@ -440,6 +446,7 @@ window.HAL.cards['polar'] = {
         d: pathD, fill: 'none', stroke: sColor,
         'stroke-width': lineW,
         'stroke-opacity': (lineA * sAlpha).toFixed(2),
+        filter: 'url(#gfxGlow)',
       });
       svgEl.appendChild(poly);
       polygonElements.push(poly);
@@ -461,14 +468,14 @@ window.HAL.cards['polar'] = {
       }
       if (showDataMin && minIdx >= 0) {
         var p = polarPt(cx, cy, valToR(minVal), (minIdx / sv.length) * 2 * Math.PI);
-        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none' });
+        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none', filter: 'url(#gfxGlow)' });
         dot.style.opacity = '0';
         svgEl.appendChild(dot);
         polygonElements.push(dot);
       }
       if (showDataMax && maxIdx >= 0) {
         var p = polarPt(cx, cy, valToR(maxVal), (maxIdx / sv.length) * 2 * Math.PI);
-        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none' });
+        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none', filter: 'url(#gfxGlow)' });
         dot.style.opacity = '0';
         svgEl.appendChild(dot);
         polygonElements.push(dot);
@@ -476,7 +483,7 @@ window.HAL.cards['polar'] = {
       if (showDataAvg && mi < yearStats.avgAngles.length) {
         var angRad = yearStats.avgAngles[mi] * Math.PI / 180;
         var p = polarPt(cx, cy, valToR(yearStats.avgVals[mi] || 0), angRad);
-        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none' });
+        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none', filter: 'url(#gfxGlow)' });
         dot.style.opacity = '0';
         svgEl.appendChild(dot);
         polygonElements.push(dot);
@@ -484,7 +491,7 @@ window.HAL.cards['polar'] = {
       if (showDataMean && mi < yearStats.meanAnglesAll.length) {
         var angRad = yearStats.meanAnglesAll[mi] * Math.PI / 180;
         var p = polarPt(cx, cy, valToR(yearStats.meanVals[mi] || 0), angRad);
-        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none' });
+        var dot = e('circle', { cx: p.x, cy: p.y, r: 3, fill: '#ffffff', stroke: 'none', filter: 'url(#gfxGlow)' });
         dot.style.opacity = '0';
         svgEl.appendChild(dot);
         polygonElements.push(dot);
@@ -609,6 +616,7 @@ window.HAL.cards['polar'] = {
         svgEl.appendChild(dot);
         legendElements.push(dot);
         var lt = e('text', {
+          filter: 'url(#txtGlow)',
           x: lx + 10, y: ly + 3,
           fill: fg('frame', 0.35 + si * 0.06), 'font-size': fs(legendFontSize),
           'font-family': labelFont,

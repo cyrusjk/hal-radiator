@@ -107,6 +107,7 @@
     function clearCard(color) {
       if (color) document.body.style.background = color;
       svgEl.innerHTML = '';
+      window.HAL.svg.addGlowFilter(svgEl);
       // Purge any leftover composite zone containers
       for (var ci = 0; ci < compositeContainers.length; ci++) {
         var cc = compositeContainers[ci];
