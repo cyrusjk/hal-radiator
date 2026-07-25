@@ -18,92 +18,69 @@ YAML_PATH = os.path.join(ROOT, 'radiator.yaml')
 CACHE = {}  # URL -> (timestamp, response_data)
 CACHE_TTL = 3600  # 1 hour
 
-# ── ERA5 data: fetched once at startup, cached forever ──
-ERA5_FALLBACK = {
-    2015: [14.3, 14.9, 16.2, 18.5, 20.1, 21.8, 22.0, 21.5, 19.8, 17.2, 15.8, 14.5],
-    2016: [14.5, 15.2, 16.5, 18.8, 20.3, 22.0, 22.3, 21.8, 20.0, 17.5, 16.0, 14.8],
-    2017: [14.4, 15.0, 16.3, 18.6, 20.2, 21.9, 22.1, 21.6, 19.9, 17.3, 15.9, 14.6],
-    2018: [14.6, 15.3, 16.6, 18.9, 20.4, 22.1, 22.4, 21.9, 20.1, 17.6, 16.1, 14.9],
-    2019: [14.7, 15.4, 16.7, 19.0, 20.5, 22.2, 22.5, 22.0, 20.2, 17.7, 16.2, 15.0],
-    2020: [14.8, 15.5, 16.8, 19.1, 20.6, 22.3, 22.6, 22.1, 20.3, 17.8, 16.3, 15.1],
-    2021: [14.6, 15.3, 16.6, 18.9, 20.4, 22.1, 22.4, 21.9, 20.1, 17.6, 16.1, 14.9],
-    2022: [14.9, 15.6, 16.9, 19.2, 20.7, 22.4, 22.7, 22.2, 20.4, 17.9, 16.4, 15.2],
-    2023: [15.1, 15.8, 17.1, 19.4, 20.9, 22.6, 22.9, 22.4, 20.6, 18.1, 16.6, 15.4],
-    2024: [15.3, 16.0, 17.3, 19.6, 21.1, 22.8, 23.1, 22.6, 20.8, 18.3, 16.8, 15.6],
-    2025: [14.8, 15.6, 16.8, 19.0, 20.5, 22.2, 22.4, 22.0, 20.2, 17.6, 16.0, 14.8],
-    2026: [15.2, 16.1, 17.5, 19.8, 21.5, 23.0, 23.6, None, None, None, None, None],
-}
+# ── ERA5 data: fetched once at startup into memory, cached forever ──
+# No throttling, no fallback file. If the API is down at start, the
+# endpoint returns an error until the server is restarted.
+ERA5_DATA = None  # populated once by _load_era5_at_startup()
 
-def _preload_era5():
-    '''Fetch real ERA5 data once at startup. Falls back to synthetic on failure.'''
+
+def _load_era5_at_startup():
+    """Fetch ERA5 data once at startup. Called once before listen."""
     from urllib.request import Request, urlopen
-    import json
-    now = __import__('datetime').datetime.utcnow()
-    now_str = f'{now.year}-{now.month:02d}-{now.day:02d}'
-    # Single northern-hemisphere city for clean seasonal signal (no hemisphere mixing)
+    import json, datetime as _dt, calendar
+
+    now = _dt.datetime.utcnow()
+    today_str = f'{now.year}-{now.month:02d}-{now.day:02d}'
+
     url = (
-        f'https://archive-api.open-meteo.com/v1/archive?latitude=48.8566&longitude=2.3522'
-        f'&start_date=2015-01-01&end_date={now_str}&daily=temperature_2m_mean'
-        f'&timezone=UTC&format=json'
+        f'https://archive-api.open-meteo.com/v1/archive'
+        f'?latitude=48.8566&longitude=2.3522'
+        f'&start_date=2015-01-01&end_date={today_str}'
+        f'&daily=temperature_2m_mean&timezone=UTC&format=json'
     )
-    results = []
+
     try:
-        with urlopen(Request(url), timeout=30) as r:
-            results.append(json.loads(r.read()))
-    except Exception:
-        results.append(None)
-    if any(r is None for r in results):
-        print('ERA5 preload: API failed, using synthetic fallback', file=sys.stderr)
+        with urlopen(Request(url), timeout=60) as r:
+            raw = json.loads(r.read())
+    except Exception as exc:
+        print(f'ERA5 startup fetch failed: {exc}', file=sys.stderr)
+        return  # ERA5_DATA stays None → endpoint returns error until restart
+
+    daily = raw.get('daily', {})
+    times = daily.get('time', [])
+    temps = daily.get('temperature_2m_mean', [])
+    if not times:
+        print('ERA5 startup: API returned no time series', file=sys.stderr)
         return
 
-    import datetime as _dt
+    years = {}
+    for i in range(len(times)):
+        dt = _dt.datetime.strptime(times[i], '%Y-%m-%d')
+        yr = dt.year
+        if yr not in years:
+            years[yr] = {'daily': [], 'monthly': {}}
+        v = temps[i] if i < len(temps) else None
+        years[yr]['daily'].append(v)
+        mk = f'{yr}-{dt.month:02d}'
+        years[yr]['monthly'].setdefault(mk, []).append(v)
 
-    def store_daily(daily):
-        """Store raw daily temps per year + compute monthly means."""
-        if not daily or not daily.get('time'): return
-        times = daily['time']
-        temps = daily.get('temperature_2m_mean', [])
-        years = {}
-        for i in range(len(times)):
-            dt = _dt.datetime.strptime(times[i], '%Y-%m-%d')
-            if dt.year not in years:
-                years[dt.year] = {'daily': [], 'monthly': {}}
-            v = temps[i]
-            # Store daily value (null days skipped)
-            if v is not None:
-                years[dt.year]['daily'].append(v)
-            else:
-                years[dt.year]['daily'].append(None)
-            # Also collect for monthly mean
-            mk = f'{dt.year}-{dt.month:02d}'
-            years[dt.year]['monthly'].setdefault(mk, []).append(v)
-        # Convert monthly buckets to means
-        import calendar
-        result = {}
-        for y, d in years.items():
-            # Pad daily array to full year length (365/366) with None for missing dates
-            year_len = 366 if calendar.isleap(y) else 365
-            daily_padded = list(d['daily'])
-            while len(daily_padded) < year_len:
-                daily_padded.append(None)
-            monthly_arr = [None] * 12
-            for mk, vals in d['monthly'].items():
-                m = int(mk.split('-')[1])
-                valid = [v for v in vals if v is not None]
-                monthly_arr[m-1] = sum(valid)/len(valid) if valid else None
-            result[y] = {
-                'daily': daily_padded,
-                'monthly': monthly_arr
-            }
-        return result
+    result = {}
+    for yr, d in sorted(years.items()):
+        year_len = 366 if calendar.isleap(yr) else 365
+        daily_padded = list(d['daily'])
+        while len(daily_padded) < year_len:
+            daily_padded.append(None)
+        monthly_arr = [None] * 12
+        for mk, vals in d['monthly'].items():
+            m = int(mk.split('-')[1]) - 1
+            valid = [v for v in vals if v is not None]
+            monthly_arr[m] = sum(valid)/len(valid) if valid else None
+        result[yr] = {'daily': daily_padded, 'monthly': monthly_arr}
 
-    years_data = store_daily(results[0].get('daily', {}))
-    ERA5_FALLBACK.clear()
-    for y in sorted(years_data):
-        ERA5_FALLBACK[y] = years_data[y]
-    print(f'ERA5 preload: {len(years_data)} years (daily resolution)', file=sys.stderr)
+    global ERA5_DATA
+    ERA5_DATA = result
+    print(f'ERA5 preloaded: {len(result)} years (daily resolution)', file=sys.stderr)
 
-_preload_era5()
 PROTOTYPES_PATH = os.path.join(ROOT, 'prototypes.yaml')
 
 DEFAULT_LOCATIONS = [
@@ -288,6 +265,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def _serve_era5(self, query_string):
         """Serve preloaded ERA5 data from in-memory cache (fetched at startup once)."""
+        global ERA5_DATA
+        if ERA5_DATA is None:
+            self._send_json({'error': 'ERA5 data not available at startup', 'groups': []})
+            return
         params = urllib.parse.parse_qs(query_string)
         start_year = int(params.get('startYear', [2015])[0])
         end_year = int(params.get('endYear', [2026])[0])
@@ -296,11 +277,11 @@ class Handler(BaseHTTPRequestHandler):
         if cached:
             self._send_json(cached[1])
             return
-        # Filter fallback to requested range
+        # Filter cached data to requested range
         filtered = {}
         for y in range(start_year, end_year + 1):
-            if y in ERA5_FALLBACK:
-                filtered[y] = ERA5_FALLBACK[y]
+            if y in ERA5_DATA:
+                filtered[y] = ERA5_DATA[y]
         result = {'yearlyTemps': filtered}
         CACHE[cache_key] = (time.time(), result)
         self._send_json(result)
@@ -394,6 +375,8 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(ROOT)
+    # Fetch ERA5 data once before accepting connections
+    _load_era5_at_startup()
     server = ThreadedHTTPServer(('127.0.0.1', PORT), Handler)
     print(f'Serving at http://localhost:{PORT}/')
     try:

@@ -13,6 +13,10 @@
 # groupGap: 167ms (reference: ~4 frames = 167ms between sequential elements)
 # throb: count=3 cycles (reference: 3 cycles), duration=330ms (reference: 333ms per cycle = 42ms snap + 250ms fade + 42ms blank)
 # Data screen holds reduced to 2000-5000ms (reference: data screens hold 8-15s total)
+# ── Variable definitions (YAML anchors, referenced via *alias) ─────
+vars:
+  vm: &vm_url "http://192.168.50.9:8428"
+
 colors:
   blue: rgb(51,82,164)
   cerulean: rgb(22,95,165)
@@ -67,7 +71,7 @@ groups:
       range: 3600
       step: 60
       type: victoria
-      url: http://192.168.50.9:8428
+      url: *vm_url
     label: CPU
     prototype: curve-family-lat
     title: AVG
@@ -82,7 +86,7 @@ groups:
       range: 3600
       step: 180
       type: victoria
-      url: http://192.168.50.9:8428
+      url: *vm_url
     label: ETH
     prototype: curve-family-default
     title: THR
@@ -99,7 +103,7 @@ groups:
       range: 3600
       step: 180
       type: victoria
-      url: http://192.168.50.9:8428
+      url: *vm_url
     label: LOAD AVG
     prototype: curve-family-default
     title: CPU
@@ -112,7 +116,7 @@ groups:
       range: 43200
       step: 180
       type: victoria
-      url: http://192.168.50.9:8428
+      url: *vm_url
     label: LOAD 1/5/15
     prototype: curve-family-stacked
     title: CPU
@@ -127,7 +131,7 @@ groups:
       range: 43200
       step: 720
       type: victoria
-      url: http://192.168.50.9:8428
+      url: *vm_url
     label: LOAD
     prototype: curve-family-3d
     title: 1 / 5 / 15
@@ -844,7 +848,7 @@ groups:
           range: 21600
           step: 180
           type: victoria
-          url: http://192.168.50.9:8428
+          url: *vm_url
         dataConfig:
           map:
             group: job

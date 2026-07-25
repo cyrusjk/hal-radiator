@@ -23,6 +23,9 @@
   });
 
   function boot(cfg) {
+    // Hide loading screen
+    var loadingEl = document.getElementById('loading');
+    if (loadingEl) { loadingEl.style.opacity = '0'; setTimeout(function() { loadingEl.style.display = 'none'; }, 1000); }
     if (!svgEl) { document.body.innerHTML += 'ERROR: no SVG element'; return; }
     if (!cfg || !cfg.cards || !cfg.cards.length) return;
     if (!window.HAL.cards || !window.HAL.cards.title) { document.body.innerHTML += 'ERROR: title renderer missing'; return; }
@@ -95,6 +98,7 @@
     var wrap = document.getElementById('wrap');
     var gen = 0;  // incremented on every showCard → invalidates stale callbacks
     var currentCardType = null;  // tracks last-shown card type for _cleanup
+    var compositeContainers = [];  // zone _container elements from composite cards
 
     function clearAuto() {
       if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
@@ -103,7 +107,18 @@
     function clearCard(color) {
       if (color) document.body.style.background = color;
       svgEl.innerHTML = '';
+      // Purge any leftover composite zone containers
+      for (var ci = 0; ci < compositeContainers.length; ci++) {
+        var cc = compositeContainers[ci];
+        if (cc.parentNode) cc.parentNode.removeChild(cc);
+      }
+      compositeContainers = [];
     }
+
+    // Register a composite zone container for cleanup on card switch
+    window.HAL._registerContainer = function(el) {
+      compositeContainers.push(el);
+    };
 
     // ── Guard: wraps a callback so it only fires if `myGen` still
     //     matches `gen`.  Prevents in-flight callbacks from a
@@ -185,39 +200,44 @@
     }
 
     // ── Auto-advance callback ────────────────────────────────────────
-    var MIN_DISPLAY_MS = 2000;  // minimum time a card must be visible
+    var MIN_DISPLAY_MS = 2000;  // minimum time a card must be visible (auto-advance only)
+    var manualNav = false;     // set true during keyboard navigation
 
     function cardDone() {
       if (locked) { showCard(idx, cardDone); return; }
 
-      // If a card's animation / data fetch completed in under MIN_DISPLAY_MS it
-      // had no meaningful content to show (e.g. a data source that was
-      // unreachable).  Hold for the remaining time so the user sees
-      // something instead of an instant flicker, then auto-advance.
-      var elapsed = Date.now() - window.__cardStart;
-      if (elapsed < MIN_DISPLAY_MS) {
-        var myGen = gen;
-        setTimeout(function() { if (myGen === gen) cardDone(); }, MIN_DISPLAY_MS - elapsed);
-        return;
+      // Only enforce minimum display time on auto-advance (not manual nav)
+      if (!manualNav) {
+        // If a card's animation / data fetch completed in under MIN_DISPLAY_MS it
+        // had no meaningful content to show (e.g. a data source that was
+        // unreachable).  Hold for the remaining time so the user sees
+        // something instead of an instant flicker, then auto-advance.
+        var elapsed = Date.now() - window.__cardStart;
+        if (elapsed < MIN_DISPLAY_MS) {
+          var myGen = gen;
+          setTimeout(function() { if (myGen === gen) cardDone(); }, MIN_DISPLAY_MS - elapsed);
+          return;
+        }
       }
 
+      manualNav = false;
       scheduleNext();
     }
 
     // ── Keyboard controls ────────────────────────────────────────────
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
-        e.preventDefault(); locked = false;
+        e.preventDefault(); locked = false; manualNav = true;
         window.__cardStart = Date.now();
         transitionTo((idx - 1 + cfg.cards.length) % cfg.cards.length);
       }
       else if (e.key === 'ArrowRight') {
-        e.preventDefault(); locked = false;
+        e.preventDefault(); locked = false; manualNav = true;
         window.__cardStart = Date.now();
         transitionTo((idx + 1) % cfg.cards.length);
       }
       else if (e.key === ' ') {
-        e.preventDefault(); locked = !locked;
+        e.preventDefault(); locked = !locked; manualNav = true;
         window.__cardStart = Date.now();
         locked ? showCard(idx, cardDone) : scheduleNext();
       }

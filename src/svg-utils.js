@@ -65,7 +65,8 @@ window.HAL.svg = {
   // Scale a base font size by visual.fontScale (default 1.0).
   // Call as fs(14) instead of hardcoding 'font-size': 14.
   fs: function(px) {
-    var scale = window.HAL.svg.vis().fontScale || 1.0;
+    var fsVal = window.HAL.svg.vis().fontScale;
+    var scale = fsVal != null ? fsVal : 1.0;
     return Math.round(px * scale);
   },
 

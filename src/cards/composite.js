@@ -82,6 +82,8 @@ window.HAL.cards['composite'] = {
       var zG = document.createElementNS(ns, 'g');
       zG.setAttribute('transform', 'translate(' + zx + ', ' + zy + ')');
       svgEl.appendChild(zG);
+      // Track for cleanup on card switch
+      if (window.HAL._registerContainer) window.HAL._registerContainer(zG);
 
       if (zone.type === 'header') {
         // ── Header zone: title + subheading text ──────────────────

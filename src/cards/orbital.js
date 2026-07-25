@@ -87,7 +87,7 @@ window.HAL.cards['orbital'] = {
     }
 
     function arcPath(r, a1, a2, steps, ecc, omega) {
-      steps = steps || 24;
+      steps = steps !== undefined ? steps : 24;
       if (a2 < a1) a2 += 360;
       var d = '';
       for (var i = 0; i <= steps; i++) {

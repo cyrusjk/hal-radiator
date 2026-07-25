@@ -86,6 +86,17 @@ window.HAL.data.sources = window.HAL.data.sources || {};
     hyperion: { a:1481010, e:0.123,   w:0.0, M0:0.0, n:16.92,  isKm:true },
     iapetus:  { a:3560820, e:0.0293,  w:0.0, M0:0.0, n:4.537,  isKm:true },
     phoebe:   { a:12947600,e:0.163,   w:0.0, M0:0.0, n:0.654,  isKm:true },
+
+    // Uranus
+    miranda:  { a:129390,  e:0.0013,  w:0.0, M0:0.0, n:254.69, isKm:true },
+    ariel:    { a:190900,  e:0.0012,  w:0.0, M0:0.0, n:142.84, isKm:true },
+    umbriel:  { a:266000,  e:0.0039,  w:0.0, M0:0.0, n:86.87,  isKm:true },
+    titania:  { a:435910,  e:0.0011,  w:0.0, M0:0.0, n:41.35,  isKm:true },
+    oberon:   { a:583520,  e:0.0014,  w:0.0, M0:0.0, n:26.74,  isKm:true },
+
+    // Neptune
+    triton:   { a:354759,  e:0.0000,  w:0.0, M0:0.0, n:61.26,  isKm:true },
+    nereid:   { a:5513800, e:0.7500,  w:0.0, M0:0.0, n:0.999,  isKm:true },
   };
 
   // ── Center lookup ──────────────────────────────────────────────────
@@ -96,6 +107,8 @@ window.HAL.data.sources = window.HAL.data.sources || {};
     earth:   'moons',
     jupiter: 'moons',
     saturn:  'moons',
+    uranus:  'moons',
+    neptune: 'moons',
     mars:    'moons',
   };
 
@@ -112,6 +125,9 @@ window.HAL.data.sources = window.HAL.data.sources || {};
     mimas: 'mimas', enceladus: 'enceladus', tethys: 'tethys', dione: 'dione',
     rhea: 'rhea', titan: 'titan', hyperion: 'hyperion', iapetus: 'iapetus',
     phoebe: 'phoebe',
+    miranda: 'miranda', ariel: 'ariel', umbriel: 'umbriel',
+    titania: 'titania', oberon: 'oberon',
+    triton: 'triton', nereid: 'nereid',
   };
 
   // ── Body label overrides ───────────────────────────────────────────
@@ -235,7 +251,9 @@ window.HAL.data.sources = window.HAL.data.sources || {};
         var body = dataSource.bodies[bi];
         var bodyName = (body.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         var elKey = ALIASES[bodyName];
-        if (!elKey) continue;
+        if (!elKey) {
+          return { error: 'Unknown body: "' + body.name + '" around ' + dataSource.center, groups: [] };
+        }
 
         var el = table[elKey];
         if (!el) {
@@ -243,7 +261,9 @@ window.HAL.data.sources = window.HAL.data.sources || {};
           var otherTable = tableType === 'planets' ? MOONS : PLANETS;
           el = otherTable[elKey];
         }
-        if (!el) continue;
+        if (!el) {
+          return { error: 'No ephemeris data for "' + body.name + '" around ' + dataSource.center, groups: [] };
+        }
 
         var pos = solveKepler(el, daysSinceJ2000);
 

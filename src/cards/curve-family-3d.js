@@ -83,13 +83,6 @@ window.HAL.cards['curve-family-3d'] = {
     var diagSp = isoStep * 0.5;
     var ySp = ((actualPts - 1) * isoStep) / globalMax;  // Y-axis same length as X-axis
 
-    function project(px, py, pz) {
-      return {
-        sx: ox + px * xSp - pz * zSp,
-        sy: oy - py * ySp + px * diagSp + pz * zDiagSp,
-      };
-    }
-
     var nCurves = allSeries.length;
 
     // Z has only (nCurves - 1) steps vs X's (actualPts - 1) steps.
@@ -99,7 +92,7 @@ window.HAL.cards['curve-family-3d'] = {
     var zSp = (totalX * 0.45) / zSteps;      // 45% of X span, spread across Z steps
     var zDiagSp = (totalX * 0.45 * 0.5) / zSteps;  // matching vertical component
 
-    // Chart bounds in projection space (before scale/translate) — computed AFTER nCurves
+    // Chart bounds in projection space (before scale/translate)
     var chartLeft  = - (nCurves - 1) * zSp;
     var chartRight = (actualPts - 1) * xSp;
     var chartTop   = - globalMax * ySp;
@@ -108,6 +101,13 @@ window.HAL.cards['curve-family-3d'] = {
     var chartCY = (chartTop + chartBottom) / 2;
     var ox = 500 - chartCX;
     var oy = 375 - chartCY;
+
+    function project(px, py, pz) {
+      return {
+        sx: ox + px * xSp - pz * zSp,
+        sy: oy - py * ySp + px * diagSp + pz * zDiagSp,
+      };
+    }
 
     // ── Scaled chart area (68% of original, centered) ─────────────────
     var chartArea = e('g');

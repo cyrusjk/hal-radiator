@@ -15,6 +15,22 @@ window.HAL.cards['non-function'] = {
     flickerRate: 100,     // ms per flicker cycle
   },
 
+  // ── Shared singleton style element ─────────────────────────────
+  _ensureStyle: function() {
+    if (document.getElementById('nf-shared-style')) return;
+    var style = document.createElement('style');
+    style.id = 'nf-shared-style';
+    style.textContent =
+      '@keyframes nf-flicker {\n' +
+      '  0%{opacity:1} 10%{opacity:0.2} 16%{opacity:1} 28%{opacity:0.3}\n' +
+      '  34%{opacity:1} 42%{opacity:0.1} 50%{opacity:1} 55%{opacity:0.4}\n' +
+      '  60%{opacity:1} 75%{opacity:0.2} 82%{opacity:1} 90%{opacity:0.5}\n' +
+      '  100%{opacity:1}\n' +
+      '}\n' +
+      '.nf-anim { animation: nf-flicker 100ms infinite; }';
+    document.head.appendChild(style);
+  },
+
   render: function(data, onDone) {
     var svgEl = window.HAL.svg.getContainer(data);
     var cfg = data.cfg || {};
@@ -35,6 +51,7 @@ window.HAL.cards['non-function'] = {
       opacity: 1,
     });
     textEl.textContent = 'NON FUNCTION';
+    textEl.classList.add('nf-anim');
     svgEl.appendChild(textEl);
 
     // Error message — smaller, below the main text
@@ -50,31 +67,10 @@ window.HAL.cards['non-function'] = {
       svgEl.appendChild(errEl);
     }
 
-    // Unique ID for this render (for keyframes + tooltip)
-    var uid = 'nf' + (window.__nfUidCounter = (window.__nfUidCounter || 0) + 1);
-
-    // Inject flicker keyframes
-    var rate = cfg.flickerRate || 100;
-    var styleId = 'nf-style-' + uid;
-    var styleEl = document.getElementById(styleId);
-    if (!styleEl) {
-      styleEl = document.createElementNS(null, 'style');
-      styleEl.id = styleId;
-      styleEl.textContent =
-        '@keyframes nf-flicker-' + uid + ' {' +
-          '0%{opacity:1} 10%{opacity:0.2} 16%{opacity:1} 28%{opacity:0.3} ' +
-          '34%{opacity:1} 42%{opacity:0.1} 50%{opacity:1} 55%{opacity:0.4} ' +
-          '60%{opacity:1} 75%{opacity:0.2} 82%{opacity:1} 90%{opacity:0.5} ' +
-          '100%{opacity:1}' +
-        '}' +
-        '.nf-anim-' + uid + ' { animation: nf-flicker-' + uid + ' ' +
-          (Math.max(rate, 50)) + 'ms infinite; }';
-      document.head.appendChild(styleEl);
-    }
-    textEl.classList.add('nf-anim-' + uid);
+    // Ensure the shared keyframe style exists
+    this._ensureStyle();
 
     // ── Tooltip (title attribute on the overlay) ───────────────
-    // Wrap the SVG in a tooltip-bearing group
     var tooltipText = 'Source: ' + (data.error ? data.error.source : 'unknown');
     if (err) tooltipText += ' — ' + err;
 
@@ -85,38 +81,21 @@ window.HAL.cards['non-function'] = {
     tipEl.setAttributeNS(null, 'title', tooltipText);
     svgEl.appendChild(tipEl);
 
-    // ── Cleanup ────────────────────────────────────────────────
+    // ── Timer ──────────────────────────────────────────────────
     var dur = cfg.duration || 5000;
     var timer = setTimeout(function() {
-      var s = document.getElementById(styleId);
-      if (s) s.remove();
       onDone();
     }, dur);
 
     // Store timer so _cleanup can cancel it
     this._nfTimer = timer;
-    this._nfStyleId = styleId;
-    this._nfUid = uid;
   },
 
-  // Cancel timer + remove injected style if card changes mid-fault
+  // Cancel timer; shared style stays (cleaned up only if never needed again)
   _cleanup: function() {
     if (this._nfTimer) {
       clearTimeout(this._nfTimer);
       this._nfTimer = null;
-    }
-    if (this._nfStyleId) {
-      var s = document.getElementById(this._nfStyleId);
-      if (s) s.remove();
-      this._nfStyleId = null;
-    }
-    // Remove lingering anim classes from any SVG children
-    if (this._nfUid) {
-      var els = document.querySelectorAll('.nf-anim-' + this._nfUid);
-      for (var i = 0; i < els.length; i++) {
-        els[i].classList.remove('nf-anim-' + this._nfUid);
-      }
-      this._nfUid = null;
     }
   },
 };

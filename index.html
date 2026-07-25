@@ -48,6 +48,16 @@
 </head>
 <body>
 <div id="boot-error" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a1a;color:#ff4444;font-family:monospace;font-size:18px;padding:40px;z-index:9999;white-space:pre-wrap;"></div>
+<div id="loading" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0a0e12;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;font-family:EurostileLocal,monospace;color:#fff;transition:opacity 1s ease;">
+  <div style="font-size:60px;letter-spacing:24px;margin-bottom:20px">HAL</div>
+  <div style="font-size:14px;letter-spacing:8px;opacity:0.6">INITIALIZING</div>
+  <div style="width:200px;height:1px;margin-top:30px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:loadPulse 2s ease-in-out infinite"></div>
+  <style>
+    @keyframes loadPulse {
+      0%{opacity:0.2} 50%{opacity:1} 100%{opacity:0.2}
+    }
+  </style>
+</div>
 <div id="wrap"><svg id="card" viewBox="-30 -30 1060 810" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>
 <!-- ── Application modules (loaded in dependency order) ─────────────── -->
 <script src="src/config.js"></script>

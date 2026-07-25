@@ -88,11 +88,12 @@ window.HAL.cards['edge-bundling'] = {
       return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
     }
 
-    // Find deepest common ancestor depth for two leaves
+    // Find deepest common ancestor depth for two leaves.
+    // Returns null if either node is unknown (caller should skip).
     function commonDepth(a, b) {
       var infoA = nodeById[a];
       var infoB = nodeById[b];
-      if (!infoA || !infoB) return 0;
+      if (!infoA || !infoB) return null;
       var pathA = infoA.path;
       var pathB = infoB.path;
       var depth = 0;
@@ -138,13 +139,14 @@ window.HAL.cards['edge-bundling'] = {
     for (var ci = 0; ci < connections.length; ci++) {
       var src = connections[ci].source;
       var tgt = connections[ci].target;
-      if (!leafAngles[src] && leafAngles[tgt] === undefined) continue;
+      if (leafAngles[src] === undefined || leafAngles[tgt] === undefined) continue;
 
       var a1 = leafAngles[src];
       var a2 = leafAngles[tgt];
 
       // Control point radius based on common ancestor depth
       var depth = commonDepth(src, tgt);
+      if (depth === null) continue;  // edge case: node not in tree
       var maxDepth = 3;
       var bundleFrac = Math.min(1, depth / maxDepth);
       var cpR = bundleR + (nodeRadius - bundleR) * (1 - bundleFrac);
