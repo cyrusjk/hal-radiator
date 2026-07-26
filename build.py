@@ -1,10 +1,10 @@
 # ═══════════════════════════════════════════════════════════════════════
 #  Build — read radiator.yaml, generate config.js, inline into dist/
-#  Run: python build.py
+#  Run: python build.py [optional-yaml-path]
 #  Output: dist/index.html (open in browser via HTTP server)
 # ═══════════════════════════════════════════════════════════════════════
 
-import json, shutil, yaml
+import sys, json, shutil, yaml
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -13,10 +13,9 @@ DIST = ROOT / "dist"
 
 # ── 1. Read YAML ──────────────────────────────────────────────────────
 
-yaml_path = ROOT / "radiator.yaml"
+yaml_path = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "radiator.yaml"
 if not yaml_path.exists():
-    print("[ERR] radiator.yaml not found")
-    exit(1)
+    yaml_path = ROOT / "radiator-demo.yaml"
 
 with open(yaml_path) as f:
     cfg = yaml.safe_load(f)
@@ -98,23 +97,21 @@ for group in groups:
                 card[k] = v
         cards.append(card)
 
-# ── 3. Generate src/config.js ─────────────────────────────────────────
+# ── 3. Generate dist/config.js (fallback for development mode) ─────────
 
-config_js_path = SRC / "config.js"
-with open(config_js_path, "w", encoding="utf-8") as f:
+config_path = DIST / "config.js"
+with open(config_path, "w", encoding="utf-8") as f:
     f.write("// ═══════════════════════════════════════════════════\n")
     f.write("//  Auto-generated from radiator.yaml\n")
     f.write("//  Do not edit directly — edit radiator.yaml and\n")
     f.write("//  run 'python build.py' to regenerate.\n")
     f.write("// ═══════════════════════════════════════════════════\n\n")
-
-    f.write("window.HAL_CONFIG = window.HAL_CONFIG || {\n")
-    f.write(f"  timing: {json.dumps(cfg.get('timing', {}), indent=2)},\n")
-    f.write(f"  visual: {json.dumps(cfg.get('visual', {}), indent=2)},\n")
-    f.write(f"  cards: {json.dumps(cards, indent=2)},\n")
-    f.write("};\n")
-
-print(f"[OK] Generated src/config.js ({config_js_path.stat().st_size} bytes, {len(cards)} cards)")
+    f.write("window.HAL_CONFIG = ")
+    json.dump({"timing": timing, "visual": cfg.get("visual", {}), "cards": cards,
+               "prototypes": prototypes, "groups": groups, "colors": colors},
+              f, indent=2)
+    f.write(";\n")
+print(f"[OK] Generated dist/config.js ({config_path.stat().st_size} bytes, {len(cards)} cards)")
 
 # ── 4. Build dist/index.html (inline all JS modules) ──────────────────
 
@@ -127,7 +124,7 @@ html = html_src.read_text(encoding="utf-8")
 
 # Core bootstrap files (fixed order — must be first)
 scripts = [
-    "src/config.js",
+    "dist/config.js",
     "src/svg-utils.js",
     "src/animation-engine.js",
     "src/data/fetcher.js",

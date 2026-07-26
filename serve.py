@@ -15,6 +15,8 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 PORT = 8009
 ROOT = os.path.dirname(os.path.abspath(__file__))
 YAML_PATH = os.path.join(ROOT, 'radiator.yaml')
+if not os.path.exists(YAML_PATH):
+    YAML_PATH = os.path.join(ROOT, 'radiator-demo.yaml')
 CACHE = {}  # URL -> (timestamp, response_data)
 CACHE_TTL = 3600  # 1 hour
 

@@ -13,6 +13,9 @@ assets/fonts/*.html
 Thumbs.db
 .DS_Store
 
+# Demo screenshot (allow this one)
+!docs/demo-preview.png
+
 # Unused Folio variants
 assets/fonts/Folio-Std-Light.ttf
 assets/fonts/Folio-Std-Extra-Bold.ttf
@@ -27,7 +30,29 @@ dist/assets/fonts/*.htm
 dist/assets/fonts/*.txt
 dist/assets/fonts/quick_tips.html
 
-# Scratch / test files
+# Dependencies
+node_modules/
+
+# Scratch / diagnostic scripts
 _check_*.py
-_check_cfg.py
+_find_*.py
+audit_glow.py
 era5_cache.json
+
+# Graph analysis output
+graphify-out/
+
+# Local config with VictoriaMetrics URLs (personal/network info)
+radiator.yaml
+
+# Generated card config (contains embedded VM URLs from radiator.yaml)
+dist/config.js
+
+# Pi agent memory (not part of the project)
+memory.py
+
+# IDE / editor settings
+.vscode/
+
+# Windows noise
+nul

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HAL Radiator — Architecture</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#c8c8d0;font-family:system-ui,-apple-system,sans-serif;display:flex;justify-content:center;padding:40px 20px}
+.wrap{max-width:1200px;width:100%}
+h1{font-size:20px;font-weight:600;color:#e0e0ea;margin-bottom:6px;letter-spacing:.3px}
+h1 small{font-weight:400;font-size:12px;color:#888;margin-left:10px}
+.sub{font-size:12px;color:#777;margin-bottom:30px}
+svg{width:100%;height:auto;display:block;border-radius:8px;background:#101018}
+.legend{display:flex;flex-wrap:wrap;gap:20px;margin-top:20px;font-size:11px;color:#999}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>HAL Radiator <small>hal-radiator</small></h1>
+<div class="sub">Build pipeline, runtime architecture &amp; data flow — one SVG card displayed at a time in a rotating carousel</div>
+
+<svg viewBox="0 0 1100 760" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">
+  <defs>
+    <filter id="g"><feGaussianBlur stdDeviation="1.5"/></filter>
+    <filter id="h"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#4488ff" flood-opacity=".25"/></filter>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10" fill="#556"/></marker>
+  </defs>
+
+  <!-- Grid -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a1a28" stroke-width=".5"/></pattern>
+  <rect width="1100" height="760" fill="url(#grid)"/>
+
+  <!-- ===== LAYER TITLES ===== -->
+  <text x="550" y="30" text-anchor="middle" fill="#666" font-size="9" letter-spacing="3" font-weight="600">BUILD TIME</text>
+  <line x1="40" y1="36" x2="1060" y2="36" stroke="#2a2a3a" stroke-width=".5"/>
+  <text x="550" y="105" text-anchor="middle" fill="#666" font-size="9" letter-spacing="3" font-weight="600">RUNTIME — HOST</text>
+  <line x1="40" y1="111" x2="1060" y2="111" stroke="#2a2a3a" stroke-width=".5"/>
+  <text x="550" y="220" text-anchor="middle" fill="#666" font-size="9" letter-spacing="3" font-weight="600">RUNTIME — BROWSER</text>
+  <line x1="40" y1="226" x2="1060" y2="226" stroke="#2a2a3a" stroke-width=".5"/>
+
+  <!-- ============ BUILD TIME ============ -->
+
+  <!-- radiator.yaml -->
+  <rect x="60" y="44" width="180" height="44" rx="6" fill="#1a2a3a" stroke="#3a6a8a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="150" y="63" text-anchor="middle" fill="#8ab8e0" font-size="11" font-weight="600">radiator.yaml</text>
+  <text x="150" y="79" text-anchor="middle" fill="#668" font-size="8">Card definitions, prototypes, data sources</text>
+
+  <!-- prototypes.yaml -->
+  <rect x="280" y="44" width="160" height="44" rx="6" fill="#1a2a3a" stroke="#3a6a8a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="360" y="63" text-anchor="middle" fill="#8ab8e0" font-size="11" font-weight="600">prototypes.yaml</text>
+  <text x="360" y="79" text-anchor="middle" fill="#668" font-size="8">Card type templates (inheritable)</text>
+
+  <!-- Arrow: prototypes → build.py -->
+  <line x1="440" y1="60" x2="490" y2="60" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+  <line x1="240" y1="60" x2="490" y2="60" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- build.py -->
+  <rect x="495" y="44" width="170" height="44" rx="6" fill="#2a1a3a" stroke="#7a4a9a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="580" y="63" text-anchor="middle" fill="#c08ae0" font-size="11" font-weight="600">build.py</text>
+  <text x="580" y="79" text-anchor="middle" fill="#668" font-size="8">YAML → merged card array</text>
+
+  <!-- Arrow: build.py → config.js -->
+  <line x1="665" y1="60" x2="720" y2="60" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- src/config.js -->
+  <rect x="725" y="44" width="200" height="44" rx="6" fill="#1a2a2a" stroke="#3a8a7a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="825" y="63" text-anchor="middle" fill="#80d0c0" font-size="11" font-weight="600">src/config.js</text>
+  <text x="825" y="79" text-anchor="middle" fill="#668" font-size="8">Auto-generated card configuration</text>
+
+  <!-- Arrow: config.js → dist/index.html -->
+  <line x1="825" y1="88" x2="825" y2="125" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- dist/index.html -->
+  <rect x="700" y="128" width="250" height="34" rx="6" fill="#2a2a2a" stroke="#6a6a7a" stroke-width="1" filter="url(#h)"/>
+  <text x="825" y="149" text-anchor="middle" fill="#c8c8d0" font-size="11" font-weight="600">dist/index.html</text>
+
+  <!-- ============ RUNTIME — HOST ============ -->
+
+  <!-- serve.py -->
+  <rect x="60" y="125" width="160" height="34" rx="6" fill="#2a1a2a" stroke="#7a4a7a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="140" y="147" text-anchor="middle" fill="#d080c0" font-size="11" font-weight="600">serve.py</text>
+
+  <!-- Arrow: serve → /api/config -->
+  <line x1="220" y1="138" x2="280" y2="138" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- /api/config -->
+  <rect x="285" y="125" width="170" height="34" rx="6" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="370" y="147" text-anchor="middle" fill="#70c0a0" font-size="10" font-weight="600">/api/config (JSON)</text>
+
+  <!-- static files -->
+  <rect x="285" y="168" width="170" height="34" rx="6" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="370" y="190" text-anchor="middle" fill="#70c0a0" font-size="10" font-weight="600">Static files (JS / fonts)</text>
+
+  <!-- era5 cache -->
+  <rect x="580" y="125" width="200" height="34" rx="6" fill="#2a1a1a" stroke="#8a4a4a" stroke-width="1" filter="url(#h)"/>
+  <text x="680" y="147" text-anchor="middle" fill="#d07070" font-size="10" font-weight="600">ERA5 data cache (in-memory)</text>
+  <line x1="455" y1="138" x2="575" y2="138" stroke="#556" stroke-width="1" marker-end="url(#arw)" stroke-dasharray="4,3"/>
+
+  <!-- ============ RUNTIME — BROWSER ============ -->
+
+  <!-- fetch /api/config -->
+  <rect x="60" y="240" width="180" height="36" rx="6" fill="#1a2a3a" stroke="#3a6a8a" stroke-width="1" filter="url(#h)"/>
+  <text x="150" y="262" text-anchor="middle" fill="#8ab8e0" font-size="10" font-weight="600">fetch(/api/config)</text>
+  <line x1="240" y1="258" x2="300" y2="258" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- app.js boot -->
+  <rect x="305" y="240" width="170" height="36" rx="6" fill="#1a3a2a" stroke="#4a9a6a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="390" y="262" text-anchor="middle" fill="#70d090" font-size="10" font-weight="600">app.js — boot()</text>
+
+  <!-- showCard -->
+  <rect x="305" y="290" width="170" height="34" rx="6" fill="#1a3a2a" stroke="#4a9a6a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="390" y="312" text-anchor="middle" fill="#70d090" font-size="10" font-weight="600">showCard() → transitionTo()</text>
+  <line x1="390" y1="276" x2="390" y2="288" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- fetcher.js -->
+  <rect x="60" y="290" width="180" height="34" rx="6" fill="#2a2a1a" stroke="#8a8a3a" stroke-width="1" filter="url(#h)"/>
+  <text x="150" y="312" text-anchor="middle" fill="#d0d070" font-size="10" font-weight="600">fetcher.js — fetchCardData()</text>
+  <line x1="240" y1="307" x2="300" y2="307" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- Data sources -->
+  <rect x="60" y="340" width="160" height="28" rx="4" fill="#1a1a2a" stroke="#5a5a7a" stroke-width=".8"/>
+  <text x="140" y="358" text-anchor="middle" fill="#90a0c0" font-size="9">inline / orbital / victoria / era5</text>
+
+  <!-- Card renderers box -->
+  <rect x="520" y="290" width="480" height="170" rx="8" fill="#0d0d18" stroke="#3a3a5a" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="760" y="308" text-anchor="middle" fill="#666" font-size="8" letter-spacing="2">CARD RENDERERS  —  one rendered at a time, cycled via auto-timer</text>
+
+  <!-- Each card as a box -->
+  <g filter="url(#h)">
+    <rect x="540" y="318" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="590" y="336" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">title.js</text>
+
+    <rect x="650" y="318" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="700" y="336" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">orbital.js</text>
+
+    <rect x="760" y="318" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="810" y="336" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">trajectory.js</text>
+
+    <rect x="870" y="318" width="110" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="925" y="336" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">curve-family.js</text>
+
+    <rect x="540" y="354" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="590" y="372" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">sunburst.js</text>
+
+    <rect x="650" y="354" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="700" y="372" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">streamgraph.js</text>
+
+    <rect x="760" y="354" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="810" y="372" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">edge-bundling.js</text>
+
+    <rect x="870" y="354" width="110" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="925" y="372" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">tabular.js</text>
+
+    <rect x="540" y="390" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="590" y="408" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">polar.js</text>
+
+    <rect x="650" y="390" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="700" y="408" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">wireframe.js</text>
+
+    <rect x="760" y="390" width="100" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="810" y="408" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">dock-stack.js</text>
+
+    <rect x="870" y="390" width="110" height="28" rx="4" fill="#1a2a2a" stroke="#4a7a6a" stroke-width="1"/>
+    <text x="925" y="408" text-anchor="middle" fill="#70c0a0" font-size="9" font-weight="600">telemetry-grid.js</text>
+  </g>
+
+  <!-- line: fetcher → card renderer -->
+  <line x1="520" y1="307" x2="520" y2="375" stroke="#556" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- animation-engine.js -->
+  <rect x="305" y="340" width="170" height="36" rx="6" fill="#1a1a3a" stroke="#5a5a9a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="390" y="356" text-anchor="middle" fill="#9090e0" font-size="10" font-weight="600">animation-engine.js</text>
+  <text x="390" y="370" text-anchor="middle" fill="#668" font-size="8">flickerIn / draw / wait / done</text>
+
+  <!-- line: boot → engine -->
+  <line x1="475" y1="258" x2="475" y2="358" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+  <line x1="390" y1="324" x2="390" y2="338" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- svg-utils.js -->
+  <rect x="305" y="390" width="170" height="34" rx="6" fill="#1a1a3a" stroke="#5a5a9a" stroke-width="1" filter="url(#h)"/>
+  <text x="390" y="409" text-anchor="middle" fill="#9090e0" font-size="10" font-weight="600">svg-utils.js</text>
+  <text x="390" y="422" text-anchor="middle" fill="#668" font-size="8">el(), fg(), fs(), polar(), svg.getContainer()</text>
+  <line x1="390" y1="376" x2="390" y2="388" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+  <line x1="475" y1="376" x2="520" y2="376" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- Card render → SVG card div -->
+  <line x1="760" y1="460" x2="760" y2="510" stroke="#556" stroke-width="1" marker-end="url(#arw)"/>
+
+  <!-- DOM Card display -->
+  <rect x="640" y="515" width="240" height="36" rx="6" fill="#2a1a2a" stroke="#8a5a7a" stroke-width="1.2" filter="url(#h)"/>
+  <text x="760" y="534" text-anchor="middle" fill="#d090c0" font-size="11" font-weight="600">&lt;div id="card"&gt; SVG &lt;/div&gt;</text>
+  <text x="760" y="547" text-anchor="middle" fill="#668" font-size="8">Rendered SVG inside card container</text>
+
+  <!-- auto-timer loop -->
+  <path d="M 540 534 Q 520 534 520 480 Q 520 420 480 420 Q 300 420 300 320 Q 300 307 305 307" fill="none" stroke="#5a5a3a" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arw)"/>
+  <text x="400" y="538" fill="#5a5a3a" font-size="8">auto-timer (config.timing.initialPause)</text>
+
+  <!-- ===== KEY BOX ===== -->
+  <rect x="60" y="460" width="210" height="80" rx="6" fill="#0d0d18" stroke="#3a3a5a" stroke-width="1"/>
+  <text x="165" y="478" text-anchor="middle" fill="#888" font-size="9" font-weight="600">DATA FLOW</text>
+  <line x1="75" y1="490" x2="90" y2="490" stroke="#556" stroke-width="1" marker-end="url(#arw)"/><text x="95" y="493" fill="#777" font-size="9">File dependency</text>
+  <line x1="75" y1="506" x2="90" y2="506" stroke="#556" stroke-width="1" stroke-dasharray="4,3"/><text x="95" y="509" fill="#777" font-size="9">HTTP / async call</text>
+  <line x1="75" y1="522" x2="90" y2="522" stroke="#5a5a3a" stroke-width="1" stroke-dasharray="5,3"/><text x="95" y="525" fill="#777" font-size="9">Auto-timer loop</text>
+</svg>
+
+<div class="legend">
+  <span><i style="background:#3a6a8a"></i> Config layer</span>
+  <span><i style="background:#7a4a9a"></i> Build scripts</span>
+  <span><i style="background:#3a8a7a"></i> Generated files</span>
+  <span><i style="background:#4a7a6a"></i> Data sources</span>
+  <span><i style="background:#5a5a9a"></i> Utilities / engine</span>
+  <span><i style="background:#4a9a6a"></i> App orchestrator</span>
+  <span><i style="background:#8a5a7a"></i> DOM output</span>
+</div>
+<p style="margin-top:30px;font-size:10px;color:#555;border-top:1px solid #1a1a2a;padding-top:16px">
+<strong>How it works:</strong> YAML cards defined in <code>radiator.yaml</code> are compiled by <code>build.py</code> into <code>src/config.js</code>. The dev server (<code>serve.py</code>) serves <code>/api/config</code> as JSON + static JS files. The browser boots via <code>app.js</code>: fetches config, then calls <code>showCard()</code> which invokes the appropriate card renderer (e.g. <code>trajectory.js</code>). The renderer uses <code>svg-utils.js</code> and the <code>animation-engine.js</code> to build and animate the SVG into <code>#card</code>. An auto-timer cycles cards after a configurable pause.
+</p>
+</div>
+</body>
+</html>

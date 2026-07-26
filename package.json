@@ -1,5 +1,5 @@
 {
-  "name": "hal-title-card-generator",
+  "name": "hal-radiator",
   "type": "module",
   "private": true,
   "scripts": {
