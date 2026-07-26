@@ -67,10 +67,10 @@ window.HAL.data.sources = window.HAL.data.sources || {};
     deimos:  { a:23464, e:0.0002, w:0.0, M0:0.0, n:285.2,  isKm:true },
 
     // Jupiter
-    io:       { a:421800,  e:0.0041,  w:0.0, M0:0.0, n:203.49, isKm:true },
-    europa:   { a:671100,  e:0.0094,  w:0.0, M0:0.0, n:101.37, isKm:true },
-    ganymede: { a:1070400, e:0.0013,  w:0.0, M0:0.0, n:50.32,  isKm:true },
-    callisto: { a:1882700, e:0.0074,  w:0.0, M0:0.0, n:21.57,  isKm:true },
+    io:       { a:421800,  e:0.0041,  w:43,   M0:0.0, n:203.49, isKm:true },
+    europa:   { a:671100,  e:0.0094,  w:108,  M0:0.0, n:101.37, isKm:true },
+    ganymede: { a:1070400, e:0.0013,  w:194,  M0:0.0, n:50.32,  isKm:true },
+    callisto: { a:1882700, e:0.0074,  w:302,  M0:0.0, n:21.57,  isKm:true },
     amalthea: { a:181400,  e:0.0032,  w:0.0, M0:0.0, n:722.5,  isKm:true },
     himalia:  { a:11460000,e:0.162,   w:0.0, M0:0.0, n:0.568,  isKm:true },
     elara:    { a:11740000,e:0.217,   w:0.0, M0:0.0, n:0.546,  isKm:true },
