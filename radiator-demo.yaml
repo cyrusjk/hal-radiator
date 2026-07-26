@@ -1798,40 +1798,50 @@ groups:
       - name: io
         boldArc: 70
         markers:
-        - angle: 0
-          label: PERIGEE
+        - angle: 45
+          label: IO
           style: solid
           glow: true
-        - angle: 180
-          label: APOGEE
+        - angle: 120
+          label: VEC°
           style: dashed
+        - angle: 300
+          style: solid
       - name: europa
         boldArc: 60
         markers:
-        - angle: 0
-          label: PERIGEE
+        - angle: 130
+          label: EUR
           style: solid
-        - angle: 180
-          label: APOGEE
+        - angle: 50
+          label: COMP.DIST
           style: dashed
+        - angle: 220
+          label: POS.1
+          style: solid
       - name: ganymede
         boldArc: 50
         markers:
-        - angle: 0
-          label: PERIGEE
+        - angle: 220
+          label: GNY
           style: solid
-        - angle: 180
-          label: APOGEE
+        - angle: 300
+          label: ORB.RAD
           style: dashed
+        - angle: 140
+          label: 1,070,522
+          style: solid
       - name: callisto
         boldArc: 40
         markers:
-        - angle: 0
-          label: PERIGEE
+        - angle: 310
+          label: CALLISTO
           style: solid
-        - angle: 180
-          label: APOGEE
+        - angle: 50
+          label: PARAM
           style: dashed
+        - angle: 200
+          style: solid
       type: orbital
     label: ORBIT MAP
     prototype: orbital-default
