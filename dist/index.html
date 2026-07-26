@@ -47,16 +47,9 @@
 </style>
 </head>
 <body>
-<div id="boot-error" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a1a;color:#ff4444;font-family:monospace;font-size:18px;padding:40px;z-index:9999;white-space:pre-wrap;"></div>
 <div id="loading" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0a0e12;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;font-family:EurostileLocal,monospace;color:#fff;transition:opacity 1s ease;">
-  <div style="font-size:60px;letter-spacing:24px;margin-bottom:20px">HAL</div>
-  <div style="font-size:14px;letter-spacing:8px;opacity:0.6">INITIALIZING</div>
-  <div style="width:200px;height:1px;margin-top:30px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:loadPulse 2s ease-in-out infinite"></div>
-  <style>
-    @keyframes loadPulse {
-      0%{opacity:0.2} 50%{opacity:1} 100%{opacity:0.2}
-    }
-  </style>
+  <svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="8 4"><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="2s" repeatCount="indefinite"/></circle></svg>
+  <div style="margin-top:12px;font-size:14px;letter-spacing:3px;opacity:0.7;">INITIALIZING</div>
 </div>
 <div id="wrap"><svg id="card" viewBox="-30 -30 1060 810" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg></div>
 <!-- ── Application modules (loaded in dependency order) ─────────────── -->
@@ -5064,41 +5057,8 @@ window.HAL_CONFIG = {
         ]
       },
       "dataSource": {
-        "type": "inline",
-        "series": [
-          {
-            "label": "GLOBAL TEMPERATURE",
-            "values": [
-              10.2,
-              14.3,
-              18.3,
-              24.3,
-              24.2,
-              24.1,
-              19.7,
-              15.8,
-              9.4,
-              4.5,
-              6.5,
-              5.7
-            ]
-          }
-        ],
-        "angles": [
-          0,
-          30,
-          60,
-          90,
-          120,
-          150,
-          180,
-          210,
-          240,
-          270,
-          300,
-          330
-        ],
-        "unit": "\u00b0C"
+        "type": "csv",
+        "url": "data/polar-temperature.csv"
       },
       "labels": [
         "JAN",
@@ -9130,41 +9090,8 @@ window.HAL_CONFIG = {
         {
           "color": "navy",
           "dataSource": {
-            "type": "inline",
-            "series": [
-              {
-                "label": "GLOBAL TEMPERATURE",
-                "values": [
-                  10.2,
-                  14.3,
-                  18.3,
-                  24.3,
-                  24.2,
-                  24.1,
-                  19.7,
-                  15.8,
-                  9.4,
-                  4.5,
-                  6.5,
-                  5.7
-                ]
-              }
-            ],
-            "angles": [
-              0,
-              30,
-              60,
-              90,
-              120,
-              150,
-              180,
-              210,
-              240,
-              270,
-              300,
-              330
-            ],
-            "unit": "\u00b0C"
+            "type": "csv",
+            "url": "data/polar-temperature.csv"
           },
           "labels": [
             "JAN",
@@ -14311,6 +14238,103 @@ window.HAL.anim = window.HAL.anim || {};
   }
 
 })();
+</script>
+<script>// ═══════════════════════════════════════════════════════════════════════
+//  CSV Data Source Plugin
+//  — Loads polar chart data from a static CSV file at runtime
+//  — Expects columns: angles, values, label (in any order)
+//  — Comment lines (#) and blank lines are ignored
+//  — A row with only a 'unit' key sets the unit for the series
+// ═══════════════════════════════════════════════════════════════════════
+//
+//  CSV format:
+//    angles,values,label
+//    0,10.2,JAN
+//    30,14.3,FEB
+//    ...
+//    unit,°C
+//
+//  Returns: { series: [{ label, values }], angles, unit }
+
+window.HAL = window.HAL || {};
+window.HAL.data = window.HAL.data || {};
+window.HAL.data.sources = window.HAL.data.sources || {};
+
+window.HAL.data.sources.csv = {
+  name: 'csv',
+
+  fetch: function(dataSource) {
+    var url = dataSource.url || 'data/polar-temperature.csv';
+    var label = dataSource.label || 'value';
+
+    return fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('CSV fetch failed: ' + r.status);
+      return r.text();
+    }).then(function(text) {
+      var lines = text.split('\n');
+      var headers = [];
+      var angles = [];
+      var values = [];
+      var unit = '';
+      var seriesLabel = label;
+      var headerRow = true;
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        // Skip blank lines and comments
+        if (!line || line.charAt(0) === '#') continue;
+
+        var parts = line.split(',');
+        for (var j = 0; j < parts.length; j++) {
+          parts[j] = parts[j].trim();
+        }
+
+        if (headerRow) {
+          headers = parts;
+          headerRow = false;
+          continue;
+        }
+
+        // Build a map of column name -> value for this row
+        var row = {};
+        for (var j = 0; j < headers.length && j < parts.length; j++) {
+          row[headers[j]] = parts[j];
+        }
+
+        // Special row: unit only
+        if (row.angles === 'unit' || row.angles === undefined) {
+          if (row.values || row.label) {
+            unit = row.values || row.label || '';
+          }
+          continue;
+        }
+
+        var angle = parseFloat(row.angles);
+        var value = parseFloat(row.values);
+        if (isNaN(angle)) continue;
+        if (isNaN(value)) continue;
+
+        angles.push(angle);
+        values.push(value);
+
+        // Use the first row's label if none was configured
+        if (row.label && seriesLabel === label) {
+          seriesLabel = row.label;
+        }
+      }
+
+      var result = {
+        series: [{
+          label: seriesLabel,
+          values: values,
+        }],
+        angles: angles,
+      };
+      if (unit) result.unit = unit;
+      return result;
+    });
+  },
+};
 </script>
 <script>// ═══════════════════════════════════════════════════════════════════════
 //  ERA5 Data Source Plugin
