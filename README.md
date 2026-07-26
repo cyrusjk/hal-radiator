@@ -178,6 +178,6 @@ See [DATA_CONTRACT.md](DATA_CONTRACT.md) for the expected data shape per card ty
 
 ## License
 
-[Non-Commercial License](LICENSE) — You may copy, modify, distribute, and use this project for any non-commercial purpose. Commercial use requires permission. No attribution required.
+[Non-Commercial License](LICENSE.md) — You may copy, modify, distribute, and use this project for any non-commercial purpose. Commercial use requires permission. No attribution required.
 
 Font files in `assets/fonts/` are licensed separately under their own terms.
