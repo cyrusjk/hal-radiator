@@ -12,6 +12,8 @@ Feel free to fork, copy, steal, whatever you like, but you cannot use it for pro
 
 ![Demo](docs/demo-preview.png)   **[Live Demo](https://cyrusjk.github.io/hal-radiator/)**
 
+This is very much in an _EXPERIMENTAL/ALPHA_ phase, as in there are inconsistencies, test cards, things that are out of alignment, etc. Feel free to come up with improvments, but this is very much a side project for me at this time, and I have not bean able to give it full attention.
+
 ## Credits and Gratitudes
 
 Models and color palette sourced from the [HAL Project Gallery ](https://ko-fi.com/joecreative/gallery) and [YouTube](https://www.youtube.com/channel/UC19EGSO3O3DC7KHYgGo5zxg) by JoeCreative. Much of the work done here used that project as source material and I have put only a fraction of the amount of work into this project than they have put into theirs. Visual design, animation timing, and typography derived from the HAL 9000 display panel as depicted in [*2001: A Space Odyssey*](https://en.wikipedia.org/wiki/2001:_A_Space_Odyssey) (1968, MGM). This project stands on the shoulders of that work and makes no claim of originality for the aesthetic. Font files are licensed separately.
