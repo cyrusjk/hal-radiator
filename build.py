@@ -167,6 +167,12 @@ if assets_dst.exists():
     shutil.rmtree(assets_dst)
 shutil.copytree(ROOT / "assets", assets_dst)
 
+data_dst = DIST / "data"
+if data_dst.exists():
+    shutil.rmtree(data_dst)
+if (ROOT / "data").exists():
+    shutil.copytree(ROOT / "data", data_dst)
+
 dist_html = DIST / "index.html"
 dist_html.write_text(output, encoding="utf-8")
 
