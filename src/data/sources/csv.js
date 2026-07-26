@@ -31,10 +31,11 @@ window.HAL.data.sources.csv = {
       var lines = text.split('\n');
       var series = [];
       var headerRow = true;
-      var numAngles = 12;
-      var angles = [];
-      for (var a = 0; a < numAngles; a++) {
-        angles.push(a * 30);
+      var angles_12 = [0,30,60,90,120,150,180,210,240,270,300,330];
+      // Daily angles: 0 to 359 degrees, 365 steps
+      var dailyAngles = [];
+      for (var d = 0; d < 365; d++) {
+        dailyAngles.push(Math.round(d * 360 / 365));
       }
 
       for (var i = 0; i < lines.length; i++) {
@@ -51,20 +52,34 @@ window.HAL.data.sources.csv = {
           continue;
         }
 
-        // First column is the year label, rest are monthly values
+        // First column is the year label, rest are 12 monthly values
         var label = parts[0];
-        var values = [];
-        for (var j = 1; j < parts.length; j++) {
+        var monthlyValues = [];
+        for (var j = 1; j < parts.length && j <= 12; j++) {
           var v = parseFloat(parts[j]);
-          if (!isNaN(v)) values.push(v);
+          if (!isNaN(v)) monthlyValues.push(v);
+        }
+        if (monthlyValues.length < 3) continue;
+
+        // Interpolate 12 monthly values → 365 daily values
+        // Place each month's value at day ~15 of that month, then
+        // linear interpolate between them, wrapping last→first.
+        var monthDays = [0,31,59,90,120,151,181,212,243,273,304,334,365];
+        var dailyValues = [];
+        for (var d = 0; d < 365; d++) {
+          // Find which month segment this day falls in
+          var mi = 0;
+          while (mi < 11 && monthDays[mi+1] <= d) mi++;
+          var t = (d - monthDays[mi]) / (monthDays[mi+1] - monthDays[mi]);
+          var v0 = monthlyValues[mi];
+          var v1 = monthlyValues[(mi + 1) % 12];
+          dailyValues.push(Math.round((v0 + (v1 - v0) * t) * 10) / 10);
         }
 
-        if (values.length > 0) {
-          series.push({
-            label: label,
-            values: values,
-          });
-        }
+        series.push({
+          label: label,
+          values: dailyValues,
+        });
       }
 
       return {
@@ -72,7 +87,7 @@ window.HAL.data.sources.csv = {
           name: 'TEMPERATURE',
           series: series,
         }],
-        angles: angles,
+        angles: dailyAngles,
         unit: '°C',
       };
     });
