@@ -1804,9 +1804,9 @@ groups:
           glow: true
         - angle: 120
           label: APOGEE
-          style: solid
-        - angle: 300
           style: dashed
+        - angle: 300
+          style: solid
       - name: europa
         boldArc: 60
         markers:
@@ -1815,9 +1815,9 @@ groups:
           style: solid
         - angle: 50
           label: APOGEE
-          style: solid
-        - angle: 220
           style: dashed
+        - angle: 220
+          style: solid
       - name: ganymede
         boldArc: 50
         markers:
@@ -1826,9 +1826,9 @@ groups:
           style: solid
         - angle: 300
           label: APOGEE
-          style: solid
-        - angle: 140
           style: dashed
+        - angle: 140
+          style: solid
       - name: callisto
         boldArc: 40
         markers:
@@ -1837,9 +1837,9 @@ groups:
           style: solid
         - angle: 50
           label: APOGEE
-          style: solid
-        - angle: 200
           style: dashed
+        - angle: 200
+          style: solid
       type: orbital
     label: ORBIT MAP
     prototype: orbital-default
