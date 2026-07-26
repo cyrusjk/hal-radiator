@@ -24,7 +24,6 @@ assets/fonts/Folio-Std-Bold-Condensed.ttf
 # Build artifacts
 __pycache__/
 *.pyc
-dist/assets/fonts/*.ttf
 dist/assets/fonts/*.zip
 dist/assets/fonts/*.htm
 dist/assets/fonts/*.txt
