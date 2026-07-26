@@ -82,6 +82,9 @@ The polar card renderer produces animated cyclic charts for the HAL 9000 Metrics
 
 ### Arc Config Properties
 
+Arcs are drawn to show the span of the min, max, avg and/or mean values for every cycle on the chart. Min is inside the outermost ring, max outside, and avg and mean over that that ring. Mean is semi-paque by default to distiguish it from the average, even though they overlap. faded segments are drawn from the relevant points on the graph to the arcs. Currently, those lines terminate at the locations of the actual relevant values regardless of the smoothing factor.
+
+
 Each entry in the `arcs` array controls one statistical-arc ring:
 
 | Field | Type | Default | Description |
