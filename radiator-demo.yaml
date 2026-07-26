@@ -2161,8 +2161,36 @@ groups:
 - charts:
   - color: navy
     dataSource:
-      type: csv
-      url: data/polar-temperature.csv
+      type: inline
+      series:
+      - label: GLOBAL TEMPERATURE
+        values:
+        - 10.2
+        - 14.3
+        - 18.3
+        - 24.3
+        - 24.2
+        - 24.1
+        - 19.7
+        - 15.8
+        - 9.4
+        - 4.5
+        - 6.5
+        - 5.7
+      angles:
+      - 0
+      - 30
+      - 60
+      - 90
+      - 120
+      - 150
+      - 180
+      - 210
+      - 240
+      - 270
+      - 300
+      - 330
+      unit: °C
     labels:
     - JAN
     - FEB

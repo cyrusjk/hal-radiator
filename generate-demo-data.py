@@ -226,6 +226,14 @@ def main():
         for chart in charts:
             replace_data_source(chart)
 
+    # Also scan standalone chart entries at root level (e.g. RB-3D)
+    for key in list(cfg.keys()):
+        val = cfg[key]
+        if isinstance(val, list):
+            for item in val:
+                if isinstance(item, dict) and ('title' in item or 'prototype' in item):
+                    replace_data_source(item)
+
     # Sanitize all strings in the entire config
     cfg = sanitize_dict(cfg)
 
