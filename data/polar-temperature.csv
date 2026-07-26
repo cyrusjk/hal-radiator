@@ -1,0 +1,16 @@
+# Paris — Monthly Surface Temperature (°C)
+# Source: ERA5-Land reanalysis, approximate 2025 monthly averages
+angles,values,label
+0,10.2,JAN
+30,14.3,FEB
+60,18.3,MAR
+90,24.3,APR
+120,24.2,MAY
+150,24.1,JUN
+180,19.7,JUL
+210,15.8,AUG
+240,9.4,SEP
+270,4.5,OCT
+300,6.5,NOV
+330,5.7,DEC
+unit,°C
