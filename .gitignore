@@ -24,10 +24,21 @@ assets/fonts/Folio-Std-Bold-Condensed.ttf
 # Build artifacts
 __pycache__/
 *.pyc
+output_svg/
+reference/
 dist/assets/fonts/*.zip
 dist/assets/fonts/*.htm
 dist/assets/fonts/*.txt
 dist/assets/fonts/quick_tips.html
+
+# Local-only development files
+SERVER_STATE.md
+polar-prototype.html
+CHANGELOG.md
+DATA_CONTRACT.md
+refresh.py
+deploy.sh
+serve.py.new
 
 # Dependencies
 node_modules/
