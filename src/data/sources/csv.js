@@ -1,9 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════
 //  CSV Data Source Plugin
-//  — Loads polar chart data from a static CSV file at runtime
-//  — Supports multi-year format: each row is one year with monthly values
-//  — Column format: year, jan, feb, mar, ... (12 monthly values per row)
+//  — Loads polar chart daily temperature data from a static CSV file
+//  — Format: year, then 365 (or 366) comma-separated daily temperature values
+//  — Each row = one year of daily temperatures
 //  — Comment lines (#) and blank lines are ignored
+//
+//  Returns: { groups: [{ name, series: [{ label, values }] }], angles, unit }
+//  where each series has 365 daily values matching the ERA5 source
 // ═══════════════════════════════════════════════════════════════════════
 //
 //  CSV format:
@@ -31,7 +34,6 @@ window.HAL.data.sources.csv = {
       var lines = text.split('\n');
       var series = [];
       var headerRow = true;
-      var angles_12 = [0,30,60,90,120,150,180,210,240,270,300,330];
       // Daily angles: 0 to 359 degrees, 365 steps
       var dailyAngles = [];
       for (var d = 0; d < 365; d++) {
@@ -52,33 +54,18 @@ window.HAL.data.sources.csv = {
           continue;
         }
 
-        // First column is the year label, rest are 12 monthly values
+        // First column is the year label, rest are daily values
         var label = parts[0];
-        var monthlyValues = [];
-        for (var j = 1; j < parts.length && j <= 12; j++) {
+        var values = [];
+        for (var j = 1; j < parts.length; j++) {
           var v = parseFloat(parts[j]);
-          if (!isNaN(v)) monthlyValues.push(v);
+          if (!isNaN(v)) values.push(v);
         }
-        if (monthlyValues.length < 3) continue;
-
-        // Interpolate 12 monthly values → 365 daily values
-        // Place each month's value at day ~15 of that month, then
-        // linear interpolate between them, wrapping last→first.
-        var monthDays = [0,31,59,90,120,151,181,212,243,273,304,334,365];
-        var dailyValues = [];
-        for (var d = 0; d < 365; d++) {
-          // Find which month segment this day falls in
-          var mi = 0;
-          while (mi < 11 && monthDays[mi+1] <= d) mi++;
-          var t = (d - monthDays[mi]) / (monthDays[mi+1] - monthDays[mi]);
-          var v0 = monthlyValues[mi];
-          var v1 = monthlyValues[(mi + 1) % 12];
-          dailyValues.push(Math.round((v0 + (v1 - v0) * t) * 10) / 10);
-        }
+        if (values.length < 10) continue;
 
         series.push({
           label: label,
-          values: dailyValues,
+          values: values,
         });
       }
 
