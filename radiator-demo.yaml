@@ -1797,41 +1797,12 @@ groups:
       bodies:
       - name: io
         boldArc: 70
-        markers:
-        - angle: 0
-          label: PERIGEE
-          style: solid
-          glow: true
-        - angle: 180
-          label: APOGEE
-          style: dashed
       - name: europa
         boldArc: 60
-        markers:
-        - angle: 0
-          label: PERIGEE
-          style: solid
-        - angle: 180
-          label: APOGEE
-          style: dashed
       - name: ganymede
         boldArc: 50
-        markers:
-        - angle: 0
-          label: PERIGEE
-          style: solid
-        - angle: 180
-          label: APOGEE
-          style: dashed
       - name: callisto
         boldArc: 40
-        markers:
-        - angle: 0
-          label: PERIGEE
-          style: solid
-        - angle: 180
-          label: APOGEE
-          style: dashed
       type: orbital
     label: ORBIT MAP
     prototype: orbital-default

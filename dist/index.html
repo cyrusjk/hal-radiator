@@ -3068,68 +3068,19 @@ window.HAL_CONFIG = {
         "bodies": [
           {
             "name": "io",
-            "boldArc": 70,
-            "markers": [
-              {
-                "angle": 0,
-                "label": "PERIGEE",
-                "style": "solid",
-                "glow": true
-              },
-              {
-                "angle": 180,
-                "label": "APOGEE",
-                "style": "dashed"
-              }
-            ]
+            "boldArc": 70
           },
           {
             "name": "europa",
-            "boldArc": 60,
-            "markers": [
-              {
-                "angle": 0,
-                "label": "PERIGEE",
-                "style": "solid"
-              },
-              {
-                "angle": 180,
-                "label": "APOGEE",
-                "style": "dashed"
-              }
-            ]
+            "boldArc": 60
           },
           {
             "name": "ganymede",
-            "boldArc": 50,
-            "markers": [
-              {
-                "angle": 0,
-                "label": "PERIGEE",
-                "style": "solid"
-              },
-              {
-                "angle": 180,
-                "label": "APOGEE",
-                "style": "dashed"
-              }
-            ]
+            "boldArc": 50
           },
           {
             "name": "callisto",
-            "boldArc": 40,
-            "markers": [
-              {
-                "angle": 0,
-                "label": "PERIGEE",
-                "style": "solid"
-              },
-              {
-                "angle": 180,
-                "label": "APOGEE",
-                "style": "dashed"
-              }
-            ]
+            "boldArc": 40
           }
         ],
         "type": "orbital"
@@ -8429,68 +8380,19 @@ window.HAL_CONFIG = {
             "bodies": [
               {
                 "name": "io",
-                "boldArc": 70,
-                "markers": [
-                  {
-                    "angle": 0,
-                    "label": "PERIGEE",
-                    "style": "solid",
-                    "glow": true
-                  },
-                  {
-                    "angle": 180,
-                    "label": "APOGEE",
-                    "style": "dashed"
-                  }
-                ]
+                "boldArc": 70
               },
               {
                 "name": "europa",
-                "boldArc": 60,
-                "markers": [
-                  {
-                    "angle": 0,
-                    "label": "PERIGEE",
-                    "style": "solid"
-                  },
-                  {
-                    "angle": 180,
-                    "label": "APOGEE",
-                    "style": "dashed"
-                  }
-                ]
+                "boldArc": 60
               },
               {
                 "name": "ganymede",
-                "boldArc": 50,
-                "markers": [
-                  {
-                    "angle": 0,
-                    "label": "PERIGEE",
-                    "style": "solid"
-                  },
-                  {
-                    "angle": 180,
-                    "label": "APOGEE",
-                    "style": "dashed"
-                  }
-                ]
+                "boldArc": 50
               },
               {
                 "name": "callisto",
-                "boldArc": 40,
-                "markers": [
-                  {
-                    "angle": 0,
-                    "label": "PERIGEE",
-                    "style": "solid"
-                  },
-                  {
-                    "angle": 180,
-                    "label": "APOGEE",
-                    "style": "dashed"
-                  }
-                ]
+                "boldArc": 40
               }
             ],
             "type": "orbital"
@@ -14702,6 +14604,21 @@ window.HAL.data.sources = window.HAL.data.sources || {};
         if (body.lagrange) {
           var lgPoints = generateLagrange(bodyR, pos.bodyAngle, body.lagrange);
           markers = markers.concat(lgPoints);
+        }
+
+        // Auto-generate apsis markers (PERIGEE at w, APOGEE at w+180)
+        // unless user explicitly provided a marker with the same label
+        var hasPerigee = false, hasApogee = false;
+        for (var mi = 0; mi < markers.length; mi++) {
+          var lbl = (markers[mi].label || '').toUpperCase();
+          if (lbl === 'PERIGEE') hasPerigee = true;
+          if (lbl === 'APOGEE') hasApogee = true;
+        }
+        if (!hasPerigee) {
+          markers.push({ angle: el.w, label: 'PERIGEE', style: 'solid', glow: true });
+        }
+        if (!hasApogee) {
+          markers.push({ angle: (el.w + 180) % 360, label: 'APOGEE', style: 'dashed' });
         }
 
         result.series.push({

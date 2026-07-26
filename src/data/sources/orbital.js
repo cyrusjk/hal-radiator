@@ -283,6 +283,21 @@ window.HAL.data.sources = window.HAL.data.sources || {};
           markers = markers.concat(lgPoints);
         }
 
+        // Auto-generate apsis markers (PERIGEE at w, APOGEE at w+180)
+        // unless user explicitly provided a marker with the same label
+        var hasPerigee = false, hasApogee = false;
+        for (var mi = 0; mi < markers.length; mi++) {
+          var lbl = (markers[mi].label || '').toUpperCase();
+          if (lbl === 'PERIGEE') hasPerigee = true;
+          if (lbl === 'APOGEE') hasApogee = true;
+        }
+        if (!hasPerigee) {
+          markers.push({ angle: el.w, label: 'PERIGEE', style: 'solid', glow: true });
+        }
+        if (!hasApogee) {
+          markers.push({ angle: (el.w + 180) % 360, label: 'APOGEE', style: 'dashed' });
+        }
+
         result.series.push({
           label: (LABELS[bodyName] || bodyName.toUpperCase()),
           r: bodyR,
