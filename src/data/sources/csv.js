@@ -1,19 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════════
 //  CSV Data Source Plugin
 //  — Loads polar chart data from a static CSV file at runtime
-//  — Expects columns: angles, values, label (in any order)
+//  — Supports multi-year format: each row is one year with monthly values
+//  — Column format: year, jan, feb, mar, ... (12 monthly values per row)
 //  — Comment lines (#) and blank lines are ignored
-//  — A row with only a 'unit' key sets the unit for the series
 // ═══════════════════════════════════════════════════════════════════════
 //
 //  CSV format:
-//    angles,values,label
-//    0,10.2,JAN
-//    30,14.3,FEB
-//    ...
-//    unit,°C
+//    year,values
+//    2015,7.2,8.5,11.8,15.3,19.1,23.5,26.2,25.8,21.4,16.1,10.3,7.8
+//    2016,6.8,8.2,12.1,15.8,19.5,23.8,26.5,26.1,21.7,16.3,10.5,7.5
 //
-//  Returns: { series: [{ label, values }], angles, unit }
+//  Returns: { groups: [{ name: 'TEMPERATURE', series: [{ label, values }] }] }
+//  where each series has 365 daily values interpolated from the 12 monthly means
 
 window.HAL = window.HAL || {};
 window.HAL.data = window.HAL.data || {};
@@ -24,23 +23,22 @@ window.HAL.data.sources.csv = {
 
   fetch: function(dataSource) {
     var url = dataSource.url || 'data/polar-temperature.csv';
-    var label = dataSource.label || 'value';
 
     return fetch(url).then(function(r) {
       if (!r.ok) throw new Error('CSV fetch failed: ' + r.status);
       return r.text();
     }).then(function(text) {
       var lines = text.split('\n');
-      var headers = [];
-      var angles = [];
-      var values = [];
-      var unit = '';
-      var seriesLabel = label;
+      var series = [];
       var headerRow = true;
+      var numAngles = 12;
+      var angles = [];
+      for (var a = 0; a < numAngles; a++) {
+        angles.push(a * 30);
+      }
 
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
-        // Skip blank lines and comments
         if (!line || line.charAt(0) === '#') continue;
 
         var parts = line.split(',');
@@ -49,48 +47,34 @@ window.HAL.data.sources.csv = {
         }
 
         if (headerRow) {
-          headers = parts;
           headerRow = false;
           continue;
         }
 
-        // Build a map of column name -> value for this row
-        var row = {};
-        for (var j = 0; j < headers.length && j < parts.length; j++) {
-          row[headers[j]] = parts[j];
+        // First column is the year label, rest are monthly values
+        var label = parts[0];
+        var values = [];
+        for (var j = 1; j < parts.length; j++) {
+          var v = parseFloat(parts[j]);
+          if (!isNaN(v)) values.push(v);
         }
 
-        // Special row: unit only
-        if (row.angles === 'unit' || row.angles === undefined) {
-          if (row.values || row.label) {
-            unit = row.values || row.label || '';
-          }
-          continue;
-        }
-
-        var angle = parseFloat(row.angles);
-        var value = parseFloat(row.values);
-        if (isNaN(angle)) continue;
-        if (isNaN(value)) continue;
-
-        angles.push(angle);
-        values.push(value);
-
-        // Use the first row's label if none was configured
-        if (row.label && seriesLabel === label) {
-          seriesLabel = row.label;
+        if (values.length > 0) {
+          series.push({
+            label: label,
+            values: values,
+          });
         }
       }
 
-      var result = {
-        series: [{
-          label: seriesLabel,
-          values: values,
+      return {
+        groups: [{
+          name: 'TEMPERATURE',
+          series: series,
         }],
         angles: angles,
+        unit: '°C',
       };
-      if (unit) result.unit = unit;
-      return result;
     });
   },
 };
