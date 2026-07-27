@@ -34,7 +34,6 @@ dist/assets/fonts/quick_tips.html
 # Local-only development files
 SERVER_STATE.md
 polar-prototype.html
-CHANGELOG.md
 DATA_CONTRACT.md
 refresh.py
 deploy.sh
@@ -66,3 +65,5 @@ memory.py
 
 # Windows noise
 nul
+# Added by code-review-graph
+.code-review-graph/

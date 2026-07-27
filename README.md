@@ -1,22 +1,20 @@
 # HAL Radiator
 
-A config-driven single-page application that cycles through animated metric visualizations in the style of the HAL 9000 computer from *2001: A Space Odyssey*. Rendered as pure SVG with no canvas, no WebGL, no external rendering libraries.
+A config-driven SPA that cycles through animated metric visualizations in the style of the HAL 9000 from *2001: A Space Odyssey*. Rendered as pure SVG with no canvas, no WebGL, no external rendering libraries.
 
-The objective is to provide a HAL 9000-like way of presenting real-world metrics along with ones that just look cool. Systems like Grafana are great
-metrics presenters, but are often complicated by toggles, switches, etc, and the HAL 9000 was an example of a simpler way to simply cycle through
-the boring day-to-day things that someone may be interested in, but not specifically.
+The objective is to show real-world metrics in a HAL 9000-style display, alongside data that just looks cool. Grafana is great for metrics, but it has many toggles and switches. The HAL 9000 shows a simpler way to cycle through the boring day-to-day things someone may be vaguely interested in, but not specifically monitoring.
 
-This project is also an experiment for myself with using AI to almost completley code such an application. While I have altered a few bits to save endless loops with an agent, 98% of this projects code is AI authored, primarily by Hermes agent using DeepSeek v4 Flash. Hermes was chosen instead of an explicit coding agent for many tasks because much of the work was esoteric, not directly codable, and I wanted to see how well it would do.
+This project is also an experiment in using AI to code an application. I altered a few bits to save endless loops with an agent. 98% of this project's code is AI-authored, primarily by Hermes agent using DeepSeek v4 Flash. Hermes was chosen instead of an explicit coding agent because much of the work was esoteric and not directly codable. I wanted to see how well it would do.
 
-Feel free to fork, copy, steal, whatever you like, but you cannot use it for profit of any kind as the source is copyrighted, and the derivative work that this was built on took a lot more work and dedication than I have put into this.
+Feel free to fork, copy, steal, whatever you like. You cannot use it for profit of any kind. The source is copyrighted, and the derivative work that this was built on took a lot more work and dedication than I have put into this.
 
 ![Demo](docs/demo-preview.png)   **[Live Demo](https://cyrusjk.github.io/hal-radiator/)**
 
-This is very much in an _EXPERIMENTAL/ALPHA_ phase, as in there are inconsistencies, test cards, things that are out of alignment, etc. Feel free to come up with improvments, but this is very much a side project for me at this time, and I have not bean able to give it full attention.
+This is in an _EXPERIMENTAL/ALPHA_ phase. There are inconsistencies, test cards, and alignment issues. Feel free to suggest improvements. This is a side project for me and I have not been able to give it full attention.
 
 ## Credits and Gratitudes
 
-Models and color palette sourced from the [HAL Project Gallery ](https://ko-fi.com/joecreative/gallery) and [YouTube](https://www.youtube.com/channel/UC19EGSO3O3DC7KHYgGo5zxg) by JoeCreative. Much of the work done here used that project as source material and I have put only a fraction of the amount of work into this project than they have put into theirs. Visual design, animation timing, and typography derived from the HAL 9000 display panel as depicted in [*2001: A Space Odyssey*](https://en.wikipedia.org/wiki/2001:_A_Space_Odyssey) (1968, MGM). This project stands on the shoulders of that work and makes no claim of originality for the aesthetic. Font files are licensed separately.
+Models and color palette sourced from the [HAL Project Gallery](https://ko-fi.com/joecreative/gallery) and [YouTube](https://www.youtube.com/channel/UC19EGSO3O3DC7KHYgGo5zxg) by JoeCreative. I used that project as source material. I put only a fraction of the work into this project that they put into theirs. Visual design, animation timing, and typography come from the HAL 9000 display panel in [*2001: A Space Odyssey*](https://en.wikipedia.org/wiki/2001:_A_Space_Odyssey) (1968, MGM). This project stands on the shoulders of that work and makes no claim of originality for the aesthetic. Font files are licensed separately.
 
 ## Quick Start
 
@@ -30,7 +28,7 @@ python serve.py
 open http://127.0.0.1:8009
 ```
 
-The demo uses synthetic inline data. For a live system with real metrics, point `radiator.yaml` at a VictoriaMetrics or Prometheus instance (see [Configuration](#configuration)).
+The demo uses synthetic inline data. For a live system with real metrics, point `radiator.yaml` at a VictoriaMetrics or Prometheus instance. See [Configuration](#configuration).
 
 ## How It Works
 
@@ -53,7 +51,7 @@ The demo uses synthetic inline data. For a live system with real metrics, point 
 | Layer | File(s) | Role |
 |-------|---------|------|
 | **Config** | `radiator.yaml` | Card definitions, timing, color palette, data source config |
-| **Prototypes** | `prototypes.yaml` | Reusable card templates (orbital, curve-family, polar, etc.) |
+| **Prototypes** | `prototypes.yaml` | Reusable card templates (orbital, curve-family, polar, and more) |
 | **Build** | `build.py` | Merges YAML → `src/config.js`, inlines everything into `dist/index.html` |
 | **Server** | `serve.py` | Serves `/api/config` as JSON + static files, ERA5 data cache |
 | **Boot** | `src/app.js` | Fetches config, cycles cards via auto-timer |
@@ -142,13 +140,13 @@ header+footer flickerIn → SOL flickerIn → planets flickerIn (simultaneous)
 
 Phase types:
 
-- **flickerIn** — Elements fade in via CSS animation (`blink-in` class)
-- **flickerOut** — Elements fade out
-- **appear** — Elements snap to full opacity
-- **disappear** — Elements snap to zero opacity
-- **draw** — Path elements revealed via stroke-dashoffset animation
-- **wait** — Configurable pause
-- **done** — Signals card completion, triggering auto-timer
+- **flickerIn**: Elements fade in via CSS animation (`blink-in` class)
+- **flickerOut**: Elements fade out
+- **appear**: Elements snap to full opacity
+- **disappear**: Elements snap to zero opacity
+- **draw**: Path elements revealed via stroke-dashoffset animation
+- **wait**: Configurable pause
+- **done**: Signals card completion, triggering auto-timer
 
 Order can be `simultaneous`, `sequential`, or `oneByOne` with configurable gap timing.
 
@@ -178,7 +176,7 @@ See [DATA_CONTRACT.md](DATA_CONTRACT.md) for the expected data shape per card ty
 
 ## License
 
-[CC BY-NC 4.0](LICENSE.md) — Creative Commons Attribution-NonCommercial 4.0 International.
+[CC BY-NC 4.0](LICENSE.md): Creative Commons Attribution-NonCommercial 4.0 International.
 
 You may fork, copy, modify, and share this project for any non-commercial purpose. Commercial use is not permitted.
 

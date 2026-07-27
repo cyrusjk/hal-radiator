@@ -1,4 +1,4 @@
-# Orbital Mechanics Card — System Guide
+# Orbital Mechanics Card : System Guide
 
 ## Overview
 
@@ -6,7 +6,7 @@ The orbital card renderer produces animated concentric-orbit maps for the HAL 90
 
 **Source:** `src/cards/orbital.js`
 **Card type:** `orbital`
-**Registration:** `radiator.yaml` — cards with `chartType: orbital`
+**Registration:** `radiator.yaml` : cards with `chartType: orbital`
 **Data plugin:** `src/data/sources/inline.js` (type: `inline`)
 
 ---
@@ -15,7 +15,7 @@ The orbital card renderer produces animated concentric-orbit maps for the HAL 90
 
 | Title | Label | Center | Series | Notes |
 |-------|-------|--------|--------|-------|
-| JOV | JUPITER | JUPITER | Io, Europa, Ganymede, Callisto | Original — 4 Galilean moons with data markers |
+| JOV | JUPITER | JUPITER | Io, Europa, Ganymede, Callisto | Original : 4 Galilean moons with data markers |
 | LUN | EARTH-MOON | EARTH | Luna (+ eccentricity) | Moon orbit at e=0.054, +5 Lagrange points (L1–L5) |
 | SOL | SOLAR SYSTEM | SOL | All 8 planets | sqrt(AU)-scaled, Mercury (e=0.205), Mars (e=0.093) |
 | JOV2 | JOVIAN SYSTEM | JUPITER | 8 moons | Galileans + Amalthea + Himalia/Elara/Pasiphae with eccentric orbits |
@@ -55,7 +55,7 @@ The orbital card renderer produces animated concentric-orbit maps for the HAL 90
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `angle` | number | yes | Position angle (0=top, CW) |
-| `style` | string | *segment-only* | `solid`, `dashed`, or `bold` — defines segment boundaries |
+| `style` | string | *segment-only* | `solid`, `dashed`, or `bold` : defines segment boundaries |
 | `label` | string | no | Text label shown offset from marker dot |
 | `r` | number | no | Radius override in data units (for points not on orbit path, e.g. Lagrange points) |
 
@@ -113,7 +113,7 @@ r(θ) = a · (1 - e²) / (1 + e · cos(θ - ω))
 **Implementation** (`polar()` function in `orbital.js`):
 - Converts card-angle to math-space: `rad = (a - 90) * π/180`
 - Computes true anomaly: `nu = (a - omega) * π/180`
-- Factor modifies radius per eccentricity, then offset is added AFTER the eccentricity factor (for label offset — CRITICAL: applying factor to offset would displace it incorrectly for elliptical orbits)
+- Factor modifies radius per eccentricity, then offset is added AFTER the eccentricity factor (for label offset : CRITICAL: applying factor to offset would displace it incorrectly for elliptical orbits)
 
 ### Animation groups
 
@@ -141,30 +141,30 @@ Static groups: `header`, `footer`, `centerBody`, `centerLabel`, `axis`
 
 ## Key Rendering Decisions
 
-1. **Opacity animation, not stroke-draw** — Initial implementation used stroke-dashoffset drawing; switched to opacity flicker for cleaner sequential pop-in without visible "drawing" artifacts.
+1. **Opacity animation, not stroke-draw** : Initial implementation used stroke-dashoffset drawing; switched to opacity flicker for cleaner sequential pop-in without visible "drawing" artifacts.
 
-2. **Per-orbit groups** — Each orbit has separate `line_N`, `bold_N`, `moon_N` groups so animation can sequence them independently.
+2. **Per-orbit groups** : Each orbit has separate `line_N`, `bold_N`, `moon_N` groups so animation can sequence them independently.
 
-3. **Segmented orbits** — Only markers with `style` property define segment boundaries. Style-less markers (e.g. Lagrange points) are annotations only.
+3. **Segmented orbits** : Only markers with `style` property define segment boundaries. Style-less markers (e.g. Lagrange points) are annotations only.
 
-4. **Label offset** — 16px outward from marker position, added AFTER eccentricity adjustment. Outer labels (r > 100) rotate perpendicular to tangent (`θ - 90°`). Inner labels remain horizontal.
+4. **Label offset** : 16px outward from marker position, added AFTER eccentricity adjustment. Outer labels (r > 100) rotate perpendicular to tangent (`θ - 90°`). Inner labels remain horizontal.
 
-5. **Body position dedup** — Markers at the same angle as `bodyAngle` with no `r` override are skipped (moon body already renders the name via the `series.label`).
+5. **Body position dedup** : Markers at the same angle as `bodyAngle` with no `r` override are skipped (moon body already renders the name via the `series.label`).
 
-6. **Marker r override** — Lagrange points (L1–L5) use explicit `r` to position at different radii than the orbit path.
+6. **Marker r override** : Lagrange points (L1–L5) use explicit `r` to position at different radii than the orbit path.
 
-7. **Maximum animation phases** — Prototype defines phases for up to 8 orbits (line_N through line_7). Adding more series requires extending phases or the partial-rendering bug reoccurs.
+7. **Maximum animation phases** : Prototype defines phases for up to 8 orbits (line_N through line_7). Adding more series requires extending phases or the partial-rendering bug reoccurs.
 
 ---
 
 ## Pitfalls & Lessons Learned
 
 ### YAML formatting
-- YAML does **not** accept compact inline mappings with multiple key/value pairs for block entries — each property on its own line under a `- ` item.
+- YAML does **not** accept compact inline mappings with multiple key/value pairs for block entries : each property on its own line under a `- ` item.
 - YAML comments (`#`) inside block sequences are fine at the same indentation level.
 
 ### Renderer bugs
-- **isBodyPos filter**: Must check both angle AND r-override — markers at the body angle but different radius (L1, L2) should NOT be treated as the body.
+- **isBodyPos filter**: Must check both angle AND r-override : markers at the body angle but different radius (L1, L2) should NOT be treated as the body.
 - **Label eccentricity**: Label offset must be added AFTER the eccentricity radius factor, otherwise the offset gets multiplied by the factor (moving labels inward/outward incorrectly).
 - **Marker r scaling**: Marker `r` values are in **data units** (same scale as series r) and auto-scaled to display pixels, just like orbit radii.
 - **Segment degenerate arcs**: Markers at the same angle create zero-length arc segments. `arcRange` handles this.
@@ -175,7 +175,7 @@ Static groups: `header`, `footer`, `centerBody`, `centerLabel`, `axis`
 - Source order matters: `orbital.js` must load AFTER `hal.js` but BEFORE the config triggers card rendering.
 
 ### Animation phases
-- The prototype `orbital-default` defines phases for only the number of orbits it lists. Cards with 8 series need phases for `line_0` through `line_7`, `bold_0`–`bold_7`, `moon_0`–`moon_7`. Missing phases cause partial rendering — elements never appear.
+- The prototype `orbital-default` defines phases for only the number of orbits it lists. Cards with 8 series need phases for `line_0` through `line_7`, `bold_0`–`bold_7`, `moon_0`–`moon_7`. Missing phases cause partial rendering : elements never appear.
 
 ---
 

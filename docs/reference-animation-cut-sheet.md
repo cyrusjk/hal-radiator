@@ -1,4 +1,4 @@
-# HAL 9000 Reference Video — Animation Cut Sheet
+# HAL 9000 Reference Video : Animation Cut Sheet
 
 **Source:** https://youtu.be/C1U_OXCZ2NE
 **Analyzed:** First 540 seconds (0-9:00) at 6-12 fps, progressive 30-second segments
@@ -45,13 +45,13 @@
 - **All transitions are instant cuts** (≤0.2s). No crossfades, no fade-to-black, no opacity tweening.
 - **Title cards** hold 2-8 seconds. Pattern: brief appearance, then instant cut to data scene.
 - **Chip behavior**: Z chip appears ≤0.15s (near-instant). NEAR-IR/UV chips appear fully formed at scene activation.
-- **Grid/wireframe elements** appear fully formed — no stroke-draw animation.
+- **Grid/wireframe elements** appear fully formed : no stroke-draw animation.
 - **Warning screens** (COMPUTER MALFUNCTION, LIFE FUNCTIONS CRITICAL) hold ~4-6s, same instant appearance/disappearance as all other cards.
 
 ## Notes
 
 - The video follows a consistent "Title Card → Data Visualization" cycle across different color themes (blue, green, purple, maroon, black, charcoal, plum, teal)
-- Many diagram types blend/interpolate — variations with different parameters/colors produce distinct appearances
+- Many diagram types blend/interpolate : variations with different parameters/colors produce distinct appearances
 - Color palette used by video: blue(rgb(0,100,200)), green(rgb(0,180,80)), purple(rgb(120,0,200)), red/orange(rgb(220,60,30)), plum/burgundy(rgb(100,30,60)), maroon(rgb(120,20,40)), charcoal(rgb(30,30,35)), teal(rgb(0,100,80)), navy(rgb(25,35,80))
 - All chart/plot elements rendered in white against colored backgrounds
 - Videos covers ~2351 seconds total; first 540s (23%) analyzed as of 2026-07-07

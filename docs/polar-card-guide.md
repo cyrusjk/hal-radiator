@@ -1,4 +1,4 @@
-# Polar / Cyclic Chart Card — System Guide
+# Polar / Cyclic Chart Card : System Guide
 
 ## Overview
 
@@ -6,7 +6,7 @@ The polar card renderer produces animated cyclic charts for the HAL 9000 Metrics
 
 **Source:** `src/cards/polar.js`
 **Card type:** `polar`
-**Registration:** `radiator.yaml` — cards with `chartType: polar` or inline `type: polar`
+**Registration:** `radiator.yaml` : cards with `chartType: polar` or inline `type: polar`
 **Data plugin:** `src/data/sources/era5.js` (type: `era5`), `src/data/sources/inline.js` (type: `inline`)
 
 ---
@@ -15,7 +15,7 @@ The polar card renderer produces animated cyclic charts for the HAL 9000 Metrics
 
 | Title | Label | Data Source | Span | Notes |
 |-------|-------|-------------|------|-------|
-| RAD | RADAR SWEEP | inline | N/A | Demo card — static radar sweep pattern |
+| RAD | RADAR SWEEP | inline | N/A | Demo card : static radar sweep pattern |
 | TEMP | SURFACE TEMPERATURE | era5 | 2015–2026 | Paris ERA5-Land weekly temps, 4 arcs (min/avg/mean/max) |
 
 ---
@@ -94,7 +94,7 @@ Each entry in the `arcs` array controls one statistical-arc ring:
 | `width` | number | `2` | Arc stroke width |
 | `color` | string | `#ffffff` | Arc stroke color |
 | `alpha` | number | `0.6` | Arc stroke opacity |
-| `label` | string | `—` | Legend label |
+| `label` | string | `:` | Legend label |
 | `tickLen` | number | `5` | Tick mark length (perpendicular to arc) |
 | `tickColor` | string | `arcColor` | Tick stroke color |
 | `tickWidth` | number | `1.0` | Tick stroke width |
@@ -126,7 +126,7 @@ This correctly handles wrapped clusters that cross 0° (e.g., January min temps 
 Arcs are drawn using SVG `A` (elliptical arc) commands rather than iterated line segments, ensuring the arc path starts and ends at **exactly** the cluster boundary angles with zero overshoot.
 
 - **Normal case** (start < end): single `A` command from `startAngle` to `endAngle`.
-- **Wrap case** (start > end): two `A` commands — from `startAngle` → 2π and from 0 → `endAngle`.
+- **Wrap case** (start > end): two `A` commands : from `startAngle` → 2π and from 0 → `endAngle`.
 
 ## Animation Phases
 
