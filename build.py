@@ -35,6 +35,7 @@ cards = flat["cards"]
 
 # ── 3. Generate dist/config.js (fallback for development mode) ─────────
 
+DIST.mkdir(exist_ok=True)
 config_path = DIST / "config.js"
 with open(config_path, "w", encoding="utf-8") as f:
     f.write("// ═══════════════════════════════════════════════════\n")
