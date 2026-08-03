@@ -5,9 +5,15 @@
 #   - Serves /api/config from radiator.yaml (flattened to card array)
 # ═══════════════════════════════════════════════════════════════════════
 
-import json, yaml, os, io, sys, time, email.utils, mimetypes, urllib.parse, urllib.request, urllib.error, re
+import json, os, sys, time, email.utils, mimetypes, urllib.parse, urllib.request
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
+from config_pipeline import (
+    load_config_from_paths,
+    resolve_prototype,
+    resolve_color,
+    flatten_config,
+)
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     allow_reuse_address = True
@@ -20,18 +26,17 @@ if not os.path.exists(YAML_PATH):
 CACHE = {}  # URL -> (timestamp, response_data)
 CACHE_TTL = 3600  # 1 hour
 
-# ── ERA5 data: fetched once at startup into memory, cached forever ──
-# No throttling, no fallback file. If the API is down at start, the
-# endpoint returns an error until the server is restarted.
-ERA5_DATA = None  # populated once by _load_era5_at_startup()
+# ── ERA5 data: fetched once into memory in a background thread, so the
+# server starts immediately even if the API is slow or down.
+ERA5_DATA = None  # populated by _load_era5_at_startup() (background thread)
 
 
 def _load_era5_at_startup():
-    """Fetch ERA5 data once at startup. Called once before listen."""
+    """Fetch ERA5 data once. Called in a background thread before listen."""
     from urllib.request import Request, urlopen
     import json, datetime as _dt, calendar
 
-    now = _dt.datetime.utcnow()
+    now = _dt.datetime.now(_dt.timezone.utc).replace(tzinfo=None)
     today_str = f'{now.year}-{now.month:02d}-{now.day:02d}'
 
     url = (
@@ -46,7 +51,7 @@ def _load_era5_at_startup():
             raw = json.loads(r.read())
     except Exception as exc:
         print(f'ERA5 startup fetch failed: {exc}', file=sys.stderr)
-        return  # ERA5_DATA stays None → endpoint returns error until restart
+        return  # ERA5_DATA stays None → endpoint reports not-ready, retried later
 
     daily = raw.get('daily', {})
     times = daily.get('time', [])
@@ -95,123 +100,7 @@ DEFAULT_LOCATIONS = [
 
 def load_config():
     """Load radiator.yaml and merge prototypes.yaml into it."""
-    with open(YAML_PATH, 'r') as f:
-        cfg = yaml.safe_load(f) or {}
-    try:
-        with open(PROTOTYPES_PATH, 'r') as f:
-            protos = yaml.safe_load(f) or {}
-    except FileNotFoundError:
-        protos = {}
-    if 'cardPrototypes' not in cfg and 'cardPrototypes' in protos:
-        cfg['cardPrototypes'] = protos['cardPrototypes']
-    return cfg
-
-def resolve_prototype(chart, prototypes):
-    """Resolve a chart entry against card prototypes.
-
-    If chart has 'prototype' key, merge prototype fields first,
-    then overlay the chart's specific fields (title, label, color,
-    dataSource). If no 'prototype' key, return chart unchanged
-    for backward compatibility.
-    """
-    proto_name = chart.get('prototype')
-    if not proto_name:
-        return chart
-
-    base = prototypes.get(proto_name)
-    if base is None:
-        raise ValueError(f"Unknown card prototype: {proto_name}")
-
-    resolved = dict(base)            # start with prototype fields
-    for k, v in chart.items():
-        if k == 'prototype':
-            continue
-        if k == 'animation' and isinstance(v, dict):
-            # Deep merge animation.phases
-            resolved['animation'] = dict(resolved.get('animation', {}))
-            resolved['animation']['phases'] = v.get('phases', resolved['animation'].get('phases', []))
-        elif k == 'dataSource' and isinstance(v, dict):
-            merged = dict(resolved.get('dataSource', {}))
-            merged.update(v)
-            resolved['dataSource'] = merged
-        else:
-            resolved[k] = v
-    return resolved
-
-
-def resolve_color(name, colors):
-    return colors.get(name, name) if isinstance(name, str) else name
-
-
-def flatten_config(cfg):
-    """Convert the YAML groups structure into a flat card array,
-    resolving card prototypes along the way."""
-    colors = cfg.get("colors", {})
-    timing = cfg.get("timing", {})
-    visual = cfg.get("visual", {})
-    groups = cfg.get("groups", [])
-    prototypes = cfg.get("cardPrototypes", {})
-
-    cards = []
-    for group in groups:
-        # Check if this is a layout/composite card (has layout.zones)
-        layout = group.get("layout")
-        if layout and layout.get("zones"):
-            # Emit as a composite card
-            zones = []
-            for zone in layout.get("zones", []):
-                z = dict(zone)
-                zt = zone.get("type", "")
-                if zt == "chart":
-                    # Resolve prototype for chart zones
-                    try:
-                        chart = resolve_prototype(zone, prototypes)
-                        z["chartType"] = chart.get("chartType", "curve-family")
-                        z["dataSource"] = chart.get("dataSource", zone.get("dataSource", {}))
-                        z.pop("prototype", None)
-                    except ValueError:
-                        pass  # unknown prototype, skip chartType resolution
-                # Resolve named color references in zone
-                if "color" in z:
-                    z["color"] = resolve_color(z["color"], colors)
-                if "bg" in z:
-                    z["bg"] = resolve_color(z["bg"], colors)
-                zones.append(z)
-            cards.append({
-                "type": "composite",
-                "title": group.get("title", ""),
-                "label": group.get("subheading", ""),
-                "color": resolve_color(group.get("color", "rgb(0,0,0)"), colors),
-                "zones": zones,
-            })
-            continue
-
-        # Title card
-        cards.append({
-            "type": "title",
-            "title": group["title"],
-            "label": group.get("subheading", ""),
-            "color": resolve_color(group.get("color", "rgb(0,0,0)"), colors),
-        })
-        # Chart cards
-        for chart in group.get("charts", []):
-            try:
-                chart = resolve_prototype(chart, prototypes)
-            except ValueError:
-                continue
-            c = dict(chart)
-            c["type"] = chart.get("chartType", "curve-family")
-            c["label"] = chart.get("label", "")
-            c["color"] = resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)")), colors)
-            c.pop("chartType", None)
-            cards.append(c)
-
-    return {
-        "timing": timing,
-        "visual": visual,
-        "dataFault": cfg.get("dataFault", {"mode": "skip"}),
-        "cards": cards,
-    }
+    return load_config_from_paths(YAML_PATH, PROTOTYPES_PATH)
 
 class Handler(BaseHTTPRequestHandler):
 
@@ -266,17 +155,17 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _serve_era5(self, query_string):
-        """Serve preloaded ERA5 data from in-memory cache (fetched at startup once)."""
+        """Serve ERA5 data from in-memory cache (fetched in background thread)."""
         global ERA5_DATA
         if ERA5_DATA is None:
-            self._send_json({'error': 'ERA5 data not available at startup', 'groups': []})
+            self._send_json({'error': 'ERA5 data not ready yet', 'groups': []})
             return
         params = urllib.parse.parse_qs(query_string)
         start_year = int(params.get('startYear', [2015])[0])
         end_year = int(params.get('endYear', [2026])[0])
         cache_key = f'era5-{start_year}-{end_year}'
         cached = CACHE.get(cache_key)
-        if cached:
+        if cached and (time.time() - cached[0]) < CACHE_TTL:
             self._send_json(cached[1])
             return
         # Filter cached data to requested range
@@ -327,6 +216,18 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/' or path == '':
             path = '/index.html'
         clean = path.lstrip('/').replace('\\', '/')
+        # Deny dot-directories (.git, .venv, .github) and config/source files
+        # that should never be served: radiator.yaml, prototypes.yaml, .env,
+        # Python modules, and the memory helper.
+        lower = clean.lower()
+        denied_segments = ['.git', '.venv', '.github', '.vscode', '.pytest_cache',
+                           '__pycache__', '.hermes', '.claude', '.cursor',
+                           '.codebuddy', '.gemini', '.kiro', '.qoder']
+        denied_exts = ('.yaml', '.yml', '.py', '.env')
+        if any(seg in lower.split('/') for seg in denied_segments) or \
+           lower.endswith(denied_exts) or lower == '.env' or lower == 'config.yaml':
+            self._send_error(403, 'Forbidden')
+            return
         abspath = os.path.normpath(os.path.join(ROOT, clean))
         if not abspath.startswith(ROOT):
             self._send_error(403, 'Forbidden')
@@ -377,8 +278,10 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(ROOT)
-    # Fetch ERA5 data once before accepting connections
-    _load_era5_at_startup()
+    # Start serving immediately; fetch ERA5 in a background thread so a slow
+    # or down API never blocks startup (endpoint reports not-ready until done).
+    import threading
+    threading.Thread(target=_load_era5_at_startup, daemon=True).start()
     server = ThreadedHTTPServer(('127.0.0.1', PORT), Handler)
     print(f'Serving at http://localhost:{PORT}/')
     try:

@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [master]
+  pull_request:
 
 permissions:
   contents: read
@@ -14,13 +15,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Python deps
+        run: pip install pyyaml pytest
+      - name: Install JS deps
+        run: npm ci || npm install
+      - name: Run JS tests
+        run: npx vitest run
+      - name: Run Python tests
+        run: python -m pytest tests/ -v
+      - name: Build dist from demo config (no private URLs)
+        run: python build.py radiator-demo.yaml
+
   deploy:
+    needs: test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python deps
+        run: pip install pyyaml
+      - name: Build dist from demo config (no private URLs)
+        run: python build.py radiator-demo.yaml
       - uses: actions/configure-pages@v5
         with:
           enablement: true

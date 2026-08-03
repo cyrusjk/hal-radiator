@@ -150,12 +150,16 @@
         window.HAL.data.fetchCardData(c)
           .then(function(data) {
             if (myGen !== gen) return;  // stale: user navigated away
-            // Merge data into card config — skip null/undefined only
-            if (data) for (var k in data) if (data[k] != null) c[k] = data[k];
+            // Render from a per-cycle copy — never mutate the shared card
+            // config, so a stale error/shape from a failed fetch can't
+            // linger into the next render of the same card.
+            var renderC = {};
+            for (var k0 in c) renderC[k0] = c[k0];
+            if (data) for (var k in data) if (data[k] != null) renderC[k] = data[k];
 
             // Fault handling
-            var cardType = c.type;
-            var df = c.dataFault || window.HAL.data.defaultDataFault || {};
+            var cardType = renderC.type;
+            var df = renderC.dataFault || window.HAL.data.defaultDataFault || {};
             var mode = df.mode || 'skip';
 
             if (data && data.error && mode === 'skip') {
@@ -175,7 +179,7 @@
               if (r && r._cleanup) r._cleanup();
               currentCardType = cardType;
               var cb = guard(onDone, myGen);
-              r && r.render ? r.render(c, cb) : cb && cb();
+              r && r.render ? r.render(renderC, cb) : cb && cb();
             } catch(e) { console.error('Card render error [', cardType, ']:', e); var cb = guard(onDone, myGen); cb && cb(); }
           })
           .catch(function(e) { console.error('Card fetch error [', c.type, ']:', e); var cb = guard(onDone, myGen); cb && cb(); });

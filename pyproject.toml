@@ -1,0 +1,17 @@
+[project]
+name = "hal-radiator"
+version = "0.1.0"
+description = "HAL 9000 metrics radiator - SVG card dashboard"
+requires-python = ">=3.10"
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "vitest",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

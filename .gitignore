@@ -55,7 +55,7 @@ graphify-out/
 radiator.yaml
 
 # Generated card config (contains embedded VM URLs from radiator.yaml)
-dist/config.js
+dist/
 
 # Pi agent memory (not part of the project)
 memory.py

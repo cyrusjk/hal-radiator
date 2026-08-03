@@ -8,7 +8,7 @@
 //    { type: 'chart', ...
 //      dataSource: {
 //        type: 'victoria',
-//        url: 'http://192.168.50.9:8428',
+//        url: 'http://metrics:8428',
 //        range: 300,            // time window in seconds (default 300)
 //        step: 30,              // [optional] seconds between points.
 //                               // If set, ALL points from VM are accepted

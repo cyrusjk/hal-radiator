@@ -10,7 +10,7 @@
 //    {
 //      type: 'composite',
 //      title: 'SYS',
-//      label: 'PAPPY: 192.168.50.9',
+//      label: 'PAPPY: metrics.local',
 //      color: 'rgb(16,45,70)',
 //      zones: [
 //        { type: 'header', x: 0, y: 0, w: 1000, h: 70 },
@@ -211,7 +211,7 @@ function renderHeader(container, data, zone) {
   headerTitle.textContent = data.title || '';
   container.appendChild(headerTitle);
 
-  // Subheading (e.g. "PAPPY: 192.168.50.9")
+  // Subheading (e.g. "PAPPY: metrics.local")
   var headerSub = e('text', {
     x: zx + (zone.titleSize || 14) * 5.5, y: titleY,
     fill: fg('frame', 0.85),

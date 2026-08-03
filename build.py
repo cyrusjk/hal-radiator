@@ -7,6 +7,8 @@
 import sys, json, shutil, yaml
 from pathlib import Path
 
+from config_pipeline import load_config_from_paths, flatten_config
+
 ROOT = Path(__file__).parent
 SRC  = ROOT / "src"
 DIST = ROOT / "dist"
@@ -17,85 +19,19 @@ yaml_path = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "radiator.yaml"
 if not yaml_path.exists():
     yaml_path = ROOT / "radiator-demo.yaml"
 
-with open(yaml_path) as f:
-    cfg = yaml.safe_load(f)
-
-# Load prototypes from separate file if not in main config
-protos_path = ROOT / "prototypes.yaml"
-prototypes = cfg.get("cardPrototypes", {})
-if not prototypes and protos_path.exists():
-    with open(protos_path) as f:
-        protos_data = yaml.safe_load(f) or {}
-    prototypes = protos_data.get("cardPrototypes", {})
+cfg = load_config_from_paths(yaml_path, ROOT / "prototypes.yaml")
 
 timing = cfg.get("timing", {})
 groups = cfg.get("groups", [])
 colors = cfg.get("colors", {})
-
-# ── Resolve card prototypes ───────────────────────────────────────────
-# Chart entries with 'prototype' key inherit chartType and animation
-# from the named prototype, then overlay title/label/color/dataSource.
-def resolve_prototype(chart, prototypes):
-    proto_name = chart.get('prototype')
-    if not proto_name:
-        return chart
-    base = prototypes.get(proto_name)
-    if base is None:
-        raise ValueError(f"Unknown card prototype: {proto_name}")
-    resolved = dict(base)
-    for k, v in chart.items():
-        if k == 'prototype':
-            continue
-        if k == 'animation' and isinstance(v, dict):
-            resolved['animation'] = dict(resolved.get('animation', {}))
-            resolved['animation']['phases'] = v.get('phases', resolved['animation'].get('phases', []))
-        elif k == 'dataSource' and isinstance(v, dict):
-            merged = dict(resolved.get('dataSource', {}))
-            merged.update(v)
-            resolved['dataSource'] = merged
-        else:
-            resolved[k] = v
-    return resolved
-
-# ── Resolve colour references ─────────────────────────────────────────
-# If a group or chart specifies a colour that matches a key in the
-# `colors:` section, substitute the RGB value. Raw rgb(...) strings
-# pass through unchanged.
-def resolve_color(name):
-    if name in colors:
-        return colors[name]
-    return name
+prototypes = cfg.get("cardPrototypes", {})
 
 # ── 2. Flatten groups into a linear card sequence ─────────────────────
-# Each group: title card (×1) → chart cards (×N)
-# Runtime cycles through the flat list sequentially.
+# Runtime cycles through the flat list sequentially. Uses the SAME
+# flatten_config as serve.py so dist/ and the dev server never diverge.
 
-cards = []
-for group in groups:
-    # Title card
-    cards.append({
-        "type": "title",
-        "title": group["title"],
-        "label": group.get("subheading", ""),
-        "color": resolve_color(group.get("color", "rgb(0,0,0)")),
-    })
-    # Chart cards for this group
-    for chart in group.get("charts", []):
-        chart = resolve_prototype(chart, prototypes)
-        card = {
-            "type": chart["chartType"],
-            "title": chart.get("title", ""),
-            "label": chart.get("label", ""),
-            "color": resolve_color(chart.get("color", group.get("color", "rgb(0,0,0)"))),
-            "animation": chart.get("animation"),
-            "dataSource": chart.get("dataSource", {"type": "inline"}),
-        }
-        # Pass through extra card-specific fields (labels, cx, cy, maxR, w, h, etc.)
-        skip = {"chartType", "type", "title", "label", "color", "animation", "dataSource", "prototype"}
-        for k, v in chart.items():
-            if k not in skip and v is not None:
-                card[k] = v
-        cards.append(card)
+flat = flatten_config(cfg)
+cards = flat["cards"]
 
 # ── 3. Generate dist/config.js (fallback for development mode) ─────────
 
@@ -107,7 +43,9 @@ with open(config_path, "w", encoding="utf-8") as f:
     f.write("//  run 'python build.py' to regenerate.\n")
     f.write("// ═══════════════════════════════════════════════════\n\n")
     f.write("window.HAL_CONFIG = ")
-    json.dump({"timing": timing, "visual": cfg.get("visual", {}), "cards": cards,
+    json.dump({"timing": timing, "visual": cfg.get("visual", {}),
+               "dataFault": cfg.get("dataFault", {"mode": "skip"}),
+               "cards": cards,
                "prototypes": prototypes, "groups": groups, "colors": colors},
               f, indent=2)
     f.write(";\n")

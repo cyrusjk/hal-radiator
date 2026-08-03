@@ -33,7 +33,7 @@ The demo uses synthetic inline data. For a live system with real metrics, point 
 ## How It Works
 
 ```
-  radiator.yaml ──→ build.py ──→ src/config.js ──→ dist/index.html
+  radiator-demo.yaml ──→ build.py ──→ dist/config.js ──→ dist/index.html
                                                        │
   serve.py ──→ /api/config (JSON) ──→ browser ──→ app.js
                                                     │
@@ -52,7 +52,7 @@ The demo uses synthetic inline data. For a live system with real metrics, point 
 |-------|---------|------|
 | **Config** | `radiator.yaml` | Card definitions, timing, color palette, data source config |
 | **Prototypes** | `prototypes.yaml` | Reusable card templates (orbital, curve-family, polar, and more) |
-| **Build** | `build.py` | Merges YAML → `src/config.js`, inlines everything into `dist/index.html` |
+| **Build** | `build.py` | Merges YAML → `dist/config.js`, inlines everything into `dist/index.html` |
 | **Server** | `serve.py` | Serves `/api/config` as JSON + static files, ERA5 data cache |
 | **Boot** | `src/app.js` | Fetches config, cycles cards via auto-timer |
 | **Data** | `src/data/fetcher.js`, `src/data/sources/` | Fetches from VictoriaMetrics, ERA5, or inline YAML data |
@@ -172,7 +172,7 @@ See [docs/architecture.html](docs/architecture.html) for a visual architecture d
 
 ### Data Contract
 
-See [DATA_CONTRACT.md](DATA_CONTRACT.md) for the expected data shape per card type.
+See [DATA_CONTRACT.md](DATA_CONTRACT.md) for the expected data shape per card type. (Note: this file is gitignored/untracked — keep a copy locally or commit it if the link should resolve on GitHub.)
 
 ## License
 
